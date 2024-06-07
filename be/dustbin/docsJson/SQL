@@ -1,0 +1,14 @@
+SELECT b.id BID, cl.id CID, bd.name Building, o.name as Floor, c.deskType, 
+cl.company, i.name, i.refNo, i.taxableAmount, i.gst, i.tds, i.amount, 
+it.item, it.qty, it.price, it.amount, it.tds, it.cgst, it.sgst, it.total,
+d.file
+FROM erp_pro.bookings b
+join offices o on b.officeId=o.id
+join buildings bd on o.buildingId=bd.id
+join contracts c on b.contractId=c.id
+join clients cl on b.clientId=cl.id
+join invoices i on b.id=i.bookingId
+join invoice_items it on i.id = it.invoiceId
+join docs d on i.pdfId=d.id
+where b.status='Active' and i.name='OfficeRent Rent for Dec 2023';
+

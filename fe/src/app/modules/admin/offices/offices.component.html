@@ -1,0 +1,1712 @@
+<div class="row mt--10">
+  <div class="col-4 row p-2 ml-0 mr-0 pt-4">
+    <h4 class="">Building & Office Configuration
+      <help-notes [context]="'Admin:BuildingFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-10 float-right"></help-notes>
+      <help-notes [context]="'Admin:BuildingDesc'" [type]="'popup'" [placement]="'bottom'" class="ml-10 float-right"></help-notes>
+      <help-notes [context]="'Admin:CarpetSBAImage'" [type]="'popup'" [placement]="'bottom'" class="ml-10 float-right"></help-notes>
+    </h4>
+  </div>
+  <div class="col-7 row p-2 ml-0 mr-0">
+    <div class="form-group p-0 col-md-3 mb-1">
+      <label for="roles">Select Country</label>
+      <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()">
+      </ng-select>
+    </div>
+    <div class="form-group p-0 col-md-4 mb-1" *ngIf="selectedCountry?.id">
+      <label for="roles">Select City</label>
+      <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+      </ng-select>
+    </div>
+    <div class="form-group p-0 col-md-5 mb-1" *ngIf="selectedCity?.id">
+      <label for="roles">Select Location</label>
+      <ng-select [items]="locations" [multiple]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select Location" [(ngModel)]="selectedLocations" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadMoreBuildings()">
+      </ng-select>
+    </div>
+  </div>
+</div>
+<div class="row">
+
+  <!----------------- Buildings Start ------------------->
+  <div [ngClass]="officeFilters.buildingId||parkingLotFilters.buildingId? 'col-3':'col-12'" class="p-1 pl-2">
+    <div class="breadcrumb">
+      <h4 class="pull-left">Buildings</h4>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="officeSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openBuildingModal()">
+        <i class="fa fa-plus"></i> Building
+      </button>
+      <!-- <button class="btn btn-outline-primary btn-mini btn-ico pull-right mr-10" (click)="openBuildingsMapModal()">
+        <i class="fa fa-map"></i> View
+      </button> -->
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+          <div class="table-responsive" *ngIf="selectedLocations.length">
+            <loading [loading]="loading"></loading>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="(officeFilters.buildingId)||(parkingLotFilters.buildingId)">
+              <thead>
+                <tr>
+                  <th class="w-30">Name</th>
+                  <th class="w-20 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll (onScroll)="loadMoreBuildings()">
+                <tr *ngFor="let building of buildings;" [ngClass]="building.selected ? 'selected':''">
+                  <td class="w-30"><a href="{{building.webUrl}}" target="_blank">{{building.name}}</a></td>
+                  <td class="w-20 text-center">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Floors" (click)="action({action:'listOffices',item: building})"><i class="i-Blinklist"></i></button>
+                    <button class="btn btn-icon btn-success" ngbTooltip="View Parking" (click)="action({action:'listLots',item: building})"><i class="i-Jeep"></i></button>
+                    <button class="btn btn-icon btn-info" (click)="action({action:'editBuilding',item: building})"><i class="i-Pen-5"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="(!officeFilters?.buildingId)&&(!parkingLotFilters?.buildingId)">
+              <thead>
+                <tr>
+                  <th class="w-20">Name</th>
+                  <th class="w-10">City</th>
+                  <th class="w-10">Location</th>
+                  <th class="w-15">Street</th>
+                  <th class="w-15">Landmark</th>
+                  <th class="w-10 text-center">SuperBuildArea</th>
+                  <th class="w-10 text-center">CarpetArea</th>
+                  <th class="w-10 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll (onScroll)="loadMoreBuildings()">
+                <tr *ngFor="let building of buildings;" [ngClass]="building.selected ? 'selected':''">
+                  <td class="w-20"><a href="{{building.webUrl}}" target="_blank">{{building.name}}</a></td>
+                  <td class="w-10">{{building.location?.city?.name}}</td>
+                  <td class="w-10">{{building.location?.name}}</td>
+                  <td class="w-15">{{building.street}}</td>
+                  <td class="w-15">{{building.landmark}}</td>
+                  <td class="w-10 text-right">{{building.sba || '-'}} sft</td>
+                  <td class="w-10 text-right">{{building.carpetArea || '-'}} sft</td>
+                  <td class="w-10 text-center">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Floors" (click)="action({action:'listOffices',item: building})"><i class="i-Blinklist"></i></button>
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Parking" (click)="action({action:'listLots',item: building})"><i class="i-Car-2"></i></button>
+                    <button class="btn btn-icon btn-info" (click)="action({action:'editBuilding',item: building})"><i class="i-Pen-5"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- <div class="card list-horizontal tableBodyScroll" *ngIf="!(officeFilters.buildingId)" style="height: calc(100vh - 220px); overflow: auto;">
+              <div *ngFor="let building of buildings;let i=index;" class="list-item col-12">
+                <div class="flex-grow-1 d-flex border-bottom">
+                  <div class="card-body p-0 pl-2 pt-1 pb-1">
+                    <div class="d-flex flex-column justify-content-between align-items-lg-center flex-lg-row align-self-center">
+                      <div class="m-0 text-muted text-small w-30 w-sm-100">
+                        <div class="text-primary"><i class="i-Building"></i> {{building.name}}</div>
+                        <span class="text-info f-b">{{building.status}}</span>
+                      </div>
+                      <div class="m-0 text-muted text-small w-30 w-sm-100">
+                        <div class="d-b text-primary"> <span class="text-secondary"><span *ngIf="building.status!='Live'&&building.status!='Dephased'">Expected</span> Live On :</span> {{building.expectedLive | date : 'MMM dd, yyyy'}}</div>
+                        <span class="d-b text-info"> <span class="text-secondary">Rent Started :</span> {{building.rentStarted | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                      <div class="m-0 text-muted text-small w-20 w-sm-100">
+                        <div class="d-b text-primary"> <span class="text-secondary">Carpet Area :</span> {{building.carpetArea}} <small>SqFt</small></div>
+                        <span class="d-b text-info"> <span class="text-secondary">Chargeable Area :</span> {{building.chargeableArea}} <small>SqFt</small></span>
+                      </div>
+                      <div class="m-0 text-muted text-center w-20 w-sm-100">
+                        <button class="btn btn-icon btn-primary" [placement]="i==0?'bottom':'top'" ngbTooltip="View Floors" (click)="action({action:'listOffices',item: building})"><i class="i-Blinklist"></i></button>
+                        <button class="btn btn-icon btn-info" [placement]="i==0?'bottom':'top'" ngbTooltip="Edit Building" (click)="action({action:'editBuilding',item: building})"><i class="i-Pen-5"></i></button>
+                      </div>
+                    </div>
+                    <div class="d-flex flex-column justify-content-between align-items-lg-center flex-lg-row align-self-center">
+                      <div class="flex-grow-1 d-flex">
+                        <div class="m-0 text-muted text-small w-100 w-sm-100">
+                          <div class="d-b text-primary"> <span class="text-secondary">Allowed Desk Sizes :</span> {{building.allowedDeskSizes}}</div>
+                          <span class="d-b text-info"> <span class="text-secondary">Address :</span> {{building.address}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <!----------------- Parking Lots Start ------------------->
+    <!-- *ngIf="parkingLotFilters.buildingId" [ngClass]="cabinFilters.officeId||resourceFilters.officeId ? 'col-3':'col-9'" -->
+    <div class="col-5 p-1" *ngIf="parkingLotFilters.buildingId">
+      <div class="breadcrumb">
+        <h4 class="pull-left">'{{selectedBuilding.name}}' Parking Lots</h4>
+        <!-- <input type="text" placeholder="Search by name" [formControl]="floorSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+        <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openParkingLotModal()">
+          <i class="fa fa-plus"></i> Lots
+        </button>
+      </div>
+      <div class="clear"></div>
+      <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card  o-hidden">
+            <data-list #cabinsList [filter]="parkingLotFilters" [dataUrl]="'internal/admin/listParkingLots'" [config]="ParkingLotConfig" (onAction)="action($event)"></data-list>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-----------------Parking Spots  ------------------->
+  <div class="col-2 p-1" *ngIf="parkingSlotFilters.parkingLotId">
+    <div class="breadcrumb">
+      <h4 class="pull-left">Parking Spots</h4>
+      <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openParkingSpotModal()">
+        <i class="fa fa-plus"></i> Spots
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #desksList [filter]="parkingSlotFilters" [dataUrl]="'internal/admin/listParkingSpots'" [config]="parkingSlotConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!----------------- Floors Start ------------------->
+  <div [ngClass]="cabinFilters.officeId||resourceFilters.officeId ? 'col-3':'col-9'" class="p-1" *ngIf="officeFilters.buildingId && !lotFilters.buildingId">
+    <div class="breadcrumb">
+      <h4 class="pull-left">'{{selectedBuilding.name}}' Floors</h4>
+      <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openOfficeModal()">
+        <i class="fa fa-plus"></i> Floor
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <div class="table-responsive">
+            <loading [loading]="loading"></loading>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="(cabinFilters.officeId||resourceFilters.officeId)">
+              <thead>
+                <tr>
+                  <th class="w-50">Name</th>
+                  <th class="w-30 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll (onScroll)="loadMoreOffices()">
+                <tr *ngFor="let office of offices;" [ngClass]="office.selected ? 'selected':''">
+                  <td class="w-50"><a href="{{office.webUrl}}" target="_blank">{{office.name}}</a></td>
+                  <td class="w-30 text-center">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Resources" (click)="action({action:'listResources',item: office})"><i class="i-Posterous"></i></button>
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Cabins" (click)="action({action:'listCabins',item: office})"><i class="i-Blinklist"></i></button>
+                    <button class="btn btn-icon btn-info" (click)="action({action:'editOffice',item: office})"><i class="i-Pen-5"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="card list-horizontal tableBodyScroll" *ngIf="!(cabinFilters.officeId||resourceFilters.officeId)" style="height: calc(100vh - 220px); overflow: auto;">
+              <div *ngFor="let office of offices;let i=index;" class="list-item col-12">
+                <div class="flex-grow-1 d-flex border-bottom">
+                  <div class="card-body p-0 pl-2 pt-1 pb-1">
+                    <div class="d-flex flex-column justify-content-between align-items-lg-center flex-lg-row align-self-center">
+                      <div class="m-0 text-muted text-small w-30 w-sm-100">
+                        <div class="text-primary"><i class="i-Building"></i> {{office.name}}</div>
+                        <span class="text-info f-b">{{office.status}}</span>
+                      </div>
+                      <div class="m-0 text-muted text-small w-30 w-sm-100">
+                        <div class="d-b text-primary"> <span class="text-secondary"><span *ngIf="office.status!='Live'&&office.status!='Dephased'">Expected</span> Live On :</span> {{office.expectedLive | date : 'MMM dd, yyyy'}}</div>
+                        <span class="d-b text-info"> <span class="text-secondary">Rent Started :</span> {{office.rentStarted | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                      <div class="m-0 text-muted text-small w-20 w-sm-100">
+                        <div class="d-b text-primary"> <span class="text-secondary">Carpet Area :</span> {{office.carpetArea}} <small>SqFt</small></div>
+                        <span class="d-b text-info"> <span class="text-secondary">Chargeable Area :</span> {{office.chargeableArea}} <small>SqFt</small></span>
+                      </div>
+                      <div class="m-0 text-muted text-center w-20 w-sm-100">
+                        <button class="btn btn-icon btn-primary" [placement]="i==0?'bottom':'top'" ngbTooltip="View Resources" (click)="action({action:'listResources',item: office})"><i class="i-Posterous"></i></button>
+                        <button class="btn btn-icon btn-primary" [placement]="i==0?'bottom':'top'" ngbTooltip="View Cabins" (click)="action({action:'listCabins',item: office})"><i class="i-Blinklist"></i></button>
+                        <button class="btn btn-icon btn-info" [placement]="i==0?'bottom':'top'" ngbTooltip="Edit Floor" (click)="action({action:'editOffice',item: office})"><i class="i-Pen-5"></i></button>
+                      </div>
+                    </div>
+                    <div class="d-flex flex-column justify-content-between align-items-lg-center flex-lg-row align-self-center">
+                      <div class="flex-grow-1 d-flex">
+                        <div class="m-0 text-muted text-small w-100 w-sm-100">
+                          <div class="d-b text-primary"> <span class="text-secondary">Allowed Desk Sizes :</span> {{office.allowedDeskSizes}}</div>
+                          <span class="d-b text-info"> <span class="text-secondary">Allowed Product Types :</span> {{office.deskTypes}}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!----------------- Lot Start ------------------->
+    <div [ngClass]="cabinFilters.officeId||resourceFilters.officeId ? 'col-3':'col-9'" class="p-1" *ngIf="lotFilters.buildingId && officeFilters.buildingId">
+      <div class="breadcrumb">
+        <h4 class="pull-left">'{{selectedBuilding.name}}' Spots</h4>
+        <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openLotModal()">
+          <i class="fa fa-plus"></i> Spots
+        </button>
+      </div>
+      <div class="clear"></div>
+      <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card  o-hidden">
+            <div class="table-responsive">
+              <loading [loading]="loading"></loading>
+              <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="(cabinFilters.officeId||resourceFilters.officeId)">
+                <thead>
+                  <tr>
+                    <th class="w-50">Name</th>
+                    <th class="w-30 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody infiniteScroll (onScroll)="loadMoreOffices()">
+                  <tr *ngFor="let office of offices;" [ngClass]="office.selected ? 'selected':''">
+                    <td class="w-50"><a href="{{office.webUrl}}" target="_blank">{{office.name}}</a></td>
+                    <td class="w-30 text-center">
+                      <!-- <button class="btn btn-icon btn-primary" ngbTooltip="View Resources" (click)="action({action:'listResources',item: office})"><i class="i-Posterous"></i></button> -->
+                      <button class="btn btn-icon btn-primary" ngbTooltip="View Cabins" (click)="action({action:'listCabins',item: office})"><i class="i-Blinklist"></i></button>
+                      <button class="btn btn-icon btn-info" (click)="action({action:'editLot',item: office})"><i class="i-Pen-5"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="card list-horizontal tableBodyScroll" *ngIf="!(cabinFilters.officeId||resourceFilters.officeId)" style="height: calc(100vh - 220px); overflow: auto;">
+                <div *ngFor="let office of offices;let i=index;" class="list-item col-12">
+                  <div class="flex-grow-1 d-flex border-bottom">
+                    <div class="card-body p-0 pl-2 pt-1 pb-1">
+                      <div class="d-flex flex-column justify-content-between align-items-lg-center flex-lg-row align-self-center">
+                        <div class="m-0 text-muted text-small w-30 w-sm-100">
+                          <div class="text-primary"><i class="i-Building"></i> {{office.name}}</div>
+                          <span class="text-info f-b">{{office.status}}</span>
+                        </div>
+                        <div class="m-0 text-muted text-small w-30 w-sm-100">
+                          <div class="d-b text-primary"> <span class="text-secondary"><span *ngIf="office.status!='Live'&&office.status!='Dephased'">Expected</span> Live On :</span> {{office.expectedLive | date : 'MMM dd, yyyy'}}</div>
+                          <span class="d-b text-info"> <span class="text-secondary">Rent Started :</span> {{office.rentStarted | date : 'MMM dd, yyyy'}}</span>
+                        </div>
+                        <div class="m-0 text-muted text-small w-20 w-sm-100">
+                          <div class="d-b text-primary"> <span class="text-secondary">Carpet Area :</span> {{office.carpetArea}} <small>SqFt</small></div>
+                          <span class="d-b text-info"> <span class="text-secondary">Chargeable Area :</span> {{office.chargeableArea}} <small>SqFt</small></span>
+                        </div>
+                        <div class="m-0 text-muted text-center w-20 w-sm-100">
+                          <!-- <button class="btn btn-icon btn-primary" [placement]="i==0?'bottom':'top'" ngbTooltip="View Resources" (click)="action({action:'listResources',item: office})"><i class="i-Posterous"></i></button> -->
+                          <button class="btn btn-icon btn-primary" [placement]="i==0?'bottom':'top'" ngbTooltip="View Cabins" (click)="action({action:'listCabins',item: office})"><i class="i-Blinklist"></i></button>
+                          <button class="btn btn-icon btn-info" [placement]="i==0?'bottom':'top'" ngbTooltip="Edit Spot" (click)="action({action:'editLot',item: office})"><i class="i-Pen-5"></i></button>
+                        </div>
+                      </div>
+                      <div class="d-flex flex-column justify-content-between align-items-lg-center flex-lg-row align-self-center">
+                        <div class="flex-grow-1 d-flex">
+                          <div class="m-0 text-muted text-small w-100 w-sm-100">
+                            <div class="d-b text-primary"> <span class="text-secondary">Allowed Desk Sizes :</span> {{office.allowedDeskSizes}}</div>
+                            <span class="d-b text-info"> <span class="text-secondary">Allowed Product Types :</span> {{office.deskTypes}}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!----------------- Resources Start " ------------------->
+  <div class="col-6 p-1" *ngIf="resourceFilters.officeId">
+    <div class="breadcrumb">
+      <h4 class="pull-left">Resources</h4>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="resourceSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openResourceModal()">
+        <i class="fa fa-plus"></i> Resource
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #resourcesList [filter]="resourceFilters" [dataUrl]="'internal/admin/listResources'" [config]="resourceConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!----------------- Cabin Start ------------------->
+  <div [ngClass]="deskFilters.cabinId ? 'col-4':'col-6'" class="p-1" *ngIf="cabinFilters.officeId">
+    <div class="breadcrumb">
+      <h4 class="pull-left">'{{selectedOffice.name}}' Cabin</h4>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="floorSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openCabinModal()">
+        <i class="fa fa-plus"></i> Cabin
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #cabinsList [filter]="cabinFilters" [dataUrl]="'internal/admin/listCabins'" [config]="cabinConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!----------------- Desks Start ------------------->
+  <div class="col-2 p-1" *ngIf="deskFilters.cabinId">
+    <div class="breadcrumb">
+      <h4 class="pull-left">Desks</h4>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="floorSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-primary btn-mini btn-ico pull-right" (click)="openDeskModal()">
+        <i class="fa fa-plus"></i> Desk
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #desksList [filter]="deskFilters" [dataUrl]="'internal/admin/listDesks'" [config]="deskConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<ng-template #buildingsMapModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Buildings Map View </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row buildings-map">
+      <div class="col-md-12 row mb-1">
+        <div class="col-md-8 text-right f-b">Filters : </div>
+        <div class="col-md-4">
+          <ng-select [items]="officeStatuses" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select statuses of  Building" multiple="true" bindLabel="name" bindValue="type" [(ngModel)]="mapFilters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="renderMap()"></ng-select>
+        </div>
+      </div>
+      <div class="col-7" *ngIf="isMapReady">
+        <agm-map [latitude]="lat" [longitude]="lng" [zoom]="14">
+          <agm-marker *ngFor="let marker of markers;" [label]="marker.label" [latitude]="marker.lat" [longitude]="marker.lng" [opacity]="marker.alpha" [animation]="marker.animation" [markerDraggable]="false" style="height: calc(100vh - 120px)" (markerClick)="scrollToBuilding(marker)">
+          </agm-marker>
+          <!-- (mouseOut)="markerOut(marker)" (mouseOver)="markerOver(marker)" -->
+        </agm-map>
+      </div>
+      <div class="col-5">
+        <span class="text-secondary d-ib p-1 fs-16">Total <strong>{{filteredBuildings.length}} buildings</strong> </span>
+        <div class="tableBodyScroll cabins" style="height: calc(100vh - 200px);overflow-y: auto;">
+          <div id="map-building-{{i+1}}" class="hot-desk card p-2 m-1 cursor" [ngClass]="{'selected':building.selected}" *ngFor="let building of filteredBuildings;let i=index;" (mouseenter)="hoverBuilding(building, true)" (mouseleave)="hoverBuilding(building, false)">
+            <div>
+              <span class="mb-1 fs-14 w-70 d-ib">#{{i+1}}. {{building.name}}</span>
+              <span class="w-30 d-ib"><span class="badge badge-dark text-white float-right">{{building.location.name}}</span></span>
+            </div>
+            <p class="mb-0 fs-10">{{building.address}}</p>
+            <div>
+              <span class="d-ib w-50">
+                <span class="text-secondary fs-12">SqFt Price : </span> <span class="text-primary fs-12 f-b">{{building.sqftPrice | inr}}</span>
+              </span>
+              <span class="text-secondary fs-12"> <span class="badge badge-info text-white float-right">{{building.status}}</span> </span>
+            </div>
+            <div>
+              <span class="d-ib w-50">
+                <span class="text-secondary fs-12">Carpet Area : </span> <span class="text-primary fs-12 f-b">{{building.carpetArea || '-'}} <small>sqft</small></span>
+              </span>
+              <span class="text-secondary fs-12">Chargeable Area : </span> <span class="text-info f-b">{{building.availableArea || '-'}} <small>sqft</small></span>
+            </div>
+            <div>
+              <span class="d-ib w-50">
+                <span class="text-secondary fs-12">HandOver : </span> <span class="text-primary fs-12 f-b">{{building.handover | date : 'MMM dd, yyyy'}}</span>
+              </span>
+              <span class="text-secondary fs-12">Expected Live : </span> <span class="text-info fs-12 f-b">{{building.expectedLive | date : 'MMM dd, yyyy'}} </span>
+            </div>
+            <div>
+              <a class="btn btn-mini btn-outline-primary btn-ico float-left" (click)="makeAsCenter(building)">Locate on Map</a>
+              <a class="btn btn-mini btn-outline-primary btn-ico float-right" (click)="showBuildingContracts(building)">Open Contracts</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<ng-template #buildingModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{building.id ? 'Edit Building' : 'New Building'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-tabset class="nav-righ" [activeId]="activeBuildingModalTab">
+      <ngb-tab title="Basic Info" id="0">
+        <ng-template ngbTabContent>
+          <form [formGroup]="buildingForm">
+            <div class="row">
+              <div class="col-md-6 form-group mb-1">
+                <!-- <label for="firstName">Name</label> -->
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="building.name">
+              </div>
+              <!--  <div class="col-md-9 form-group mb-1">
+                <label for="roles">Status</label>
+                <ng-select [items]="officeStatuses" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select status of this Building" bindLabel="name" bindValue="type" [(ngModel)]="building.status" [ngModelOptions]="{standalone: true}">
+                </ng-select>
+              </div> -->
+              <div class="form-group col-md-4 mb-1">
+                <ng-select [items]="locations" [multiple]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}">
+                </ng-select>
+              </div>
+              <div class="col-md-2 pl-0 pr-1  form-group mb-1 mt-2">
+                <label class="checkbox checkbox-success">
+                  <input type="checkbox" [(ngModel)]="building.active" [ngModelOptions]="{standalone: true}">
+                  <span>Active</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-6 form-group mb-1">
+                <!-- <label for="firstName">Street</label> -->
+                <input type="text" class="form-control" id="street" formControlName="street" placeholder="Enter Street" [(ngModel)]="building.street">
+              </div>
+              <div class="col-md-6 form-group mb-1">
+                <!-- <label for="firstName">Landmark</label> -->
+                <input type="text" class="form-control" id="landmark" formControlName="landmark" placeholder="Enter Landmark" [(ngModel)]="building.landmark">
+              </div>
+              <div class="col-md-8 form-group mb-1">
+                <!-- <label for="firstName">Address</label> -->
+                <input type="text" class="form-control" id="address" formControlName="address" placeholder="Enter Address" [(ngModel)]="building.address">
+              </div>
+              <!-- <div class="col-md-8 form-group mb-1 googleplace-container">
+                <label for="roles">Location <small> (type to fetch more location details)</small></label>
+                <input class="form-control" placeholder="Enter Office Location" (setAddress)="getGooglePlaceAddress($event)" name="googlelocation" formControlName="googlelocation" [(ngModel)]="building.address" googleplace id="googleplace">
+                <div class="pac-container" style="z-index: 9999 !important"></div>
+              </div> -->
+              <div class="col-md-2 form-group mb-1">
+                <!-- <label for="firstName">Latitude</label> -->
+                <input type="number" class="form-control" id="lat" formControlName="lat" placeholder="Latitude degree" [(ngModel)]="building.lat">
+              </div>
+              <div class="col-md-2 form-group mb-1">
+                <!-- <label for="firstName">Longitude</label> -->
+                <input type="number" class="form-control" id="lat" formControlName="lat" placeholder="Longitude degree" [(ngModel)]="building.lng">
+              </div>
+              <div class="col-md-12 form-group mb-1" *ngIf="building.status=='Live'">
+                <!-- <label for="firstName">WebUrl</label> -->
+                <input type="text" class="form-control" id="webUrl" formControlName="webUrl" placeholder="Enter WebSite Url" [(ngModel)]="building.webUrl">
+              </div>
+              <!-- <div class="row" style="width: 50%; float:right;" *ngIf="building.id">
+              <h4 class="col-12 fs-14 mb-0 f-b pb-1">Building Details</h4>
+              <div class="col-md-12 row  border-top pt-2" style="margin-top: -130px;">
+                <div class="col-md-2 form-group mb-1">
+                  <label for="firstName">Floors</label>
+                  <input type="number" class="form-control" id="floors" formControlName="floors" placeholder="Enter Floor count" [(ngModel)]="building.floors">
+                </div>
+                <div class="col-md-4 form-group mb-1">
+                  <label class="d-b">Site Size <small>(LxW) <small>(in mtrs)</small></small></label>
+                  <input type="number" class="form-control w-40 float-left" id="size" formControlName="size" placeholder="Length" [(ngModel)]="building.length">
+                  <div class="text-center float-left w-20 fs-18 f-b">x</div>
+                  <input type="number" class="form-control w-40 float-right" id="size" formControlName="size" placeholder="Enter Dimensions" [(ngModel)]="building.width">
+                </div>
+                <div class="col-md-3 form-group mb-1">
+                  <label for="firstName">Carpet Area <small>(sqft)</small></label>
+                  <input type="number" class="form-control" id="carpetArea" formControlName="carpetArea" placeholder="in SqFt" [(ngModel)]="building.carpetArea">
+                </div>
+                <div class="col-md-3 form-group mb-1">
+                  <label for="firstName">Build Area <small>(sqft)</small></label>
+                  <input type="number" class="form-control" id="buildupArea" formControlName="buildupArea" placeholder="in SqFt" [(ngModel)]="building.buildupArea">
+                </div>
+                <h4 class="col-12 fs-14 mb-0 f-b pb-1">Contracting Details</h4>
+                <div class="col-md-4 form-group mb-1">
+                  <label for="firstName">SqFt Price</label>
+                  <input type="number" class="form-control" id="sqftPrice" formControlName="sqftPrice" placeholder="Enter Price/SqFt" [(ngModel)]="building.sqftPrice">
+                </div>
+                <div class="col-md-4 form-group mb-1">
+                  <label for="firstName">Rent Free Months</label>
+                  <input type="number" class="form-control" id="rentFreeDays" formControlName="rentFreeDays" placeholder="Rent Free Days" [(ngModel)]="building.rentFreeDays">
+                </div>
+                <div class="col-md-4 form-group mb-1">
+                  <label for="firstName">HandOver Date</label>
+                  <input type="text" class="form-control" id="handover" name="dphandover" ngbDatepicker #dphandover="ngbDatepicker" formControlName="handover" placeholder="HandOver" [(ngModel)]="building.handover" (focus)="dphandover.toggle()" [minDate]="minDate">
+                </div>
+                <div class="col-md-4 form-group mb-1">
+                    <label for="firstName">Avg Desk Price</label>
+                    <input type="number" class="form-control" id="avgDeskPrice" formControlName="avgDeskPrice" placeholder="Enter Avg DeskPrice" [(ngModel)]="building.avgDeskPrice">
+                  </div> 
+                  <div class="col-md-4 form-group mb-1">
+                    <label for="firstName">Expected Live Date</label>
+                    <input type="text" class="form-control" id="expectedLive" name="livedp" ngbDatepicker #livedp="ngbDatepicker" formControlName="expectedLive" placeholder="Live Date" [(ngModel)]="building.expectedLive" (focus)="livedp.toggle()" [minDate]="minDate">
+                  </div> 
+                  </div>
+                  </div> -->
+              <div class="col-md-12 form-group mb-1">
+                <!-- <label for="firstName">Description</label> -->
+                <textarea class="form-control" id="description" formControlName="description" placeholder="Description" [(ngModel)]="building.description"></textarea>
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="1" *ngIf="building.id">
+        <ng-template ngbTabTitle>
+          <div (click)="getBuildingContacts()">Contacts</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <button class="btn btn-primary btn-mini btn-ico pull-right" *ngIf="!showContactForm" (click)="showContactForm=true">
+            <i class="fa fa-plus"></i> New Contact
+          </button>
+          <form [formGroup]="buildingContactForm" *ngIf="showContactForm">
+            <div class="row">
+              <div class="col-md-2 form-group mb-1 pr-0">
+                <!-- <label for="firstName">Name</label> -->
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="contact.name">
+              </div>
+              <div class="col-md-3 form-group mb-1 pl-1 pr-0">
+                <!-- <label for="firstName">] Email</label> -->
+                <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="contact.email">
+              </div>
+              <div class="col-md-2 form-group mb-1 pl-1 pr-0">
+                <!-- <label for="firstName">] Phone</label> -->
+                <input type="text" class="form-control" id="phone" formControlName="phone" placeholder="Enter Phone" [(ngModel)]="contact.phone">
+              </div>
+              <div class="col-md-3 form-group mb-1 mt-1 pl-2 pr-0">
+                <!-- <label for="firstName">] Purposes</label> -->
+                <!-- <ng-select [items]="['Owner','Writer','Contractor']" [multiple]="true" [hideSelected]="true" placeholder="Select ] Purposes" [(ngModel)]="contact.purposes" [ngModelOptions]="{standalone: true}">
+          </ng-select> -->
+                <label class="checkbox checkbox-success mr-3 float-left">
+                  <input type="checkbox" [(ngModel)]="contact.owner" [ngModelOptions]="{standalone: true}">
+                  <span>Owner</span>
+                  <span class="checkmark"></span>
+                </label>
+                <label class="checkbox checkbox-success mr-3 float-left">
+                  <input type="checkbox" [(ngModel)]="contact.writer" [ngModelOptions]="{standalone: true}">
+                  <span>Writer</span>
+                  <span class="checkmark"></span>
+                </label>
+                <label class="checkbox checkbox-success mr-3 float-left">
+                  <input type="checkbox" [(ngModel)]="contact.contractor" [ngModelOptions]="{standalone: true}">
+                  <span>Contractor</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-1 form-group mb-1 mt-1 pl-0 pr-0">
+                <label class="checkbox checkbox-success">
+                  <input type="checkbox" [(ngModel)]="contact.active" [ngModelOptions]="{standalone: true}">
+                  <span>Active</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-1 form-group mb-1 pr-0 pl-0">
+                <button class="btn btn-primary btn-mini btn-icon pull-right" [disabled]="buildingContactForm.invalid" ngbTooltip="Save Contact" (click)="saveBuildingContact()">
+                  <i class="fa fa-check"></i>
+                </button>
+                <button class="btn btn-mini btn-icon pull-right" ngbTooltip="Cancel" (click)="showContactForm=false;">
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+          <!--  <data-list #buildingContactsList [filter]="buildingContactsFilters" [dataUrl]="'internal/admin/listBuildingContacts'" [config]="buildingContactsConfig" (onAction)="action($event)"></data-list> -->
+          <h4 class="text-center p-4" *ngIf="!buildingContacts?.length">No owner contacts are added yet.</h4>
+          <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="buildingContacts?.length">
+            <thead>
+              <tr>
+                <th class="w-20 text-left">Name</th>
+                <th class="w-20 text-left">Email</th>
+                <th class="w-10 text-left">Phone</th>
+                <th class="w-30 text-left">Role</th>
+                <th class="w-10 text-left">Status</th>
+                <th class="w-10 text-left"></th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll" style="max-height: 325px;">
+              <tr *ngFor="let contact of buildingContacts;">
+                <td class="w-20 text-left">{{contact.name}}</td>
+                <td class="w-20 text-left">{{contact.email}}</td>
+                <td class="w-10 text-left">{{contact.phone}}</td>
+                <td class="w-30 text-left">{{contact.purposes}}</td>
+                <td class="w-10 text-left">
+                  <label class="checkbox checkbox-success">
+                    <input type="checkbox" [(ngModel)]="contact.active" [disabled]="true">
+                    <span></span>
+                    <span class="checkmark"></span>
+                  </label>
+                </td>
+                <td class="w-10 text-center">
+                  <button (click)="editContact(contact)" class="btn btn-sm btn-info btn-icon"><i class="fa fa-pencil"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="4" *ngIf="building.id">
+        <ng-template ngbTabTitle>
+          <div (click)="loadBuildingImages()">Images</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <div class="row">
+            <div class="col-6 row">
+              <div class="col-md-5">
+                <h4>Select files</h4>
+                <div ng2FileDrop [ngClass]="{'nv-file-over': hasBaseDropZoneOver}" (fileOver)="fileOverBase($event)" [uploader]="uploader" class="well my-drop-zone" style="width: 100%;height: 120px;border: dotted 3px lightgray; padding-top: 30%;text-align: center;">
+                  Files Drop Zone
+                </div>
+                Select Files
+                <input type="file" ng2FileSelect [uploader]="uploader" multiple /><br />
+              </div>
+              <div class="col-md-7" style="margin-bottom: 40px">
+                <!-- <h4>Uploading Images</h4> -->
+                <p class="mb-0">Queue length: {{ uploader?.queue?.length }}</p>
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of uploader.queue">
+                      <td><strong>{{ item?.file?.name }}</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="mt-1">
+                  <div class="mb-2">
+                    <p class="text-right mb-0" *ngIf="uploader.progress">Queue progress : {{uploader.progress}}% </p>
+                    <div class="progress" style="">
+                      <div class="progress-bar" role="progressbar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-ico btn-success btn-sm float-left" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length">
+                    <span class="fa fa-upload"></span> Upload
+                  </button>
+                  <!--   <button type="button" class="btn btn-ico btn-warning btn-sm ml-1" (click)="uploader.cancelAll()" [disabled]="!uploader.isUploading">
+                    <span class="fa fa-times"></span> Cancel
+                  </button> -->
+                  <button type="button" class="btn btn-ico btn-danger btn-sm float-right" (click)="uploader.clearQueue()" [disabled]="!uploader.queue.length">
+                    <span class="fa fa-trash"></span> Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 row tableBodyScroll" style="height: calc(100vh - 200px);overflow: auto;">
+              <!-- {{buildingImages | json}} -->
+              <div class="col-md-6 pl-1 pr-1 float-left" *ngFor="let buildingImage of buildingImages;">
+                <div class="card text-white o-hidden mb-3">
+                  <img alt="" class="card-img" [src]="buildingImage.image">
+                  <div class="card-img-overlay">
+                    <div class="p-1 text-left card-footer font-weight-light">
+                      <div class=""><i class="i-Boy mr-1"></i> {{buildingImage.updatedBy}} </div>
+                      <div class=""><i class="i-Calendar-4 mr-2"></i> <small>{{buildingImage.updated | date: 'medium'}}</small></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="3" *ngIf="building.status=='Live'">
+        <ng-template ngbTabTitle>
+          <div (click)="getBuildingServices()">Services</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <ngb-accordion #acc="ngbAccordion" [closeOthers]="true">
+            <ngb-panel *ngFor="let service of buildingServices;">
+              <ng-template ngbPanelTitle>
+                <span class="pull-left d-b w-90 fs-16 f-b" (click)="selectService(service)">{{service.name}}</span>
+                <span class="pull-right d-b">
+                  <label class="checkbox checkbox-success mb-0">
+                    <input type="checkbox" [(ngModel)]="service.active" (ngModelChange)="saveService(service)">
+                    <span>Enable</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </span>
+              </ng-template>
+              <ng-template ngbPanelContent>
+                <strong class="d-b text-center" *ngIf="!service.active">
+                  Please enable this service to configure further
+                </strong>
+                <div class="row" *ngIf="service.active">
+                  <div class="col-md-8">
+                    <label class="d-b f-b mb-0">Service Notes</label>
+                    <textarea class="form-control mb-10" cols="20" [(ngModel)]="service.serviceNotes" placeholder="Enter building specific Service Notes here to guide Service Assignees"></textarea>
+                    <label class="d-b f-b mb-0">Client Notes</label>
+                    <textarea class="form-control mb-10" cols="20" [(ngModel)]="service.clientNotes" placeholder="Enter building specific Client Notes here to show in Selfcare portal"></textarea>
+                    <button class="btn btn-sm btn-info float-right btn-ico" ngbTooltip="Save Service Notes" (click)="saveService(service)">
+                      <i class="fa fa-check"></i> &nbsp; Save
+                    </button>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="mb-1">
+                      <ng-select [items]="assigneeUsers" [hideSelected]="true" placeholder="Select User to assign to this Service" [(ngModel)]="assignee" [bindLabel]="'name'" (ngModelChange)="assignUser(service)">
+                      </ng-select>
+                    </div>
+                    <strong *ngIf="!service.assignees?.length" class="mt-4">No Service Members are assigned to this service yet.</strong>
+                    <table *ngIf="service.assignees?.length" class="table table-sm table-hover table-striped">
+                      <thead>
+                        <th class="w-50">Name</th>
+                        <th class="w-40">Phone</th>
+                        <th class="w-10"></th>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let assignee of service.assignees">
+                          <td class="w-50">{{assignee.user.name}}</td>
+                          <td class="w-40">{{assignee.user.phone}}</td>
+                          <td class="w-10">
+                            <i class="fa fa-times fa-3x f-b cursor text-danger" ngbTooltip="UnAssign User" (click)="removeAssignee(service, assignee.user)"></i>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </ng-template>
+            </ngb-panel>
+          </ngb-accordion>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="5" *ngIf="building.id">
+        <ng-template ngbTabTitle>
+          <div (click)="getBuildingContractTerms()">Contract Terms</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <form [formGroup]="contractTermForm" *ngIf="contractTerm" class="mt--10">
+            <div class="row">
+              <div class="col-md-3 form-group mb-1 pl-1 pr-0">
+                <label for="firstName">Term</label>
+                <ng-select [items]="['SecurityDeposit','Rent','LockIn','Rights and Conventions', 'Utilities','Termination', 'Services','Annexure']" [hideSelected]="true" placeholder="Select Term" [(ngModel)]="contractTerm.term" formControlName="term" name="term"> </ng-select>
+              </div>
+              <div class="col-md-4 form-group mb-1 pl-1 pr-0">
+                <label for="firstName">Image</label>
+                <a *ngIf="contractTerm.image" [href]="contractTerm.image" target="_blank" ngbTooltip="Click to View"><img [src]="contractTerm.image" /></a>
+                <span class="input-group">
+                  <div class="custom-file" *ngIf="!termImageFile">
+                    <input class="custom-file-input" id="termImageId" (change)="termImageFileChange($event)" type="file">
+                    <label class="custom-file-label" for="termImageId">Choose file</label>
+                  </div>
+                  <div class="custom-file" *ngIf="termImageFile">
+                    <span class="float-left">{{termImageFile?.name}}</span>
+                    <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="termImageFile=null;"></i>
+                    <div class="mb-1">
+                      <div *ngIf="termImageFileError">
+                        {{ termImageFileError.message }}
+                      </div>
+                      <div *ngIf="termImageUploadResponse.status === 'error'">
+                        {{ termImageUploadResponse.message }}
+                      </div>
+                      <div *ngIf="termImageUploadResponse.status === 'progress'">
+                        <div role="progressbar" [style.width.%]="termImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                          {{termImageUploadResponse.message}}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="input-group-append">
+                    <span class="input-group-text cursor" (click)="uploadTermImageFile()">Upload</span>
+                  </div>
+                </span>
+              </div>
+              <div class="col-md-5 form-group mb-1 pl-1 pr-1">
+                <label for="firstName">Info</label>
+                <textarea class="form-control" id="info" formControlName="info" placeholder="Enter Invoice Item description" [(ngModel)]="contractTerm.info"></textarea>
+              </div>
+            </div>
+          </form>
+          <div>
+            <div class="input-group w-60 float-left" *ngIf="!contractTerm">
+              <span *ngIf="building.agreement"><a [href]="building.agreement.file" target="_blank" ngbTooltip="Click to View" class="badge badge-success p-1">View Owner Agreement</a> &nbsp; <i class="fa fa-times" (click)="building.agreement=null"></i></span>
+              <span class="input-group" *ngIf="!building.agreement">
+                <strong>Owner Agreement : &nbsp; </strong>
+                <div class="custom-file" *ngIf="!agreementFile">
+                  <input class="custom-file-input" id="agreementId" (change)="agreementFileChange($event)" type="file">
+                  <label class="custom-file-label" for="agreementId">Choose file</label>
+                </div>
+                <div class="custom-file" *ngIf="agreementFile">
+                  <span class="float-left">{{agreementFile?.name}}</span>
+                  <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="agreementFile=null;"></i>
+                  <div class="mb-1">
+                    <div *ngIf="agreementFileError">
+                      {{ agreementFileError.message }}
+                    </div>
+                    <div *ngIf="agreementUploadResponse.status === 'error'">
+                      {{ agreementUploadResponse.message }}
+                    </div>
+                    <div *ngIf="agreementUploadResponse.status === 'progress'">
+                      <div role="progressbar" [style.width.%]="agreementUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                        {{agreementUploadResponse.message}}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="input-group-append">
+                  <span class="input-group-text cursor" (click)="uploadAgreementFile()">Upload</span>
+                </div>
+              </span>
+            </div>
+            <button class="btn btn-sm btn-info ladda-button float-right btn-ico" *ngIf="contractTerm" [ladda]="loading" [disabled]="loading||contractTermForm.invalid" (click)="saveContractTerm()"><i class="fa fa-check" *ngIf="!loading"></i> Save Term</button>
+            <button type="button" *ngIf="contractTerm" class="btn btn-sm btn-outline-danger float-right btn-ico mr-2" (click)="contractTerm=null"> Cancel </button>
+            <button type="button" *ngIf="!contractTerm" class="btn btn-sm btn-outline-info float-right btn-ico" (click)="contractTerm={}"><i class="fa fa-plus"></i> Add New Term</button>
+          </div>
+          <div class="clear mb-1"></div>
+          <div class="row" *ngIf="buildingContractTerms?.length">
+            <div class="col-md-4" *ngFor="let item of buildingContractTerms">
+              <button class="btn btn-icon btn-sm btn-info" style="position: absolute;right: 24px;z-index: 9;" (click)="contractTerm=item" ngbTooltip="Edit"><i class="i-Pen-5 text-bold"></i></button>
+              <button class="btn btn-sm btn-icon btn-danger" style="position: absolute;right: 0;z-index: 9;" (click)="item.status='Archived';saveContractTerm(item);" ngbTooltip="Delete"><i class="fa fa-times text-bold"></i></button>
+              <div class="f-b"> {{item.term}} </div>
+              <div class="card text-white o-hidden mb-1">
+                <a [href]="item.image" target="_blank"><img alt="" class="card-img" [src]="item.image"></a>
+              </div>
+              <div class="text-black"><small>{{item.info}}</small></div>
+            </div>
+          </div>
+          <div *ngIf="!buildingContractTerms?.length" class="text-center">
+            No Tenant Terms are added to this contract yet .
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="6" *ngIf="building.id">
+        <ng-template ngbTabTitle>
+          <div (click)="listBuildingAmcs()">AMCs</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <form [formGroup]="buildingAmcForm" *ngIf="buildingAmc" class="mt--10">
+            <div class="row">
+              <div class="col-md-2 form-group mb-1 pl-1 pr-0">
+                <label for="firstName">AMC Item</label>
+                <ng-select [items]="amcItems" bindLabel="name" bindValue="id" [hideSelected]="true" placeholder="Select AMC Item" [(ngModel)]="buildingAmc.amcItemId" formControlName="amcItemId" name="amcItemId"> </ng-select>
+              </div>
+              <div class="col-md-2 form-group mb-1 pl-1 pr-0">
+                <label for="firstName">Responsibility</label>
+                <ng-select [items]="['Owner','Company']" [hideSelected]="true" placeholder="Select Responsibility" [(ngModel)]="buildingAmc.responsibility" formControlName="responsibility" name="responsibility"> </ng-select>
+              </div>
+              <div class="col-md-8 form-group mb-1 pl-1 pr-1">
+                <label for="firstName">Info</label>
+                <textarea class="form-control" id="notes" formControlName="notes" placeholder="Enter Invoice Item description" [(ngModel)]="buildingAmc.notes"></textarea>
+              </div>
+            </div>
+          </form>
+          <div>
+            <button class="btn btn-sm btn-info ladda-button float-right btn-ico" *ngIf="buildingAmc" [ladda]="loading" [disabled]="loading||buildingAmcForm.invalid" (click)="saveBuildingAmc()"><i class="fa fa-check" *ngIf="!loading"></i> Save AMC</button>
+            <button type="button" *ngIf="buildingAmc" class="btn btn-sm btn-outline-danger float-right btn-ico mr-2" (click)="buildingAmc=null"> Cancel </button>
+            <button type="button" *ngIf="!buildingAmc" class="btn btn-sm btn-outline-info float-right btn-ico" (click)="buildingAmc={}"><i class="fa fa-plus"></i> New AMC</button>
+            <button type="button" class="btn btn-sm btn-outline-info float-left btn-ico" (click)="openAmcItemModal()"><i class="fa fa-list"></i>AMC Items</button>
+          </div>
+          <div class="clear"></div>
+          <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="buildingAmcs?.length">
+            <thead>
+              <tr>
+                <th class="w-15">Item</th>
+                <th class="w-15">Responsibility</th>
+                <th class="w-60">Info</th>
+                <th class="w-10"></th>
+              </tr>
+            </thead>
+            <tbody style="max-height: 300px">
+              <tr *ngFor="let item of buildingAmcs;">
+                <td class="w-15">{{item.amcItem?.name}}</td>
+                <td class="w-15">{{item.responsibility}}</td>
+                <td class="w-60">{{item.notes}}</td>
+                <td class="w-10">
+                  <button class="btn btn-icon btn-info" (click)="buildingAmc=item" ngbTooltip="Edit"><i class="i-Pen-5 text-bold"></i></button>
+                  <button class="btn btn-icon btn-warning" (click)="item.active=0;saveBuildingAmc(item);" ngbTooltip="Delete"><i class="i-Close-Window text-bold"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="!buildingAmcs?.length" class="text-center">
+            No Building AMCs are added yet .
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||buildingForm.invalid" (click)="saveBuilding()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #buildingContractUpdateModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Contract Update</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="buildingContractUpdateForm">
+      <h4 class="border-bottom pb-1 mb-1 fs-12 f-b">Owner's Expected Price</h4>
+      <div class="row mb-2">
+        <div class="col-md-2 pr-1">
+          <label class="mb-0">Sqft Price</label>
+          <input type="number" class="form-control" id="expectedSqftPrice" formControlName="expectedSqftPrice" placeholder="Price / SqFt" [(ngModel)]="buildingContractUpdate.expectedSqftPrice">
+        </div>
+        <div class="col-md-2 pr-1 pl-0">
+          <label class="mb-0">Rent</label>
+          <input type="number" class="form-control" id="expectedRent" formControlName="expectedRent" placeholder="Month Rent" [(ngModel)]="buildingContractUpdate.expectedRent">
+        </div>
+        <div class="col-md-3 pr-1 pl-0">
+          <label class="mb-0">Deposit</label>
+          <input type="number" class="form-control" id="expectedDeposit" formControlName="expectedDeposit" placeholder="Security Deposit" [(ngModel)]="buildingContractUpdate.expectedDeposit">
+        </div>
+        <div class="col-md-2 pr-1 pl-0">
+          <label class="mb-0">Maintenance</label>
+          <input type="number" class="form-control" id="expectedMaintenancePrice" formControlName="expectedMaintenancePrice" placeholder="Total" [(ngModel)]="buildingContractUpdate.expectedMaintenancePrice">
+        </div>
+        <div class="col-md-3  pl-0">
+          <label class="mb-0">Handover</label>
+          <input type="text" class="form-control" name="expectedHandover" [ngModelOptions]="{standalone: true}" placeholder="Date" (focus)="expectedHandover.toggle()" ngbDatepicker #expectedHandover="ngbDatepicker" [(ngModel)]="buildingContractUpdate.expectedHandover" (dateSelect)="expectedHandover.close()">
+        </div>
+      </div>
+      <h4 class="border-bottom pb-1 mb-1 mt-1 fs-12 f-b">Negotiated Prices</h4>
+      <div class="row mb-2">
+        <div class="col-md-2 pr-1">
+          <label class="mb-0">Sqft Price</label>
+          <input type="number" class="form-control" id="negotiatedSqftPrice" formControlName="negotiatedSqftPrice" placeholder="Price / SqFt" [(ngModel)]="buildingContractUpdate.negotiatedSqftPrice">
+        </div>
+        <div class="col-md-2 pr-1 pl-0">
+          <label class="mb-0">Rent</label>
+          <input type="number" class="form-control" id="negotiatedRent" formControlName="negotiatedRent" placeholder="Month Rent" [(ngModel)]="buildingContractUpdate.negotiatedRent">
+        </div>
+        <div class="col-md-3 pr-1 pl-0">
+          <label class="mb-0">Deposit</label>
+          <input type="number" class="form-control" id="negotiatedDeposit" formControlName="negotiatedDeposit" placeholder="Security Deposit" [(ngModel)]="buildingContractUpdate.negotiatedDeposit">
+        </div>
+        <div class="col-md-2 pr-1 pl-0">
+          <label class="mb-0">Maintenance</label>
+          <input type="number" class="form-control" id="negotiatedMaintenancePrice" formControlName="negotiatedMaintenancePrice" placeholder="Maintenance/Sqft" [(ngModel)]="buildingContractUpdate.negotiatedMaintenancePrice">
+        </div>
+        <div class="col-md-3 pl-0">
+          <label class="mb-0">Handover</label>
+          <input type="text" class="form-control" name="negotiatedHandover" [ngModelOptions]="{standalone: true}" placeholder="Total" [(ngModel)]="buildingContractUpdate.negotiatedHandover" (focus)="negotiatedHandover.toggle()" ngbDatepicker (dateSelect)="negotiatedHandover.close()" #negotiatedHandover="ngbDatepicker">
+        </div>
+        <div class="col-md-12 ">
+          <label class="mb-0">Comments</label>
+          <textarea class="form-control" id="comments" [ngModelOptions]="{standalone: true}" placeholder="Enter your owner discussion comments here" [(ngModel)]="buildingContractUpdate.comments"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||buildingContractUpdateForm.invalid" (click)="saveBuildingContractUpdate()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #buildingContactModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{contact.id ? 'Edit Contact' : 'New Contact'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="buildingContactForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Contact Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Contact Name" [(ngModel)]="contact.name">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Contact Email</label>
+          <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Contact Email" [(ngModel)]="contact.email">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Contact Phone</label>
+          <input type="text" class="form-control" id="phone" formControlName="phone" placeholder="Enter Contact Phone" [(ngModel)]="contact.phone">
+        </div>
+        <div class="col-md-10 form-group mb-1">
+          <label for="firstName">Contact Purposes</label>
+          <ng-select [items]="['Owner','Writer','Contractor']" [multiple]="true" [hideSelected]="true" placeholder="Select Contact Purposes" [(ngModel)]="contact.purposes" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-4 pt-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="contact.active" [ngModelOptions]="{standalone: true}">
+            <span>Is Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||buildingContactForm.invalid" (click)="saveBuildingContact()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #officeModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{office.id ? 'Edit Floor' : 'New Floor'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-tabset class="nav-left">
+      <ngb-tab title="General Info">
+        <ng-template ngbTabContent>
+          <hr class="mt--10 mb-10">
+          <form [formGroup]="officeForm" (validSubmit)="saveOffice()">
+            <div class="row">
+              <div class="col-md-9 form-group mb-1">
+                <label for="firstName">Name</label>
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="office.name">
+              </div>
+              <div class="col-md-3 form-group mb-1 mt-4">
+                <label class="checkbox checkbox-success">
+                  <input type="checkbox" [(ngModel)]="office.active" [ngModelOptions]="{standalone: true}">
+                  <span>Active</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-3 form-group mb-1">
+                <label for="roles">Status</label>
+                <ng-select [items]="officeStatuses" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select status of this floor" bindLabel="name" bindValue="type" [(ngModel)]="office.status" [ngModelOptions]="{standalone: true}">
+                </ng-select>
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Expected Live Date</label>
+                <input placeholder="Select Expected Live Date" class="form-control" name="dplive" (focus)="dplive.toggle()" ngbDatepicker (dateSelect)="dplive.close()" #dplive="ngbDatepicker" [(ngModel)]="office.expectedLive" [ngModelOptions]="{standalone: true}" [minDate]="minDate" />
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Rent Start Date</label>
+                <input placeholder="Select Rent Start Date" class="form-control" name="dprentStart" ngbDatepicker #dprentStart="ngbDatepicker" (dateSelect)="dprentStart.close()" [(ngModel)]="office.rentStarted" [ngModelOptions]="{standalone: true}" (focus)="dprentStart.toggle()" [minDate]="minDate" />
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Carpet Area</label>
+                <input type="number" class="form-control" placeholder="Carpet Area" [(ngModel)]="office.carpetArea" [ngModelOptions]="{standalone: true}" />
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Chargeable Area</label>
+                <input type="number" class="form-control" placeholder="Chargeable Area" [(ngModel)]="office.chargeableArea" [ngModelOptions]="{standalone: true}" />
+              </div>
+              <div class="col-md-9 form-group mb-1">
+                <label for="roles">Allowed Desk Sizes</label>
+                <ng-select [items]="deskSizes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" bindLabel="roles" placeholder="Select Desk Sizes allowed in this office" [(ngModel)]="office.allowedDeskSizes" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+                </ng-select>
+              </div>
+              <div class="col-md-9 form-group mb-1">
+                <label for="roles">Allowed Product Types</label>
+                <ng-select [items]="deskTypes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" bindLabel="roles" placeholder="Select Products allowed in this office" [(ngModel)]="office.deskTypes" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+                </ng-select>
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Pricing" *ngIf="office.id">
+        <ng-template ngbTabContent>
+          <hr class="mt--10 mb-10">
+          <div style="min-height: 300px;max-height: 330px;overflow-y: auto;overflow-x: hidden;" class="tableBodyScroll">
+            <div class="row">
+              <div class="col-2 p-1 pl-3">
+                <label class="mb-0">DeskType</label>
+              </div>
+              <div class="col-5 p-1">
+                <label class="mb-0">Facilities</label>
+              </div>
+              <div class="col-2 p-1">
+                <label class="mb-0">Persons Count Range</label>
+              </div>
+              <div class="col-1 p-1">
+                <label class="mb-0">Duration</label>
+              </div>
+              <div class="col-1 p-1">
+                <label class="mb-0">Price</label>
+              </div>
+              <div class="col-1 p-1">
+                <label class="mb-0"></label>
+              </div>
+            </div>
+            <div class="row" *ngFor="let price of pricings">
+              <div class="col-2 p-1 pl-3">
+                <ng-select [items]="office.deskTypes" [hideSelected]="true" placeholder="Select DeskType" [(ngModel)]="price.deskType" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+                </ng-select>
+              </div>
+              <div class="col-5 p-1">
+                <ng-template #tipContent>{{getFacilitySetLabel(price)}}</ng-template>
+                <ng-select [items]="facilitySets" [hideSelected]="true" [bindValue]="'id'" placeholder="Select facilitySet" [(ngModel)]="price.facilitySetId" [ngModelOptions]="{standalone: true}" [ngbPopover]="tipContent" triggers="mouseenter:mouseleave" container="body">
+                </ng-select>
+              </div>
+              <div class="col-2 p-1">
+                <div class="clear"></div>
+                <input type="number" name="min" [(ngModel)]="price.minPerson" placeholder="Minimum" class="form-control w-50 pull-left" />
+                <input type="number" name="max" [(ngModel)]="price.maxPerson" placeholder="Maximum" class="form-control w-50 pull-left" />
+                <div class="clear"></div>
+              </div>
+              <div class="col-1 p-1">
+                <input type="number" name="duration" [(ngModel)]="price.duration" ngbTooltip="in months" placeholder="Duration" class="form-control" />
+              </div>
+              <div class="col-1 p-1">
+                <input type="number" name="duration" [(ngModel)]="price.price" placeholder="Price" class="form-control" />
+              </div>
+              <div class="col-1 p-1">
+                <button class="btn btn-danger btn-icon btn-mt-1 mini pull-left" ngbTooltip="Delete Price" *ngIf="price.id" (click)="removePricing(price)"><i class="fa fa-times"></i></button>
+                <button class="btn btn-info btn-icon btn-mini mt-1 pull-left" ngbTooltip="Save Price" *ngIf="price.id" [disabled]="" (click)="saveOfficePricing(price)"><i class="fa fa-check"></i></button>
+                <button class="btn btn-info btn-ico btn-mini mt-1 pull-left" ngbTooltip="Add Price" *ngIf="!price.id" [disabled]="" (click)="saveOfficePricing(price)"><i class="fa fa-plus"></i> Add</button>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||officeForm.invalid" (click)="saveOffice()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #floorModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{floor.id ? 'Edit Floor' : 'New Floor'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="floorForm" (validSubmit)="saveFloor()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="floor.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="floor.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||floorForm.invalid" (click)="saveFloor()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #cabinModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{cabin.id ? 'Edit Cabin' : 'New Cabin'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="cabinForm" (validSubmit)="saveCabin()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="cabin.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="cabin.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Allowed Product Type for this cabin</label>
+          <ng-select [items]="cabinDeskTypes" [hideSelected]="true" placeholder="Select DeskType" [(ngModel)]="cabin.deskType" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+          </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 ">
+          <label for="firstName">Total Area</label>
+          <input type="text" class="form-control" id="area" formControlName="area" placeholder="Area in SqFt" [(ngModel)]="cabin.totalArea">
+        </div>
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Allowed DeskSize for this cabin</label>
+          <ng-select [items]="cabinDeskSizes" [hideSelected]="true" placeholder="Select DeskSize" [(ngModel)]="cabin.deskSize" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+          </ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||cabinForm.invalid" (click)="saveCabin()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #deskModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{desk.id ? 'Edit Desk' : 'New Desk'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="deskForm" (validSubmit)="saveDesk()">
+      <div class="row">
+        <div class="col-md-6 p-1 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Desk Name" [(ngModel)]="desk.name">
+        </div>
+        <div class="col-md-3 p-1 form-group mb-1" *ngIf="!desk.id">
+          <label for="firstName">Bulk Entry Count</label>
+          <input type="number" class="form-control" id="count" formControlName="count" placeholder="Count" [(ngModel)]="desk.count">
+        </div>
+        <div class="col-md-3 p-1 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="desk.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||deskForm.invalid" (click)="saveDesk()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #LotsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{office.id ? 'Edit Spot' : 'New Spot'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-tabset class="nav-left">
+      <ngb-tab title="General Info">
+        <ng-template ngbTabContent>
+          <hr class="mt--10 mb-10">
+          <form [formGroup]="officeForm" (validSubmit)="saveOffice()">
+            <div class="row">
+              <div class="col-md-9 form-group mb-1">
+                <label for="firstName">Name</label>
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="office.name">
+              </div>
+              <div class="col-md-3 form-group mb-1 mt-4">
+                <label class="checkbox checkbox-success">
+                  <input type="checkbox" [(ngModel)]="office.active" [ngModelOptions]="{standalone: true}">
+                  <span>Active</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-3 form-group mb-1">
+                <label for="roles">Status</label>
+                <ng-select [items]="officeStatuses" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select status of this floor" bindLabel="name" bindValue="type" [(ngModel)]="office.status" [ngModelOptions]="{standalone: true}">
+                </ng-select>
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Expected Live Date</label>
+                <input placeholder="Select Expected Live Date" class="form-control" name="dplive" (focus)="dplive.toggle()" ngbDatepicker (dateSelect)="dplive.close()" #dplive="ngbDatepicker" [(ngModel)]="office.expectedLive" [ngModelOptions]="{standalone: true}" [minDate]="minDate" />
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Rent Start Date</label>
+                <input placeholder="Select Rent Start Date" class="form-control" name="dprentStart" ngbDatepicker #dprentStart="ngbDatepicker" (dateSelect)="dprentStart.close()" [(ngModel)]="office.rentStarted" [ngModelOptions]="{standalone: true}" (focus)="dprentStart.toggle()" [minDate]="minDate" />
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Total Area</label>
+                <input type="number" class="form-control" placeholder="Carpet Area" [(ngModel)]="office.carpetArea" [ngModelOptions]="{standalone: true}" />
+              </div>
+              <div class="form-group p-1 col-md-2">
+                <label for="roles">Chargeable Area</label>
+                <input type="number" class="form-control" placeholder="Chargeable Area" [(ngModel)]="office.chargeableArea" [ngModelOptions]="{standalone: true}" />
+              </div>
+              <div class="col-md-9 form-group mb-1">
+                <label for="roles">Allowed Lot Sizes</label>
+                <ng-select [items]="deskSizes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" bindLabel="roles" placeholder="Select Spot Sizes allowed in this Parking Lot" [(ngModel)]="office.allowedDeskSizes" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+                </ng-select>
+              </div>
+              <div class="col-md-9 form-group mb-1">
+                <label for="roles">Allowed Parking Types</label>
+                <ng-select [items]="lotTypes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" bindLabel="roles" placeholder="Select Products allowed in this Parking Lot" [(ngModel)]="office.deskTypes" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+                </ng-select>
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Pricing" *ngIf="office.id">
+        <ng-template ngbTabContent>
+          <hr class="mt--10 mb-10">
+          <div style="min-height: 300px;max-height: 330px;overflow-y: auto;overflow-x: hidden;" class="tableBodyScroll">
+            <div class="row">
+              <div class="col-2 p-1 pl-3">
+                <label class="mb-0">DeskType</label>
+              </div>
+              <div class="col-5 p-1">
+                <label class="mb-0">Facilities</label>
+              </div>
+              <div class="col-2 p-1">
+                <label class="mb-0">Persons Count Range</label>
+              </div>
+              <div class="col-1 p-1">
+                <label class="mb-0">Duration</label>
+              </div>
+              <div class="col-1 p-1">
+                <label class="mb-0">Price</label>
+              </div>
+              <div class="col-1 p-1">
+                <label class="mb-0"></label>
+              </div>
+            </div>
+            <div class="row" *ngFor="let price of pricings">
+              <div class="col-2 p-1 pl-3">
+                <ng-select [items]="office.deskTypes" [hideSelected]="true" placeholder="Select DeskType" [(ngModel)]="price.deskType" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+                </ng-select>
+              </div>
+              <div class="col-5 p-1">
+                <ng-template #tipContent>{{getFacilitySetLabel(price)}}</ng-template>
+                <ng-select [items]="facilitySets" [hideSelected]="true" [bindValue]="'id'" placeholder="Select facilitySet" [(ngModel)]="price.facilitySetId" [ngModelOptions]="{standalone: true}" [ngbPopover]="tipContent" triggers="mouseenter:mouseleave" container="body">
+                </ng-select>
+              </div>
+              <div class="col-2 p-1">
+                <div class="clear"></div>
+                <input type="number" name="min" [(ngModel)]="price.minPerson" placeholder="Minimum" class="form-control w-50 pull-left" />
+                <input type="number" name="max" [(ngModel)]="price.maxPerson" placeholder="Maximum" class="form-control w-50 pull-left" />
+                <div class="clear"></div>
+              </div>
+              <div class="col-1 p-1">
+                <input type="number" name="duration" [(ngModel)]="price.duration" ngbTooltip="in months" placeholder="Duration" class="form-control" />
+              </div>
+              <div class="col-1 p-1">
+                <input type="number" name="duration" [(ngModel)]="price.price" placeholder="Price" class="form-control" />
+              </div>
+              <div class="col-1 p-1">
+                <button class="btn btn-danger btn-icon btn-mt-1 mini pull-left" ngbTooltip="Delete Price" *ngIf="price.id" (click)="removePricing(price)"><i class="fa fa-times"></i></button>
+                <button class="btn btn-info btn-icon btn-mini mt-1 pull-left" ngbTooltip="Save Price" *ngIf="price.id" [disabled]="" (click)="saveOfficePricing(price)"><i class="fa fa-check"></i></button>
+                <button class="btn btn-info btn-ico btn-mini mt-1 pull-left" ngbTooltip="Add Price" *ngIf="!price.id" [disabled]="" (click)="saveOfficePricing(price)"><i class="fa fa-plus"></i> Add</button>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||officeForm.invalid" (click)="saveOffice()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+
+<!-- **************************************************** -->
+<ng-template #parkingSpotModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{parkingSpots.id ? 'Edit Parking Spot' : 'New Parking Spots'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="parkingSpotsForm" (validSubmit)="saveParkingSpot()">
+      <div class="row">
+        <div class="col-md-6 p-1 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Spot Name" [(ngModel)]="parkingSpots.name">
+        </div>
+        <div class="col-md-3 p-1 form-group mb-1" *ngIf="!parkingSpots.id">
+          <label for="firstName">Bulk Entry Count</label>
+          <input type="number" class="form-control" id="count" formControlName="count" placeholder="Count" [(ngModel)]="parkingSpots.count">
+        </div>
+        <div class="col-md-3 p-1 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="parkingSpots.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading"  (click)="saveParkingSpot()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #parkingLotModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{parkingLots.id ? 'Edit Parking Lot' : 'New Parking Lot'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="cabinForm" (validSubmit)="saveCabin()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="parkingLots.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="parkingLots.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Allowed Parking Type for this Lot</label>
+          <ng-select [items]="parkingTypes" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Parking Type" bindLabel="name" bindValue="type" [(ngModel)]="parkingLots.productType" [ngModelOptions]="{standalone: true}"></ng-select>
+          <!-- <ng-select [items]="cabinDeskTypes" [hideSelected]="true" placeholder="Select Parking Type" [(ngModel)]="parkingLot.deskType" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+          </ng-select> -->
+        </div>
+        <!-- <div class="col-md-3 form-group mb-1 ">
+          <label for="firstName">Total Area</label>
+          <input type="text" class="form-control" id="area" formControlName="area" placeholder="Area in SqFt" [(ngModel)]="cabin.totalArea">
+        </div> -->
+        <!-- <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Allowed DeskSize for this cabin</label>
+          <ng-select [items]="cabinDeskSizes" [hideSelected]="true" placeholder="Select DeskSize" [(ngModel)]="cabin.deskSize" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="type">
+          </ng-select>
+        </div> -->
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <!-- [disabled]="loading||cabinForm.invalid" -->
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading"  (click)="saveParkingLot()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<!-- **************************************************** -->
+
+<ng-template #resourceModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{resource.id ? 'Edit Resource' : 'New Resource'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="resourceForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter reource name" [(ngModel)]="resource.name">
+        </div>
+        <div class="col-md-6 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Resource Type</label>
+          <ng-select [items]="resourceTypes" [hideSelected]="true" [closeOnSelect]="true" placeholder="Select ResourceType" [(ngModel)]="resource.type" [bindLabel]="'name'" name="type" formControlName="type">
+          </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1  pl-1 pr-1">
+          <label for="firstName">Price per hour <small>(auto calculated)</small></label>
+          <input type="text" class="form-control" id="price" formControlName="price" placeholder="Enter price" [(ngModel)]="resource.price">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4  pl-1 pr-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="resource.status" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-5 form-group mb-1  pl-1 pr-1" *ngIf="resource?.type">
+          <label for="firstName">Style</label>
+          <ng-select [items]="resource?.type?.styles" [hideSelected]="true" placeholder="Select Style" [(ngModel)]="resource.style" [bindLabel]="'name'" [bindValue]="'type'" name="style" formControlName="style">
+          </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1  pl-1 pr-1" *ngIf="resource?.type">
+          <label for="firstName">{{resource?.type?.subUnitsLabel}}</label>
+          <input type="number" class="form-control" id="subUnits" formControlName="subUnits" placeholder="Count " [(ngModel)]="resource.subUnits" (ngModelChange)="calculateResourcePrice()">
+        </div>
+        <div class="col-md-5 form-group mb-1  pl-1 pr-1" *ngIf="resource?.type">
+          <label for="firstName">{{resource?.type?.subUnitsLabel}} Type </label>
+          <ng-select [items]="resource?.type?.subUnitTypes" [hideSelected]="true" placeholder="Select {{resource?.type?.subUnitsLabel}} Type" [(ngModel)]="resource.subUnitType" [bindLabel]="'name'" [bindValue]="'type'" name="subUnitType" formControlName="subUnitType">
+          </ng-select>
+        </div>
+        <div class="col-md-12 form-group mb-1  pl-1 pr-1" *ngIf="resource?.type">
+          <label for="firstName">Facilities</label>
+          <ng-select [items]="resource?.type?.facilities" [multiple]="true" [hideSelected]="true" placeholder="Select Facilities" [(ngModel)]="resource.facilities" [bindLabel]="'name'" [bindValue]="'type'" name="facilities" formControlName="facilities">
+          </ng-select>
+        </div>
+        <div class="col-md-12 form-group mb-1  pl-1 pr-1">
+          <label for="firstName">Description</label>
+          <textarea class="form-control" id="description" formControlName="description" placeholder="Enter description" [(ngModel)]="resource.description"></textarea>
+        </div>
+        <div class="col-md-6 form-group mb-1  pl-1 pr-1">
+          <p class="text-muted mb-0">Manual Document</p>
+          <a class="f-b badge badge-success fs-12" *ngIf="resource?.userGuide?.file" [href]="resource?.userGuide?.file" target="_blank" ngbTooltip="Click to View">Uploaded</a>
+          <span class="input-group" *ngIf="!resource?.userGuide?.file">
+            <div class="custom-file" *ngIf="!userGuideFile">
+              <input class="custom-file-input" id="userGuideId" (change)="userGuideFileChange($event)" type="file">
+              <label class="custom-file-label" for="userGuideId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="userGuideFile">
+              <span class="float-left">{{userGuideFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="userGuideFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="userGuideFileError">
+                  {{ userGuideFileError.message }}
+                </div>
+                <div *ngIf="userGuideUploadResponse.status === 'error'">
+                  {{ userGuideUploadResponse.message }}
+                </div>
+                <div *ngIf="userGuideUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="userGuideUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{userGuideUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadUserGuideFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-6 form-group mb-1  mt-4 pl-1 pr-1" *ngIf="resource.id">
+          <button type="button" class="btn btn-outline-info" (click)="openResourceImagesModal(resource.id)">Open Resource Images Gallery</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||resourceForm.invalid" (click)="saveResource()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #resourceImagesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Resource Image Uploads </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-5 row">
+        <div class="col-md-5">
+          <h4>Select files</h4>
+          <div ng2FileDrop [ngClass]="{'nv-file-over': hasBaseDropZoneOver}" (fileOver)="fileOverBase($event)" [uploader]="uploader" class="well my-drop-zone" style="width: 100%;height: 120px;border: dotted 3px lightgray; padding-top: 30%;text-align: center;">
+            Files Drop Zone
+          </div>
+          Select Files
+          <input type="file" ng2FileSelect [uploader]="uploader" multiple /><br />
+        </div>
+        <div class="col-md-7" style="margin-bottom: 40px">
+          <!-- <h4>Uploading Images</h4> -->
+          <p class="mb-0">Queue length: {{ uploader?.queue?.length }}</p>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of uploader.queue">
+                <td><strong>{{ item?.file?.name }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="mt-1">
+            <div class="mb-2">
+              <p class="text-right mb-0" *ngIf="uploader.progress">Queue progress : {{uploader.progress}}% </p>
+              <div class="progress" style="">
+                <div class="progress-bar" role="progressbar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-ico btn-success btn-sm float-left" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length">
+              <span class="fa fa-upload"></span> Upload
+            </button>
+            <!--   <button type="button" class="btn btn-ico btn-warning btn-sm ml-1" (click)="uploader.cancelAll()" [disabled]="!uploader.isUploading">
+              <span class="fa fa-times"></span> Cancel
+            </button> -->
+            <button type="button" class="btn btn-ico btn-danger btn-sm float-right" (click)="uploader.clearQueue()" [disabled]="!uploader.queue.length">
+              <span class="fa fa-trash"></span> Remove
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-7 row tableBodyScroll" style="height: calc(100vh - 200px);overflow: auto;">
+        <div class="col-md-4 float-left" *ngFor="let resourceImage of resourceImages;">
+          <div class="card text-white o-hidden mb-3">
+            <img alt="" class="card-img" [src]="resourceImage.image?.file">
+            <div class="card-img-overlay">
+              <div class="p-1 text-left card-footer font-weight-light">
+                <div class=""><i class="i-Boy mr-1"></i> {{resourceImage.updatedBy}} </div>
+                <div class=""><i class="i-Calendar-4 mr-2"></i> <small>{{resourceImage.updated | date: 'medium'}}</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #amcItemModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">AMC Items</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="amcItemForm">
+      <div class="row">
+        <div class="col-md-6 p-1 form-group mb-1">
+          <label for="firstName">Item</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter AMC Item" [(ngModel)]="amcItem.name">
+        </div>
+        <div class="col-md-3 p-1 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="amcItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 p-1 form-group mb-1 mt-4">
+          <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||amcItemForm.invalid" (click)="saveAmcItem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+        </div>
+      </div>
+    </form>
+    <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="amcItems?.length">
+      <thead>
+        <tr>
+          <th class="w-60">Item</th>
+          <th class="w-15">Active</th>
+          <th class="w-25"></th>
+        </tr>
+      </thead>
+      <tbody style="max-height: 300px">
+        <tr *ngFor="let item of amcItems;">
+          <td class="w-60">{{item.name}}</td>
+          <td class="w-15">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="item.active" [disabled]="true" [ngModelOptions]="{standalone: true}">
+              <span></span>
+              <span class="checkmark"></span>
+            </label>
+          </td>
+          <td class="w-25 text-center">
+            <button class="btn btn-icon btn-info" (click)="amcItem=item" ngbTooltip="Edit"><i class="i-Pen-5 text-bold"></i></button>
+            <button class="btn btn-icon btn-warning" (click)="item.active=0;saveAmcItem(item);" ngbTooltip="Delete"><i class="i-Close-Window text-bold"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="!amcItems?.length" class="text-center">
+      No AMC Items are added yet .
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<!-- <app-floorplan *ngIf="commonService.floorplanOpen"></app-floorplan> -->

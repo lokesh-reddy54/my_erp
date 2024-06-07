@@ -1,0 +1,15 @@
+.layout-sidebar-large .sidebar-left .navigation-left {
+  width: 85px !important;
+}
+
+.layout-sidebar-large .sidebar-left .navigation-left .nav-item .nav-item-hold {
+  padding: 10px 0 !important;
+}
+
+.layout-sidebar-large .sidebar-left .navigation-left .nav-item.active .triangle {
+  border-width: 0 0 15px 15px !important;
+}
+
+.layout-sidebar-large .sidebar-left-secondary.open {
+  left: 80px !important;
+}

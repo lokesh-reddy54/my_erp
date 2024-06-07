@@ -1,0 +1,719 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left mt-5 f-b">Assets
+    </h4>
+    <div class="row p-1 ml-0 mr-0 w-40 float-right" style="margin-top: -18px;">
+      <div class="form-group pl-1 col-md-4 mb-1">
+        <label class="mb-0">Select Country</label>
+        <ng-select class="mini" [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()"></ng-select>
+      </div>
+      <div class="form-group pl-1 col-md-4 mb-1" *ngIf="selectedCountry?.id">
+        <label class="mb-0">Select City</label>
+        <ng-select class="mini" [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group pl-1 col-md-4 mb-1" *ngIf="selectedCity?.id">
+        <label class="mb-0">Select Location</label>
+        <ng-select class="mini" [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLocationSelected()"></ng-select>
+      </div>
+    </div>
+    <div class="row p-1 ml-0 mr-1 w-50 mt-0 float-right">
+      <strong>by</strong>
+      <div class="btn-group btn-group-toggle pull-left pl-1" data-toggle="buttons">
+        <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="viewType" (ngModelChange)="getViewData()">
+          <!--  <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Projects"> Projects
+          </label> -->
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Buildings"> Buildings
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Stores"> Stores
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Trashed"> Trashed
+          </label>
+        </div>
+      </div>
+      <div class="w-60 pull-right pl-1">
+        <!--  <ng-select *ngIf="viewType=='Projects'" class="mini" [items]="projects" [hideSelected]="true" bindLabel="title" placeholder="Select Project" [(ngModel)]="selectedProject" [ngModelOptions]="{standalone: true}" (ngModelChange)="getProjectAssets()"></ng-select> -->
+        <ng-select *ngIf="viewType=='Buildings'" class="mini" [multiple]="true" [items]="buildings" [hideSelected]="true" bindLabel="name" placeholder="Select Buildings" [(ngModel)]="selectedBuildings" [ngModelOptions]="{standalone: true}" (ngModelChange)="getBuildingAssets()"></ng-select>
+        <ng-select *ngIf="viewType=='Stores'" class="mini" [multiple]="true" [items]="stores" [hideSelected]="true" bindLabel="name" placeholder="Select Store" [(ngModel)]="selectedStore" [ngModelOptions]="{standalone: true}" (ngModelChange)="getStoreAssets()"></ng-select>
+      </div>
+    </div>
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 135px);">
+        <loading [loading]="loading"></loading>
+        <div class="row">
+          <div class="p-1 w-100">
+            <!-- <h5 class="pull-left mb-1 ml-20" *ngIf="viewType=='Projects'">Project Assets</h5> -->
+            <h5 class="pull-left mb-1 ml-20" *ngIf="viewType=='Buildings'">Building Assets</h5>
+            <h5 class="pull-left mb-1 ml-20" *ngIf="viewType=='Stores'">InStore Assets</h5>
+            <h5 class="pull-left mb-1 ml-20" *ngIf="viewType=='Trashed'">Trashed Assets</h5>
+            <input type="text" placeholder="Search by vendor or Sku" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-1">
+            <help-notes [context]="'Assets:StatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="ml-10 float-left"></help-notes>
+            <div class=" w-30 pl-10 float-left ml-10" *ngIf="viewType=='Buildings'">
+              <ng-select class="mini" multiple="true" [items]="['New','InUse','UnderR&M','UnderDisposal','Disposed']" [hideSelected]="true" placeholder="Search by Statuses" [(ngModel)]="statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="getBuildingAssets()"></ng-select>
+            </div>
+            <help-notes [context]="'Assets:StatusFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-10 float-left"></help-notes>
+            <button class="btn btn-ico btn-sm btn-outline-info float-right mr-4" (click)="openNewAssets();"><i class="fa fa-plus"></i> Assets</button>
+            <button *ngIf="viewType=='Stores'" class="btn btn-ico btn-sm btn-outline-info float-right mr-4" (click)="openStoresView();"><i class="i-Clothing-Store"></i> View Stores</button>
+          </div>
+          <div class="pr-3" [ngClass]="{'col-md-12':!assets,'col-md-5':assets}">
+            <h4 class="text-center" *ngIf="!loading && (!skuAssets.length && !buildingAssets.length) ">
+              <div class="mt-4 pt-4 f-b" *ngIf="viewType=='Projects' && !selectedProject">Please select a project to list all Assets</div>
+              <div class="mt-4 pt-4 f-b" *ngIf="viewType=='Projects' && selectedProject && !projectAssets.length">No assets are mapped to {{selectedProject.title}}</div>
+              <div class="mt-4 pt-4 f-b" *ngIf="viewType=='Buildings' && !selectedBuilding">Please select a building to list all Assets</div>
+              <div class="mt-4 pt-4 f-b" *ngIf="viewType=='Buildings' && selectedBuilding && !buildingAssets.length">No assets are mapped to {{selectedBuilding.name}}</div>
+              <div class="mt-4 pt-4 f-b" *ngIf="viewType=='Stores' && !selectedStore">Please select a store to list all Assets</div>
+              <div class="mt-4 pt-4 f-b" *ngIf="viewType=='Stores' && selectedStore && !buildingAssets.length">No assets are mapped to {{selectedStore.name}}</div>
+              <div class="mt-4 pt-4 f-b" *ngIf="viewType=='Trashed' && !buildingAssets.length">No assets are trashed yet.</div>
+            </h4>
+            <div class="table-responsive pl-3 pr-0 row  border-bottom" *ngIf="viewType=='Buildings' && skuAssets.length">
+              <div class=" col-12 table">
+                <div class="row">
+                  <div class="cell f-b p-1 pl-0 pr-1 w-100">
+                    <span class="w-15 d-b float-left">Asset Category</span>
+                    <span class="w-15 d-b float-left">Asset Type</span>
+                    <span class="w-50 d-b float-left">Asset Item</span>
+                    <span class="w-10 d-b float-left text-center">Count</span>
+                    <span class="w-10 d-b float-left">Actions</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12" *ngFor="let category of skuAssets;let ci=index;">
+                <div class="table" *ngFor="let type of category.types;let ti=index;">
+                  <div class="row" *ngFor="let sku of type.skus;let ki=index;">
+                    <div class="cell pr-1 w-100">
+                      <div class="w-15 d-b float-left pt-1" [ngClass]="{'border-top':ti==0&&ki==0}"><span *ngIf="ti==0&&ki==0">{{category.name}}</span></div>
+                      <div class="w-15 d-b float-left pt-1" [ngClass]="{'border-top':ki==0}"><span *ngIf="ki==0">{{type.name}}</span></div>
+                      <div class="w-50 d-b float-left border-top pt-1">{{sku.sku}}</div>
+                      <div class="w-10 d-b float-left border-top pt-1 text-center">{{sku.items}}</div>
+                      <div class="w-10 d-b float-left border-top">
+                        <button class="btn btn-icon btn-primary" ngbTooltip="View Asset Items" (click)="getAssets(sku)"><i class="i-Blinklist"></i></button>
+                      </div>
+                      <div class="clear"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="table-responsive pl-3 pr-0" *ngIf="(viewType=='Stores' || viewType=='Trashed')  && buildingAssets.length">
+              <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="assets">
+                <thead>
+                  <tr>
+                    <!-- <th class="w-40">Vendor</th> -->
+                    <th class="w-80">Sku</th>
+                    <th class="w-10">Count</th>
+                    <th class="text-center w-10">Action</th>
+                  </tr>
+                </thead>
+                <tbody infiniteScroll class="tableBodyScroll">
+                  <tr *ngFor="let asset of buildingAssets;" [ngClass]="{'selected':currentAsset.id==asset.id}">
+                    <!-- <td class="w-40">{{asset.vendor.name}}</td> -->
+                    <td class="w-80">{{asset.name}}</td>
+                    <td class="w-10">{{asset.count}}</td>
+                    <td class="text-center w-10">
+                      <button class="btn btn-icon btn-primary" ngbTooltip="View Asset Items" (click)="getAssets(asset)"><i class="i-Blinklist"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="!assets">
+                <thead>
+                  <tr>
+                    <th class="w-25">Vendor</th>
+                    <th class="w-50">Sku</th>
+                    <th class="w-10 text-right">Units</th>
+                    <th class="w-10 text-right">Unit Price</th>
+                    <th class="text-center w-5">Action</th>
+                  </tr>
+                </thead>
+                <tbody infiniteScroll class="tableBodyScroll">
+                  <tr *ngFor="let asset of buildingAssets;">
+                    <td class="w-25">{{asset.vendor.name}}</td>
+                    <td class="w-50">{{asset.name}}</td>
+                    <td class="w-10 text-right">{{asset.items.length}} / {{asset.count}}</td>
+                    <td class="w-10 text-right">{{asset.price | inr}}</td>
+                    <td class="text-center w-5">
+                      <button class="btn btn-icon btn-primary" ngbTooltip="View Asset Items" (click)="getAssets(asset)"><i class="i-Blinklist"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-7 pl-0 pr-3" *ngIf="assets">
+            <h5 class="f-b border-bottom pb-1 mt-1 w-100">Asset Details : <small><strong>{{assets.name}} </strong> ({{assets.category.name}})</small>
+              <button class="btn btn-icon btn-sm btn-outline-danger float-right" ngbTooltip="Close Assets" (click)="assets=null;"><i class="fa fa-times"></i></button></h5>
+            <div class="row border-bottom pb-1">
+              <div class="col-md-7"><label class="d-b f-b mb-0">Vendor : </label> {{assets.vendor.name}} <a href="" class="float-right" href="#/purchases/purchaseorder/{{assets.purchaseOrderId}}" target="_blank"><i class="fa fa-external-link" ngbTooltip="View PurchaseOrder"></i></a> </div>
+              <div class="col-md-2"><label class="d-b f-b mb-0">Item Count : </label> {{assets.items?.length}}</div>
+              <div class="col-md-3"><label class="d-b f-b mb-0">Item Price </label> {{assets.price | inr}}</div>
+              <div class="col-md-6" *ngIf="assets.manufacturer"><label class="d-b f-b mb-0">Manufacturer : </label> {{assets.manufacturer}}</div>
+              <div class="col-md-6" *ngIf="!assets.manufacturer"><label class="d-b f-b mb-0">Manufacturer : </label><a href="javascript:void(0)" (click)="editAssets()">Set Manufacturer</a></div>
+              <div class="col-md-6" *ngIf="assets.modelName"><label class="d-b f-b mb-0">Model : </label> {{assets.modelName}}</div>
+              <div class="col-md-6" *ngIf="!assets.modelName"><label class="d-b f-b mb-0">Model : </label> <a href="javascript:void(0)" (click)="editAssets()">Set ModelName</a></div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 f-b mt-2" *ngIf="!assets.serviceProvider">
+                <a href="javascript:void(0)" (click)="addServiceProvider(assets)">Set Service Provider</a></div>
+              <div class="col-md-6 row mt-1" *ngIf="assets.serviceProvider">
+                <div class="col-md-12 border-bottom f-b ">Assigned Service Provider <button class="btn btn-sm btn-icon btn-outline-danger float-right" (click)="removeServiceProvider()"><i class="fa fa-times"></i></button></div>
+                <div class="col-md-12"><label class="f-b mb-0">Name : </label> {{assets.serviceProvider.name}}</div>
+                <div class="col-md-12"><label class="f-b mb-0">Email : </label> {{assets.serviceProvider.email}}</div>
+                <div class="col-md-12"><label class="f-b mb-0">Phone : </label> {{assets.serviceProvider.phone}} <span *ngIf="assets.serviceProvider.landline"> / {{assets.serviceProvider.landline}}</span></div>
+              </div>
+              <div class="col-md-6 f-b mt-2 pr-4 text-right" *ngIf="!assets.warrenty"><a href="javascript:void(0)" (click)="addWarrenty(assets)">Add Warranty Details</a></div>
+              <div class="col-md-6 row mt-1" *ngIf="assets.warrenty">
+                <div class="col-md-12 border-bottom f-b ">Warranty Details</div>
+                <div class="col-md-12"><label class="f-b mb-0">Purchased Date : </label> {{assets.warrenty.purchasedDate | date: 'MMM dd, yyyy'}}</div>
+                <div class="col-md-12"><label class="f-b mb-0">Warranty Period : </label> {{assets.warrenty.warrentyPeriod}} months</div>
+                <div class="col-md-12"><label class="f-b mb-0">Expiry Date : </label> {{assets.warrenty.expiryDate | date: 'MMM dd, yyyy'}}</div>
+              </div>
+            </div>
+            <table class=" mt-1 table table-sm table-hover table-striped tableBodyScroll">
+              <thead>
+                <tr>
+                  <th class="w-25">TagNo</th>
+                  <th class="w-10 text-center">Status</th>
+                  <th class="w-20">WarrantyNo</th>
+                  <th class="w-20 text-center">Assigned</th>
+                  <th class="text-center w-20">
+                    <span class="" *ngIf="!selection" (click)="selection=true;checkSelection();">MultiSelect</span>
+                    <span class="" *ngIf="selection" (click)="selection=false;checkSelection();">Select</span>
+                    <span class="text-info ml-10" *ngIf="selection && !selectedAll" (click)="selectAll(true)">All</span>
+                    <span class="text-danger ml-10" *ngIf="selection && selectedAll" (click)="selectAll(false)">None</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let item of assets.items;">
+                  <td class="w-80">
+                    <div class="row d-flex">
+                      <div class="col-md-4">{{item.tagNo}}</div>
+                      <div class="col-md-2 f-b">{{item.status}}</div>
+                      <div class="col-md-3">{{item.warrentyNo || '-'}}</div>
+                      <div class="col-md-3" ngbTooltip="{{item.assignedBy}}">{{item.assignment?.assignedOn | date : 'MMM dd, yyyy'}}</div>
+                      <div class="col-md-12" *ngIf="item.assignment?.buildingId">
+                        <strong>At : </strong> {{item.assignment?.building?.name}}
+                        <span *ngIf="item.assignment?.office?.name">, {{item.assignment?.office?.name}}</span>
+                        <span *ngIf="item.assignment?.cabin?.name">, {{item.assignment?.cabin?.name}}</span>
+                        <span *ngIf="item.assignment?.desk?.name">, {{item.assignment?.desk?.name}}</span>
+                      </div>
+                      <div class="col-md-12" *ngIf="item.assignment?.movement?.store">
+                        <strong>Moved to Store : </strong> {{item.assignment?.movement?.store?.name}}, {{item.assignment?.movement?.store?.location?.name}} on <small><strong>{{item.assignment?.movement?.date | date : 'MMM dd, yyyy'}}</strong></small>
+                      </div>
+                      <div class="col-md-12" *ngIf="item.assignment?.movement?.purpose=='ToRepair'">
+                        <strong>Sent to Repair : </strong> {{item.assignment?.movement?.serviceProvider?.name}} ({{item.assignment?.movement?.serviceProvider?.phone}}), on <small><strong>{{item.assignment?.movement?.date | date : 'MMM dd, yyyy'}}</strong></small>
+                      </div>
+                      <div class="col-md-12" *ngIf="item.assignment?.movement?.purpose=='ToTrash'">
+                        <strong class="text-danger">Sent to Trash : </strong> on <small><strong>{{item.assignment?.movement?.date | date : 'MMM dd, yyyy'}}</strong></small>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-right w-20">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Item" (click)="openViewAssetItem(item)" *ngIf="!item.selection"><i class="fa fa-search"></i></button>
+                    <span *ngIf="item.status!='Trashed'">
+                      <button class="btn btn-sm btn-icon" *ngIf="item.selection">
+                        <label class="checkbox checkbox-success" style="margin-top: -8px;margin-left: -1px;">
+                          <input type="checkbox" [(ngModel)]="item.selected" [ngModelOptions]="{standalone: true}">
+                          <span></span>
+                          <span class="checkmark"></span>
+                        </label>
+                      </button>
+                      <button class="btn btn-icon btn-primary" ngbTooltip="Move Item" (click)="openMoveAssetItem(item)"><i class="fa fa-truck"></i></button>
+                      <button class="btn btn-icon btn-primary" ngbTooltip="Assign Item" (click)="openAssignAssetItem(item)"><i class="fa fa-tag"></i></button>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #newAssetsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Adding New Assets</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row p-1 ml-0 mr-1 mt-0">
+      <strong class="col-md-2 text-right">Add To : </strong>
+      <div class="col-md-4">
+        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+          <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="addTo">
+            <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="loadBuildings()">
+              <input ngbButton type="radio" value="ToBuilding"> Building
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="loadStores()">
+              <input ngbButton type="radio" value="ToStore"> Store
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <ng-select *ngIf="addTo=='ToBuilding'" class="" [items]="buildings" [hideSelected]="true" bindLabel="name" placeholder="Select Building" [(ngModel)]="selectedBuilding" [ngModelOptions]="{standalone: true}"></ng-select>
+        <ng-select *ngIf="addTo=='ToStore'" class="" [items]="stores" [hideSelected]="true" bindLabel="name" placeholder="Select Store" [(ngModel)]="selectedStore" [ngModelOptions]="{standalone: true}"></ng-select>
+      </div>
+    </div>
+    <div class="row" *ngIf="selectedBuilding||selectedStore">
+      <div class="form-group col-md-7" *ngIf="!selectedSkus[0]?.id">
+        <label class="f-b mb-0">Select SKU</label>
+        <tag-input [formControl]="selectedSku" theme='primary' (onAdd)="searchVendorSkus()" [(ngModel)]="selectedSkus" secondaryPlaceholder="Type SKU name to search" (onTextChange)="onSKuSearch($event)" maxItems="1" [onlyFromAutocomplete]="true">
+          <tag-input-dropdown [autocompleteItems]="autocompleteSkus" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'sku'" [identifyBy]="skuId">
+            <ng-template let-item="item" let-index="index">
+              {{item.sku}}, {{item.type}}, {{item.category}}
+            </ng-template>
+          </tag-input-dropdown>
+        </tag-input>
+      </div>
+      <div class="col-3 mb-1" *ngIf="selectedSkus.length">
+        <label class="f-b mb-0">SKU Type</label>
+        <div>{{selectedSkus[0]?.type}}</div>
+      </div>
+      <div class="col-2 mb-1" *ngIf="selectedSkus.length">
+        <label class="f-b mb-0">SKU Category</label>
+        <div>{{selectedSkus[0]?.category}}</div>
+      </div>
+    </div>
+    <div class="form-group row" *ngIf="selectedSkus.length">
+      <div class="col-6 mb-1">
+        <label class="f-b mb-0">Vendor</label>
+        <ng-select class="" [items]="vendors" [hideSelected]="true" bindLabel="vendorName" placeholder="Select Vendor" [(ngModel)]="selectedVendor" [ngModelOptions]="{standalone: true}"></ng-select>
+      </div>
+      <div class="col-2 mb-1">
+        <label class="f-b mb-0">Quantity</label>
+        <input type="number" class="form-control" [(ngModel)]="newAssets.count" placeholder="Enter Quantity" [ngModelOptions]="{standalone: true}">
+      </div>
+      <div class="col-3 mb-1">
+        <label class="f-b mb-0">Unit Price</label>
+        <input type="number" class="form-control" [(ngModel)]="newAssets.unitPrice" placeholder="Enter Unit Price" [ngModelOptions]="{standalone: true}">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!selectedSkus.length||!newAssets.count" (click)="saveNewAssets()"><i class="fa fa-check" *ngIf="!loading"></i> Save Assets</button>
+  </div>
+</ng-template>
+<ng-template #movementModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">AssetItem Movement</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="form-group col-md-12 mb-1">
+        <label class="float-left d-ib f-b mt-1 fs-14">Move To : </label>
+        <div class="btn-group btn-group-toggle pull-left pl-1" data-toggle="buttons">
+          <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="moveTo" (ngModelChange)="onMoveToChanged()">
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="ToBuilding"> Building
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="ToStore"> Store
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="ToRepair"> Repair
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="SetAside"> Aside
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="ToTrash"> Trash
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" *ngIf="moveTo=='ToBuilding'">
+      <div class="form-group col-md-12 mb-1">
+        <label>Select Country</label>
+        <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (change)="onCountrySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-12 mb-1">
+        <label>Select City</label>
+        <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (change)="onCitySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-12 mb-1">
+        <label>Select Location</label>
+        <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (change)="loadBuildings()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-12 mb-1">
+        <label>Select Building</label>
+        <ng-select [items]="buildings" [hideSelected]="true" bindLabel="name" placeholder="Select Building" [(ngModel)]="assetBuilding" [ngModelOptions]="{standalone: true}">
+        </ng-select>
+      </div>
+    </div>
+    <div class="row" *ngIf="moveTo=='ToRepair'">
+      <div class="col-md-12 row">
+        <div class="form-group col-9 mb-1">
+          <label class="mb-0">Vendor Service Providers</label>
+          <ng-select [items]="vendorServiceProviders" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select ServiceProvider" [(ngModel)]="repairServiceProviderId" [ngModelOptions]="{standalone: true}"></ng-select>
+        </div>
+        <div class="form-group pl-1 col-1 mb-1 mt-4">
+          <button class="btn btn-outline-primary btn-icon" (click)="newServiceProvider=true" *ngIf="!newServiceProvider"><i class="fa fa-plus"></i></button>
+        </div>
+      </div>
+      <div class="row  pl-3 pr-3" *ngIf="newServiceProvider">
+        <form [formGroup]="serviceProviderForm">
+          <div class="col-md-12 form-group mb-1">
+            <label for="firstName">Name</label>
+            <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter person name" [(ngModel)]="serviceProvider.name">
+          </div>
+          <div class="col-md-12 form-group mb-1">
+            <label for="exampleInputEmail1">Email</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter email" formControlName="email" [(ngModel)]="serviceProvider.email">
+          </div>
+          <div class="col-md-12 form-group mb-1">
+            <label for="phone">Phone</label>
+            <input class="form-control" id="phone" placeholder="Enter mobile phone" formControlName="phone" [(ngModel)]="serviceProvider.phone">
+          </div>
+          <div class="col-md-12 form-group mb-1">
+            <label for="phone">LandLine</label>
+            <input class="form-control" id="landline" placeholder="Enter LandPhone" formControlName="landline" [(ngModel)]="serviceProvider.landline">
+          </div>
+          <div class="col-md-12 form-group mb-1 mt-4">
+            <button class="btn btn-info ladda-button btn-ico float-left" [ladda]="loading" [disabled]="loading||serviceProviderForm.invalid" (click)="saveServiceProvider(false)"><i class="fa fa-check" *ngIf="!loading"></i> Add ServiceProvider</button>
+            <button class="btn btn-outline-danger btn-ico float-right" (click)="newServiceProvider=false" *ngIf="newServiceProvider"><i class="fa fa-times"></i> Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="p-4" *ngIf="moveTo=='SetAside'">
+      <h5 class="text-warning text-center">Item is malfunctioning / damaged and not in use.</h5>
+    </div>
+    <div class="p-4" *ngIf="moveTo=='ToTrash'">
+      <h5 class="text-danger text-center">Once Item is trashed, cant be restored, please be cautious .!</h5>
+    </div>
+    <div class="row" *ngIf="moveTo=='ToStore'">
+      <div class="form-group col-12 mb-1">
+        <label class="mb-0">Select Store</label>
+        <ng-select [items]="stores" [hideSelected]="true" bindLabel="name" placeholder="Select Store" [(ngModel)]="selectedStore" [ngModelOptions]="{standalone: true}"></ng-select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!moveTo" (click)="confirmItemsMovement()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Assignment</button>
+  </div>
+</ng-template>
+<ng-template #assignmentModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">AssetItem Assignment</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="form-group col-md-12 mb-1">
+        <label class="d-b">Selected Building</label>
+        <!--  <ng-select [items]="offices" [hideSelected]="true" bindLabel="name" placeholder="Select Building" [(ngModel)]="selectedOffice" [ngModelOptions]="{standalone: true}" (ngModelChange)="onAssetBuildingSelected()"></ng-select> -->
+        {{currentAssetItem.assignment?.building?.name}}
+      </div>
+      <div class="form-group col-md-12 mb-1">
+        <label>Select Floor</label>
+        <ng-select [items]="offices" [hideSelected]="true" bindLabel="name" placeholder="Select Office" [(ngModel)]="assetOffice" [ngModelOptions]="{standalone: true}" (ngModelChange)="onAssetOfficeSelected()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-12 mb-1">
+        <label>Select Cabin</label>
+        <ng-select [items]="cabins" [hideSelected]="true" bindLabel="name" placeholder="Select Cabin" [(ngModel)]="assetCabin" [ngModelOptions]="{standalone: true}" (ngModelChange)="onAssetCabinSelected()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-12 mb-1">
+        <label>Select Desk</label>
+        <ng-select [items]="desks" [hideSelected]="true" bindLabel="name" placeholder="Select Desk" [(ngModel)]="assetDesk" [ngModelOptions]="{standalone: true}"></ng-select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading" (click)="assignItems()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Assignment</button>
+  </div>
+</ng-template>
+<ng-template #warrentyModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h5 class="modal-title" id="modal-basic-title">Asset Warrenty to <br><strong>{{assets.name}}</strong></h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="warrentyForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label>Warenty Start Date</label>
+          <input type="text" class="form-control" id="purchasedDate" formControlName="purchasedDate" placeholder="Select Start Date" [(ngModel)]="warrenty.purchasedDate" name="dpi" ngbDatepicker #dpi="ngbDatepicker" (focus)="dpi.toggle()" (ngModelChange)="updateExipiryDate()">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label>Warrent Period <small>(in months)</small></label>
+          <input type="number" class="form-control" id="period" placeholder="Enter warrenty Period" formControlName="warrentyPeriod" [(ngModel)]="warrenty.warrentyPeriod" (ngModelChange)="updateExipiryDate()">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="exampleInputEmail1">Warrenty Expiry Date</label>
+          <input type="text" class="form-control" id="expiryDate" placeholder="Enter ExpiryDate" formControlName="expiryDate" [(ngModel)]="warrenty.expiryDate" name="dpe" ngbDatepicker #dpe="ngbDatepicker" (focus)="dpe.toggle()">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||warrentyForm.invalid" (click)="saveWarrenty()"><i class="fa fa-check" *ngIf="!loading"></i> Save Warrenty</button>
+  </div>
+</ng-template>
+<ng-template #serviceProviderModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Asset Service Provider</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="serviceProviderForm">
+      <div class="row">
+        <div class="form-group col-10 mb-1">
+          <label class="mb-0">Vendor Service Providers</label>
+          <ng-select [items]="vendorServiceProviders" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select ServiceProvider" [(ngModel)]="assets.assetServiceProviderId" [ngModelOptions]="{standalone: true}" (ngModelChange)="setServiceProvider()"></ng-select>
+        </div>
+        <div class="form-group pl-1 col-2 mb-1 mt-4">
+          <button class="btn btn-outline-primary btn-ico" (click)="newServiceProvider=true" *ngIf="!newServiceProvider"><i class="fa fa-plus"></i> Add</button>
+        </div>
+      </div>
+      <div class="row" *ngIf="newServiceProvider">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter person name" [(ngModel)]="serviceProvider.name">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Enter email" formControlName="email" [(ngModel)]="serviceProvider.email">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="phone">Phone</label>
+          <input class="form-control" id="phone" placeholder="Enter mobile phone" formControlName="phone" [(ngModel)]="serviceProvider.phone">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="phone">LandLine</label>
+          <input class="form-control" id="landline" placeholder="Enter LandPhone" formControlName="landline" [(ngModel)]="serviceProvider.landline">
+        </div>
+        <div class="col-md-4 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="serviceProvider.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-8 form-group mb-1 mt-4">
+          <button class="btn btn-outline-danger btn-ico" (click)="newServiceProvider=false" *ngIf="newServiceProvider"><i class="fa fa-times"></i> Cancel</button>
+          <button class="btn btn-info ladda-button btn-ico float-right" [ladda]="loading" [disabled]="loading||serviceProviderForm.invalid" (click)="saveServiceProvider(true)"><i class="fa fa-check" *ngIf="!loading"></i> Add ServiceProvider</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #viewItemModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h5 class="modal-title" id="modal-basic-title">Asset Item - <strong>{{currentAssetItem.tagNo}}</strong></h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-4 form-group mb-1">
+        <label>Warenty No</label>
+        <input type="text" class="form-control" id="warrentyNo" placeholder="Enter WarrentyNo" [(ngModel)]="currentAssetItem.warrentyNo">
+      </div>
+      <div class="col-md-5 form-group mb-1">
+        <label>Warrent File</label>
+        <span class="input-group" *ngIf="!warrentyFile.image?.file">
+          <div class="custom-file" *ngIf="!warrentyFileImageFile">
+            <input class="custom-file-input" id="warrentyFileImageId" (change)="warrentyFileImageFileChange($event)" type="file">
+            <label class="custom-file-label" for="warrentyFileImageId">Choose file</label>
+          </div>
+          <div class="custom-file" *ngIf="warrentyFileImageFile">
+            <span class="float-left">{{warrentyFileImageFile?.name}}</span>
+            <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="warrentyFileImageFile=null;"></i>
+            <div class="mb-1">
+              <div *ngIf="warrentyFileImageFileError">
+                {{ warrentyFileImageFileError.message }}
+              </div>
+              <div *ngIf="warrentyFileImageUploadResponse.status === 'error'">
+                {{ warrentyFileImageUploadResponse.message }}
+              </div>
+              <div *ngIf="warrentyFileImageUploadResponse.status === 'progress'">
+                <div role="progressbar" [style.width.%]="warrentyFileImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                  {{warrentyFileImageUploadResponse.message}}%
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="input-group-append">
+            <span class="input-group-text cursor" (click)="uploadOpexBillImage()">Upload</span>
+          </div>
+        </span>
+      </div>
+      <div class="col-md-3 form-group mb-1 mt-4">
+        <button class="btn btn-info ladda-button btn-ico float-right" [ladda]="loading" [disabled]="loading||!currentAssetItem.warrentyNo" (click)="saveAssetItemWarrentyNo()"><i class="fa fa-check" *ngIf="!loading"></i> Save Warrenty</button>
+      </div>
+    </div>
+    <div class="row mt-2">
+      <div class="col-md-6">
+        <h5 class="f-b">Assignments</h5>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="assets">
+          <thead>
+            <tr>
+              <th class="w-70">Assigned To</th>
+              <th class="w-30">Date</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll">
+            <tr *ngFor="let item of currentAssetItem.assignments;">
+              <td class="w-70">{{item.assignedTo}}</td>
+              <td class="w-30" ngbTooltip="{{item.assignedBy}}">{{item.assignedOn | date:'MMM dd, yyyy'}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-6">
+        <h5 class="f-b">Movements</h5>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="assets">
+          <thead>
+            <tr>
+              <th class="w-30">Purpose</th>
+              <th class="w-30">Date</th>
+              <th class="w-40">Moved To</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll">
+            <tr *ngFor="let item of currentAssetItem.movements;">
+              <td class="w-30">{{item.purpose}}</td>
+              <td class="w-30">{{item.date | date:'MMM dd, yyyy'}}</td>
+              <td class="w-40">{{item.building || item.store || item.serviceProvider || 'Trash'}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #viewAssetsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h5 class="modal-title" id="modal-basic-title">Assets - <strong>{{currentAsset.name}}</strong></h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 form-group mb-1">
+        <label>Manufacturer</label>
+        <input type="text" class="form-control" id="manufacturer" placeholder="Enter Manufacturer" [(ngModel)]="currentAsset.manufacturer">
+      </div>
+      <div class="col-md-12 form-group mb-1">
+        <label>Model Name</label>
+        <input type="text" class="form-control" id="modelName" placeholder="Enter Model Name" [(ngModel)]="currentAsset.modelName">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico float-right" [ladda]="loading" [disabled]="loading||!(currentAsset.manufacturer && currentAsset.modelName)" (click)="saveAsset()"><i class="fa fa-check" *ngIf="!loading"></i> Update Assets Details</button>
+  </div>
+</ng-template>
+<ng-template #storesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h5 class="modal-title" id="modal-basic-title">{{selectedLocation?.name}} Stores</h5>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="storeForm" *ngIf="newStore">
+      <div class="row mb-1">
+        <div class="col-md-3 pr-0 form-group mb-1">
+          <label>Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Store Name" [(ngModel)]="store.name">
+        </div>
+        <div class="col-md-4 pr-0 form-group mb-1">
+          <label>Address</label>
+          <textarea class="form-control" id="address" formControlName="address" placeholder="Enter Store Address" [(ngModel)]="store.address"></textarea>
+        </div>
+        <div class="col-md-3 pr-0 form-group mb-1">
+          <label>Manager</label>
+          <ng-select [items]="storeManagers" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select Manager" [(ngModel)]="store.managerId" [ngModelOptions]="{standalone: true}"></ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-4">
+          <button class="btn btn-info ladda-button btn-ico btn-sm float-right" [ladda]="loading" [disabled]="loading||storeForm.invalid" (click)="saveStore()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+          <button class="btn btn-outline-danger btn-icon btn-sm float-right" (click)="newStore=false;store={};"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+    </form>
+    <div class="mt--10">
+      <h5 class="f-b float-left">Stores List</h5>
+      <button class="btn btn-outline-info btn-ico btn-sm float-right" *ngIf="!newStore" (click)="newStore=true;store={};"><i class="fa fa-plus"></i> New Store</button>
+      <div class="clear"></div>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-20">Name</th>
+            <th class="w-50">Address</th>
+            <th class="w-20">Manager</th>
+            <th class="w-10">Action</th>
+          </tr>
+        </thead>
+        <tbody class="tableBodyScroll">
+          <tr *ngFor="let item of stores;">
+            <td class="w-20">{{item.name}}</td>
+            <td class="w-50">{{item.address}}</td>
+            <td class="w-20">{{item.manager?.name}} <small>({{item.manager?.phone}})</small></td>
+            <th class="w-10">
+              <label class="checkbox checkbox-success mt-1">
+                <input type="checkbox" [(ngModel)]="item.active" (ngModelChange)="store=item;saveStore()" [ngModelOptions]="{standalone: true}">
+                <span></span>
+                <span class="checkmark"></span>
+              </label>
+              <button class="btn btn-sm btn-icon btn-outline-info float-right mt--10" (click)="store=item;newStore=true;"><i class="fa fa-pencil"></i></button>
+            </th>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-center mt-4" *ngIf="!stores.length">No stores in {{selectedLocation.name}} location</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

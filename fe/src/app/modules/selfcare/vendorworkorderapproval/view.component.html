@@ -1,0 +1,162 @@
+<div class="row">
+  <div class="col-md-11 col-12 m-auto">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Vendor WorkOrder Approval</h1>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="card  mb-1 d-b m-auto mt-4" *ngIf="!workOrder">
+      <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+    </div>
+    <div class="card user-profile o-hidden mb-1 d-b" *ngIf="workOrder">
+      <div class="card-body pt-1">
+        <loading [loading]="loading"></loading>
+        <h4 class=" border-bottom pb-2">WorkOrder Information</h4>
+        <div class="row">
+          <div class="col-md-4 col-12 mb-2" *ngIf="workOrder.building">
+            <p class="text-black f-b mb-0">Building : </p>
+            <span class="">{{workOrder.building?.name}} , {{workOrder.building?.location}}</span>
+          </div>
+          <div class="col-md-4 col-12 mb-2" *ngIf="workOrder.office">
+            <p class="text-black f-b mb-0">Office : </p>
+            <span class="">{{workOrder.office?.name}} , {{workOrder.office?.location}}</span>
+          </div>
+          <div class="col-md-3 col-12 mb-2">
+            <p class="text-black f-b mb-0">Vendor : </p>
+            <span class="fs-14 fw-600">{{workOrder.vendor?.name}}</span>
+          </div>
+          <div class="col-md-1 col-12 mb-2">
+            <p class="text-black f-b mb-0">Budget : </p>
+            <span class="">{{workOrder.budget | inr}}</span>
+          </div>
+          <div class="col-md-4 col-12 mb-2">
+            <p class="text-black f-b mb-0">Payment Term : </p>
+            <span class="">{{workOrder.paymentTerm?.name}} {{workOrder.paymentTerm?.tagName}}</span>
+          </div>
+        </div>
+        <hr class="mb-1 mt-1 ">
+        <h5>Vendor Contact Information</h5>
+        <div class="row ">
+          <div class="col-md-3 col-6 mb-2">
+            <p class="text-black f-b mb-0">Name : </p>
+            <span class="">{{workOrder.vendor?.contact?.name}}</span>
+          </div>
+          <div class="col-md-3 col-6 mb-2">
+            <p class="text-black f-b mb-0">Email : </p>
+            <span class="">{{workOrder.vendor?.contact?.email}}</span>
+          </div>
+          <div class="col-md-2 col-6 mb-2">
+            <p class="text-black f-b mb-0">Phone : </p>
+            <span class="">{{workOrder.vendor?.contact?.phone}}</span>
+          </div>
+          <div class="col-md-3 col-6 mb-2">
+            <p class="text-black f-b mb-0">Designation : </p>
+            <span class="">{{workOrder.vendor?.contact?.designation}}</span>
+          </div>
+        </div>
+        <div class="mt-1 border-top pt-1" *ngIf="allItemsActed">
+          <strong class="float-left">Please click on Proceed button to raise purchase order for below accepted items.</strong>
+          <button class="btn btn-primary ladda-button btn-ico btn-sm float-right" [ladda]="loading" [disabled]="!allExpectedDatesAdded || loading" (click)="raisePurchaseOrder()">
+            <i class="fa fa-check" *ngIf="!loading"></i> Proceed to Raise Purchase Order</button>
+          <div class="clear"></div>
+        </div>
+        <div class="mt-1 border-top pt-1" *ngIf="allRejected">
+          <strong class="float-left">Please click on Decline button to reject purchase order for below items.</strong>
+          <button class="btn btn-danger ladda-button btn-ico btn-sm float-right" [ladda]="loading" [disabled]="loading" (click)="raisePurchaseOrder()">
+            <i class="fa fa-check" *ngIf="!loading"></i> Proceed to Reject Purchase Order</button>
+          <div class="clear"></div>
+        </div>
+        <div class="mt-1 border-top pt-1" *ngIf="workOrder.purchaseOrder?.pdf">
+          <strong class="float-left badge badge-success fs-14">Purchase Order raised for the same WorkOrder for your further proceedings.</strong>
+          <a [href]="workOrder.purchaseOrder?.pdf.file" class="pull-right btn btn-info btn-sm btn-ico" ngbTooltip="Click to View PO PDF" target="_blank"> <i class="fa fa-file-pdf-o"></i> Purchase Order PDF</a>
+          <div class="clear"></div>
+        </div>
+        <div class="row mt-1 pl-2" *ngIf="workOrder">
+          <h5 class="f-b">Work Items <small>(Please accept or reject each item to proceed further)</small> </h5>
+          <data-list #workItemsList [autoHeightAdjust]="false" [filter]="workItemsFilters" [dataUrl]="'internal/purchases/listWorkItems'" [config]="workItemsConfig" (onAction)="action($event)"></data-list>
+        </div>
+        <div class="row mt-4 pl-2 " *ngIf="milestones.length">
+          <h5 class="f-b">Payment Milestones <small>(Please enter your expected payment dates for each milestone.)</small></h5>
+          <table class="w-75 table table-stripped table-sm">
+            <thead>
+              <tr>
+                <th>Milestone</th>
+                <th class="text-right">Amount</th>
+                <th class="text-center">Expected Completion Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let term of milestones;">
+                <td>{{term.name}}</td>
+                <td class="text-right">{{term.amount | inr}}</td>
+                <td class="pl-4 text-center">
+                  <!-- <input type="date" class="form-control" [(ngModel)]="term.expectedDate" placeholder="Expected By" [ngModelOptions]="{standalone: true}" (ngModelChange)="expectedDateChanged()" /> -->
+                  {{term.expectedDate | date : 'MMM dd, yyyy'}}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row mt-1 pl-2">
+          <div class="col-md-7 form-group mb-1"></div>
+          <div class="col-md-2 form-group mb-1">
+            <label for="phone" *ngIf="hasDeliveryCharge">Delivery Charges (should be inclusive of GST)</label>
+            <input *ngIf="hasDeliveryCharge" type="number" class="form-control" id="deliveryCharges" placeholder="Enter Delivery Charges" [(ngModel)]="deliveryCharges" [ngModelOptions]="{standalone: true}">
+          </div>
+          <div class="col-md-3 form-group mb-1 pt-4">
+            <label class="checkbox checkbox-primary">
+              <input type="checkbox" [(ngModel)]="hasDeliveryCharge" (ngModelChange)="getMilestones()" [ngModelOptions]="{standalone: true}">
+              <span>Has Delivery Charge . ?</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+        <div class="row mt-1 pl-2">
+          <div class="col-md-3 form-group mb-1"></div>
+          <div class="col-md-4 form-group mb-1">
+            <label *ngIf="hasAdditionalCharge" for="phone">Enter your additional charges Notes</label>
+            <textarea *ngIf="hasAdditionalCharge" class="form-control" id="phone" placeholder="Enter your additional charges Notes here. (at least 10 characters)" [(ngModel)]="additionalChargesNote"></textarea>
+          </div>
+          <div class="col-md-2 form-group mb-1">
+            <label *ngIf="hasAdditionalCharge" for="phone"> Addtional Charges (should be inclusive of GST)</label>
+            <input *ngIf="hasAdditionalCharge" type="additionalCharges" class="form-control" id="additionalCharges" placeholder="Enter Charges here" [(ngModel)]="additionalCharges" [ngModelOptions]="{standalone: true}" [disabled]="!additionalChargesNote||additionalChargesNote.length<10?true:null" (ngModelChange)="getMilestones()">
+          </div>
+          <div class="col-md-3 form-group mb-1 pt-4">
+            <label class="checkbox checkbox-primary">
+              <input type="checkbox" [(ngModel)]="hasAdditionalCharge" (ngModelChange)="getMilestones()" [ngModelOptions]="{standalone: true}" (ngModelChange)="getMilestones()">
+              <span>Has Additional Charges . ?</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #rejectedModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{workItem.vendorRejectedComments ? 'View' : 'Enter'}} Rejected Message </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="rejectedForm">
+      <div class="row">
+        <div class="col-12 mb-10">
+          <label for="roles">Select Rejected Reason</label>
+          <ng-select [items]="deadReasons" [hideSelected]="true" bindLabel="name" placeholder="Select Decline Reason" [(ngModel)]="vendorRejectedReason" formControlName="vendorRejectedReason">
+          </ng-select>
+        </div>
+        <div class="col-12">
+          <textarea class="form-control" [(ngModel)]="vendorRejectedComments" placeholder="Enter your comments to reject work item" formControlName="comments"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-danger ladda-button btn-ico" *ngIf="!workItem.vendorRejectedComments" [ladda]="loading" [disabled]="loading||rejectedForm.invalid" (click)="rejectWorkItem()"><i class="fa fa-check" *ngIf="!loading"></i> Reject</button>
+  </div>
+</ng-template>

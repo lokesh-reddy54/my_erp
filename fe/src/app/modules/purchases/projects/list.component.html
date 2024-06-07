@@ -1,0 +1,160 @@
+<div class="">
+  <div class="breadcrumb">
+    <h3 class="pull-left">Projects <i class="fa fa-question-circle-o cursor pl-1" (click)="openHelpNotes()" ngbTooltip="Help"></i>
+    </h3>
+    <input type="text" placeholder="Search by building, client company, reference number" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-20">
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Quick Filters" *ngIf="!moreFilters" (click)="moreFilters=true;loadBuildingProjects()"><i class="fa fa-caret-square-o-down"></i></button>
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Hide Filters" *ngIf="moreFilters" (click)="moreFilters=false;"><i class="fa fa-caret-square-o-up"></i></button>
+    <ng-select class="w-40 float-left ml-10" [items]="statuses" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="filter.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openProjectModal()">
+      <i class="fa fa-plus"></i> Project
+    </button>
+    <div class="clear"></div>
+  </div>
+  <div class="row" *ngIf="moreFilters">
+    <div class="col-md-6 pt-2">
+      <span class="badge fs-12 mr-2 cursor" *ngFor="let building of buildingProjects;" [ngClass]="{'badge-outline-primary':selectedBuilding?.id!=building?.id,'badge-primary':selectedBuilding?.id==building?.id}" (click)="selectBuilding(building)">{{building?.name}} ({{building?.count}})</span>
+    </div>
+    <div class="col-md-6 pt-2">
+      <span class="badge fs-14 mr-2 cursor" *ngIf="totalProjectsCount>0">Total - {{totalProjectsCount}} </span>
+      <span class="badge fs-12 mr-2 cursor badge-outline-primary" *ngFor="let status of projectsByStatuses;" (click)="filter.statuses=[status.status];resetList();">{{status?.status}} ({{status?.count}})</span>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="clear"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);padding-top: 20px;margin-top: -10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12 pl-1 pr-1">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <a routerLink="/purchases/project/{{item.id}}" class="w-30 w-sm-100 pr-3" ngbTooltip="Project Details">
+              <div class="m-0 text-secondary text-smal">
+                <div class="f-b">{{item.building?.name}} <span class="pull-right text-primary fw-600">{{item.office?.name}}</span></div>
+                <div class="text-primary">{{item.booking?.client?.company}}</div>
+              </div>
+            </a>
+            <div class="m-0 text-muted text-small w-30 w-sm-100 pr-2">
+              <div><span class="text-primary"><strong>{{item.refNo}}</strong></span>
+                <span class="text-secondary pull-right f-b">{{item.estimatedBudget | inr}}</span>
+              </div>
+              <div>
+                <span class="text-primary">{{item.purpose}}</span>
+                <span class="text-secondary pull-right">{{item.subPurpose}}</span>
+              </div>
+            </div>
+            <div class="m-0 text-muted text-small w-30 w-sm-100 pl-2 pr-3" ngbTooltip="{{item.notes}}">
+              <div class="d-b text-info">{{item.title}}</div>
+              <div class="d-b text-primary"><strong class="">{{item.proposedBy}}</strong> on {{item.date | date : 'MMM dd, yyyy'}}</div>
+            </div>
+            <div class="m-0 text-muted text-center text-small w-10 w-sm-100 d-none d-lg-block item-actions">
+              <div class="w-100">
+                <span class="badge" [ngClass]="{'badge-info':item.status=='Draft','badge-success':item.status=='InProgress','badge-secondary':item.status=='OnHold','badge-light':item.status=='Closed','badge-light':item.status=='Deferred'}">{{item.status}}</span>
+              </div>
+              <button class="btn btn-icon btn-sm btn-primary" ngbTooltip="View Project" routerLink="/purchases/project/{{item.id}}">
+                <i class="i-Magnifi-Glass1 text-bold"></i>
+              </button>
+              <button class="btn btn-icon btn-sm btn-info" (click)="openProjectModal(item)">
+                <i class="i-Pen-5 text-bold"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/purchases/listVendorProjects'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div> -->
+</div>
+<ng-template #projectModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{project.id ? 'Edit Project' : 'New Project'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="projectForm">
+      <div class="row">
+        <div class="form-group col-md-4">
+          <label class="d-b" for="firstName">Select Building</label>
+          <ng-select *ngIf="!project.id" [items]="buildings" [hideSelected]="true" placeholder="Select Building" [(ngModel)]="project.buildingId" (ngModelChange)="onBuildingSelected()" [ngModelOptions]="{standalone: true}" bindValue="id" bindLabel="name"> </ng-select>
+          <strong *ngIf="project.id" class="d-b">{{project.building?.name}}</strong>
+        </div>
+        <div class="form-group col-md-4" *ngIf="project.buildingId">
+          <label class="d-b" for="roles">Floor</label>
+          <ng-select *ngIf="!project.id" [items]="offices" [hideSelected]="true" placeholder="Select Floor" [(ngModel)]="project.officeId" (ngModelChange)="onOfficeSelected()" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="id"> </ng-select>
+          <strong *ngIf="project.id" class="d-b">{{project.office?.name || '-'}}</strong>
+        </div>
+        <div class="form-group col-md-4" *ngIf="project.officeId">
+          <label class="d-b" for="roles">Client</label>
+          <ng-select *ngIf="!project.id" [items]="bookings" [hideSelected]="true" placeholder="Select Client" [(ngModel)]="project.bookingId" [ngModelOptions]="{standalone: true}" bindLabel="name" bindValue="id"> </ng-select>
+          <strong *ngIf="project.id" class="d-b">{{project.booking?.client?.company || '-'}}</strong>
+        </div>
+      </div>
+      <div class="row" *ngIf="project.buildingId">
+        <div class="form-group col-md-4">
+          <label class="d-b" for="roles">Purpose</label>
+          <ng-select [items]="purposes" [hideSelected]="true" placeholder="Select Purpose" [(ngModel)]="project.purpose" formControlName="purpose" formControlName="purpose"> </ng-select>
+        </div>
+        <div class="form-group col-md-4">
+          <label class="d-b" for="roles">SubPurpose</label>
+          <input type="text" class="form-control" id="subPurpose" formControlName="subPurpose" placeholder="Detailed Purpose" [(ngModel)]="project.subPurpose">
+        </div>
+        <div class="form-group col-md-2">
+          <label class="d-b" for="roles">Expected Budget</label>
+          <input type="number" class="form-control" id="estimatedBudget" formControlName="estimatedBudget" placeholder="Budget Amount" [(ngModel)]="project.estimatedBudget">
+        </div>
+        <div class="form-group col-md-2 pl-0 pr-2">
+          <label class="d-b" for="firstName">Status</label>
+          <ng-select [items]="statuses" [hideSelected]="true" placeholder="Select Status" [(ngModel)]="project.status" formControlName="status"> </ng-select>
+        </div>
+      </div>
+      <div class="row" *ngIf="project.buildingId">
+        <!--         <div class="form-group col-md-12">
+          <input type="text" class="form-control w-100" placeholder="Title here" [(ngModel)]="project.title" formControlName="title" />
+        </div> -->
+        <div class="form-group col-md-12">
+          <textarea class="form-control w-100" placeholder="Additional Info" [(ngModel)]="project.notes" formControlName="notes"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||projectForm.invalid" (click)="saveProject()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #helpNotesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Help Notes</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body p-0">
+    <ngb-tabset class="nav-center">
+      <ngb-tab title="Projects Status Definition">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:ProjectStatusDefinition'" [type]="'notes'" class="text-center"></help-notes>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Projects Status Flow">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:ProjectStatusFlow'" [type]="'notes'" class="text-center"></help-notes>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

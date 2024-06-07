@@ -1,0 +1,151 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Help Notes</h1>
+    <input type="text" placeholder="Search Help Note by content" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2">
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openHelpNoteModal(helpNotesModal)">
+      <i class="fa fa-plus"></i> Add New Help Note
+    </button>
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right mr-2" (click)="openBusinessTerms()">
+      <i class="fa fa-plus"></i> Open Business Terms
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/admin/listHelpNotes'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #helpNotesModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{helpNotes.id ? 'Edit HelpNote' : 'New HelpNote'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{helpNotes|json}} -->
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Section</label>
+          <ng-select [items]="sections" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select HelpNote Section" [(ngModel)]="helpNotes.selectedSection" bindLabel="name" formControlName="section">
+          </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Context</label>
+          <ng-select [items]="helpNotes.selectedSection?.contexts" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select HelpNote Context" [(ngModel)]="helpNotes.context" formControlName="context">
+          </ng-select>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Content</label>
+          <textarea class="form-control" [(ngModel)]="helpNotes.content" formControlName="content"></textarea>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label class="d-b">Image <small>(if any)</small></label>
+          <a class="f-b badge badge-secondary fs-10 float-left" *ngIf="helpNotes?.file" [href]="helpNotes?.file" target="_blank" ngbTooltip="Click to View">Help Image</a>
+          <i *ngIf="helpNotes?.file" class="fa fa-times cursor float-left ml-10" (click)="helpNotes.file=null;save();" ngbTooltip="Clear Image"></i>
+          <span class="input-group" *ngIf="!helpNotes?.file">
+            <div class="custom-file" *ngIf="!helpImage">
+              <input class="custom-file-input" id="helpImage" (change)="helpImageChange($event)" type="file">
+              <label class="custom-file-label" for="helpImage">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="helpImage">
+              <span class="float-left">{{helpImage?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="helpImage=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="helpImageError">
+                  {{ helpImageError.message }}
+                </div>
+                <div *ngIf="helpImageUploadResponse.status === 'error'">
+                  {{ helpImageUploadResponse.message }}
+                </div>
+                <div *ngIf="helpImageUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="helpImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{helpImageUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadHelpImageFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #businessTermsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title float-left" id="modal-basic-title">Business Terms</h4>
+    <div class="row w-60 ml-1 float-left">
+      <div class="col-md-4 form-group mb-1 pr-0 pl-0">
+        <ng-select [items]="sections" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Section" [(ngModel)]="businessTermSection" bindLabel="name" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchBusinessTerms()">
+        </ng-select>
+      </div>
+      <div class="col-md-8 form-group mb-1 mt-1 pl-1 pr-0">
+        <input type="text" class="form-control" placeholder="Search by Business Term" [(ngModel)]="businessTermSearch" [formControl]="searchBusinessTerm" />
+      </div>
+    </div>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <table class="tableBodyScroll table table-striped table-hover table-sm">
+      <thead>
+        <tr>
+          <th class="cursor w-20 text-center" (click)="sortBy('section')">Section &nbsp; <i *ngIf="sort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.name?.desc" class="fa fa-caret-down"></i></th>
+          <th class="cursor w-20" (click)="sortBy('acronym')">Acronym &nbsp; <i *ngIf="sort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.name?.desc" class="fa fa-caret-down"></i></th>
+          <th class="cursor w-50" (click)="sortBy('term')">Term &nbsp; <i *ngIf="sort.rent?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.rent?.desc" class="fa fa-caret-down"></i></th>
+          <th> Actions </th>
+        </tr>
+      </thead>
+      <tbody infiniteScroll [autoHeightAdjust]="300" class="tableBodyScroll">
+        <tr *ngFor="let term of businessTerms;">
+          <td class="w-20 text-center">{{term.section}}</td>
+          <td class="w-20">{{term.acronym}}</td>
+          <td class="w-50">{{term.term}}</td>
+          <td>
+            <button class="btn btn-icon btn-info btn-sm" (click)="editBusinessTerm(term)"><i class="i-Pen-5"></i></button>
+            <button class="btn btn-icon btn-danger btn-sm" (click)="deleteBusinessTerm(term)"><i class="i-Folder-Trash"></i></button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer d-b">
+    <button class="btn btn-info btn-sm btn-ico pull-left" *ngIf="!termForm" (click)="termForm=true;"><i class="fa fa-plus"></i> New Business Term</button>
+    <form [formGroup]="businessTermForm" class="w-100 p-1" *ngIf="termForm">
+      <div class="row mt--10">
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Section</label>
+          <ng-select [items]="sections" [closeOnSelect]="true" [hideSelected]="true" dropdownPosition="top" placeholder="Select Section" [(ngModel)]="businessTerm.section" bindLabel="name" bindValue="name" formControlName="section">
+          </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Acronym</label>
+          <input type="text" class="form-control" placeholder="Enter Acronym" [(ngModel)]="businessTerm.acronym" formControlName="acronym" />
+        </div>
+        <div class="col-md-5 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Term</label>
+          <input type="text" class="form-control" placeholder="Enter Business Term" [(ngModel)]="businessTerm.term" formControlName="term" />
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1 mt-4">
+          <button class="btn btn-sm btn-icon float-right" ngbTooltip="Cancel" (click)="cancelBusinessTerm()"><i class="fa fa-times"></i></button>
+          <button class="btn btn-info ladda-button btn-ico float-right" [ladda]="loading" [disabled]="loading||businessTermForm.invalid" (click)="saveBusinessTerm()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+        </div>
+      </div>
+    </form>
+    <button *ngIf="!termForm" type="button" class="btn btn-outline-light pull-right" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

@@ -1,0 +1,965 @@
+<div class="card tableBodyScroll mb-1 d-b" style="height: calc(100vh - 90px);">
+  <div class="card-body pt-1">
+    <div class="row">
+      <div class="col-md-7 border-bottom">
+        <div class="float-left pt-2">
+          <h3 *ngIf="purchaseOrder?.id">{{purchaseOrder.isBill ? 'Bill' : 'Purchase Order'}} - <small>{{purchaseOrder.refNo}}</small></h3>
+        </div>
+      </div>
+      <div class="col-md-5 border-bottom row pl-0" *ngIf="!purchaseOrder.isBill">
+        <div class="col-md-4">
+          <p class="text-black mb-0 f-b">Purchase Order</p>
+          <a class="" *ngIf="purchaseOrder.pdf?.file" [href]="purchaseOrder.pdf?.file" target="_blank" ngbTooltip="Click to View"><i class="fa fa-file-pdf-o"></i> View</a>
+          <a *ngIf="!purchaseOrder.pdf?.file" class="cursor" (click)="regeneratePurchaseOrder()">Click to generate PO</a>
+        </div>
+        <div class="col-md-8 pl-0 pr-0">
+          <p class="text-black mb-0 f-b">Proforma Invoice</p>
+          <a class="" *ngIf="purchaseOrder.proformaInvoice?.file" [href]="purchaseOrder.proformaInvoice?.file" target="_blank" ngbTooltip="Click to View"><i class="fa fa-file-pdf-o"></i> View</a>
+          <span class="input-group" *ngIf="!purchaseOrder.proformaInvoice?.file">
+            <div class="custom-file" *ngIf="!proformaInvoiceFile">
+              <input class="custom-file-input" id="proformaInvoiceId" (change)="proformaInvoiceFileChange($event)" type="file">
+              <label class="custom-file-label" for="proformaInvoiceId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="proformaInvoiceFile">
+              <span class="float-left">{{proformaInvoiceFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="proformaInvoiceFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="proformaInvoiceFileError">
+                  {{ proformaInvoiceFileError.message }}
+                </div>
+                <div *ngIf="proformaInvoiceUploadResponse.status === 'error'">
+                  {{ proformaInvoiceUploadResponse.message }}
+                </div>
+                <div *ngIf="proformaInvoiceUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="proformaInvoiceUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{proformaInvoiceUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadProformaInvoiceFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+      </div>
+      <div class="col-md-12 row border-bottom">
+        <div class="col-md-3 mb-2">
+          <p class="text-black f-b mb-0">Project</p>
+          <span class="">{{purchaseOrder.project?.title || 'UnAssigned'}}</span>
+        </div>
+        <div class="col-md-1-5 mb-2">
+          <p class="text-black f-b mb-0">Building</p>
+          <span class="">{{purchaseOrder.building?.name}}</span>
+        </div>
+        <div class="col-md-1 mb-2">
+          <p class="text-black f-b mb-0">Amount</p>
+          <span class="">{{purchaseOrder.amount | inr}}</span>
+        </div>
+        <div class="col-md-1 mb-2">
+          <p class="text-black f-b mb-0">Status</p>
+          <span class="badge badge-info" *ngIf="purchaseOrder.status=='Raised'">Raised</span>
+          <span class="badge badge-success" *ngIf="purchaseOrder.status=='Started'">Started</span>
+          <span class="badge badge-light" *ngIf="purchaseOrder.status=='Closed'">Closed</span>
+          <span class="badge badge-danger" ngbTooltip="{{purchaseOrder.deletedReason}}" *ngIf="purchaseOrder.status=='Deleted'">Deleted</span>
+          <span class="text-info cursor float-right f-b" [placement]="'bottom'" [ngbPopover]="datespopContent" [popoverTitle]="datesPopTitle" triggers="mouseenter:mouseleave">H</span>
+          <ng-template #datesPopTitle>{{popOverTitle}}</ng-template>
+          <ng-template #datespopContent>
+            <div class="ol-6 mb-2">
+              <p class="text-black f-b mb-0 float-left">Raised : </p>
+              <span class="float-left ml-10">{{(purchaseOrder.workOrder?.date || purchaseOrder?.date) | date : 'MMM dd, yyyy'}} by {{purchaseOrder.executive?.name}}</span>
+              <div class="clear"></div>
+            </div>
+            <div class="ol-6 mb-2">
+              <p class="text-black f-b mb-0 float-left">Approved : </p>
+              <span class="float-left ml-10">{{(purchaseOrder.workOrder?.approvedOn || purchaseOrder?.date) | date : 'MMM dd, yyyy'}} by {{purchaseOrder.manager?.name}}</span>
+              <div class="clear"></div>
+            </div>
+            <div class="ol-6 mb-2">
+              <p class="text-black f-b mb-0 float-left">Accepted : </p>
+              <span class=" float-left  ml-10">{{purchaseOrder.date | date : 'MMM dd, yyyy'}}</span>
+              <div class="clear"></div>
+            </div>
+            <div class="ol-6 mb-2 " *ngIf="purchaseOrder.status=='Started'">
+              <p class="text-black f-b mb-0 float-left">Started : </p>
+              <span class=" ml-10 float-left" *ngIf="purchaseOrder.status!='Raised'">{{purchaseOrder.startedOn | date : 'MMM dd, yyyy'}}</span>
+              <div class="clear"></div>
+            </div>
+            <div class="ol-6 mb-2" *ngIf="purchaseOrder.status=='Started'">
+              <p class="text-black f-b mb-0 float-left">Closed : </p>
+              <span class=" ml-10 float-left" *ngIf="purchaseOrder.status=='Closed'">{{purchaseOrder.closedOn | date : 'MMM dd, yyyy'}}</span>
+              <span class=" ml-10 float-left" *ngIf="purchaseOrder.status!='Closed'">
+                <small>PO will be closed automatically after last payment</small></span>
+              <div class="clear"></div>
+            </div>
+          </ng-template>
+        </div>
+        <!--  <div class="col-md-1-5 mb-1">
+          <p class="text-black f-b mb-0">RaisedBy</p>
+          <span class="">{{purchaseOrder.executive?.name}}</span>
+        </div>
+        <div class="col-md-1-5">
+          <p class="text-black f-b mb-0">ApprovedBy</p>
+          <span *ngIf="purchaseOrder.manager">{{purchaseOrder.manager?.name}}</span>
+          <span *ngIf="!purchaseOrder.manager"><a class="cursor text-underline" (click)="assignManager()">Assign Manager</a></span>
+        </div> -->
+        <div class="col-md-3">
+          <p class="text-black f-b mb-0">Vendor</p>
+          <a class="" target="_blank" href="/#/purchases/vendor/{{purchaseOrder.vendor?.id}}">{{purchaseOrder.vendor?.name}} <i class="fa fa-external-link"></i></a>
+        </div>
+        <div class="col-md-2">
+          <!--  <p class="text-black f-b mb-0">Status History</p>
+          <span class="text-info cursor float-left" [placement]="'bottom'" [ngbPopover]="datespopContent" [popoverTitle]="datesPopTitle" triggers="mouseenter:mouseleave"> <i class="fa fa-info"></i> View</span> -->
+          <button *ngIf="purchaseOrder.status=='Raised'" class="badge badge-success cursor mt-4 float-right" (click)="startPO()">
+            <i class="fa fa-check"></i> Start PO
+          </button>
+        </div>
+      </div>
+      <div class="col-md-12 mt-1">
+        <ngb-tabset class="nav-center">
+          <ngb-tab title="Tax Invoices">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+              <div class="float-right" *ngIf="purchaseOrder?.needInvoice && purchaseOrder.status!='Deleted'" style="margin-top: -40px;">
+                <button class="btn btn-info btn-sm float-right" (click)="openTaxInvoiceModal()">
+                  <i class="fa fa-plus"></i> Tax Invoice</button>
+              </div>
+              <div class="float-right" *ngIf="purchaseOrder.taxInvoice?.file && !purchaseOrder.invoices?.length" style="margin-top: -40px;">
+                <a class="f-b badge badge-secondary fs-10" [href]="purchaseOrder.taxInvoice?.file" target="_blank" ngbTooltip="Click to View">Tax Invoice</a>
+              </div>
+              <loading [loading]="loading"></loading>
+              <div class="col-md-12 mb-2 pb-2 pl-0 pr-0 mt-2">
+                <div class="tableBodyScroll mt-2" style="height: calc(100vh - 350px);overflow-y: auto;overflow-x: hidden;">
+                  <p class="text-center text-danger f-b" *ngIf="!purchaseOrder.invoices?.length">No Tax Invoice is uploaded yet..</p>
+                  <div class="row border-bottom" *ngIf="purchaseOrder?.invoices?.length">
+                    <div class="col-md-1 pr-0 ">
+                      <label class="mb-0 d-b f-b">InvoiceNo</label>
+                    </div>
+                    <div class="col-md-1 pr-0 pl-0 pr-0 ">
+                      <label class="mb-0 d-b f-b">Invoice Date</label>
+                    </div>
+                    <div class="col-md-1 pr-0 pl-0 pr-0 ">
+                      <label class="mb-0 d-b f-b ">Due Date</label>
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pr-0 ">
+                      <label class="mb-0 d-b f-b">Taxable Amount (A)</label>
+                    </div>
+                    <div class="col-md-1 pr-0 text-right pl-0 pr-0 ">
+                      <label class="mb-0 d-b f-b">GST (B)</label>
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pr-0 ">
+                      <label class="mb-0 d-b f-b">Invoice Amount <br> (C = A + B)</label>
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pr-0 ">
+                      <label class="mb-0 d-b f-b">TDS (D)</label>
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pr-0 ">
+                      <label class="mb-0 d-b f-b">Payable Amount <br> (E = C - D)</label>
+                    </div>
+                  </div>
+                  <div class="row border-bottom" *ngFor="let invoice of purchaseOrder?.invoices">
+                    <div class="col-md-1 pr-0 mb-1 pt-2">
+                      {{invoice.invoiceNo || invoice.billNo}}
+                    </div>
+                    <div class="col-md-1 pr-0 pl-0 pt-2 mb-1">
+                      {{invoice.invoiceDate | date: 'MMM dd, yyyy'}}
+                    </div>
+                    <div class="col-md-1 pr-0 pl-0 pt-2 mb-1">
+                      {{invoice.invoiceDueDate | date: 'MMM dd, yyyy'}}
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pt-2 mb-1">
+                      {{invoice.taxableAmount | inr}}
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pt-2 mb-1">
+                      {{invoice.gst | inr}}
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pt-2 mb-1">
+                      {{invoice.amount | inr}}
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pt-2 mb-1">
+                      {{invoice.tds | inr}}
+                    </div>
+                    <div class="col-md-1 text-right pr-0 pl-0 pt-2 mb-1">
+                      {{(invoice.amount - invoice.tds)| inr}}
+                    </div>
+                    <div class="col-md-4 pt-1">
+                      <a class="btn btn-ico btn-sm btn-primary float-left ml-10 text-white cursor" (click)="openTaxInvoiceModal(invoice)" *ngIf="purchaseOrder.status!='Deleted'" placement="left" ngbTooltip="Click to Edit TaxInvoice"> <i class="fa fa-pencil"></i> Edit </a>
+                      <a class="btn btn-ico btn-sm btn-primary float-left ml-10 text-white cursor" (click)="openGstModal(invoice)" *ngIf="purchaseOrder.status!='Deleted'" placement="left" ngbTooltip="Click to post GST data"> <i class="fa fa-list"></i> GST </a>
+                      <span class="btn btn-icon btn-danger float-right ml-10" ngbTooltip="No TaxInvoice is not uploaded" *ngIf="!invoice?.file"><i class="fa fa-info"></i></span>
+                      <a class="btn btn-ico btn-sm btn-info float-right ml-10" *ngIf="invoice?.file" [href]="invoice?.file?.file" target="_blank" placement="left" ngbTooltip="Click to View TaxInvoice"><i class="fa fa-file-pdf-o"></i> Invoice</a>
+                      <a class="btn btn-ico btn-sm btn-info float-right" *ngIf="invoice?.gstFile" [href]="invoice?.gstFile?.file" target="_blank" placement="left" ngbTooltip="Click to View GST File"><i class="fa fa-file-pdf-o"></i> GSTR</a>
+                    </div>
+                  </div>
+                  <p class="w-100 text-danger mb-0 text-center p-2 f-b cursor" *ngIf="purchaseOrder.invoices?.length && purchaseOrder?.needInvoice" (click)="openTaxInvoiceModal()">Need one more Invoice. Click to Add Invoice. </p>
+                </div>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="{{purchaseOrder.isBill ? 'Bill' : 'Purchase'}} Items">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+              <!-- *ngIf="purchaseOrder.type=='Services'" -->
+              <div style="margin-top: -40px !important;">
+                <button *checkAccess="'purchases:editMilestones'" class="btn btn-outline-info btn-sm float-right" (click)="editPO()">Edit PurchaseOrder</button>
+                <div class="clear"></div>
+              </div>
+              <!-- <div class="row mt-2">
+                <div class="col-md-3 mb-2">
+                  <p class="text-black f-b mb-0">Delivery Charges : </p>
+                  <span class="">{{purchaseOrder.deliveryCharges | inr}}</span>
+                </div>
+                <div class="col-md-3 mb-2" *ngIf="purchaseOrder.additionalCharges">
+                  <p class="text-black f-b mb-0">Additional Charges : </p>
+                  <span class="">{{purchaseOrder.additionalCharges | inr}}</span>
+                </div>
+                <div class="col-md-6 mb-2" *ngIf="purchaseOrder.additionalChargesNote">
+                  <p class="text-black f-b mb-0">AddtionalCharge Note : </p>
+                  <span class="">{{purchaseOrder.additionalChargesNote}}</span>
+                </div>
+              </div> -->
+              <div class="row mt-1">
+                <!-- <data-list #purchaseItemsList [filter]="purchaseItemsFilters" [dataUrl]="'internal/purchases/listPurchaseItems'" [config]="purchaseItemsConfig" (onAction)="action($event)"></data-list> -->
+                <table class="table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-25">SKU</th>
+                      <th class="w-5 text-center" *ngIf="purchaseOrder.isBill">Accounted</th>
+                      <th class="w-10 text-right">UnitPrice</th>
+                      <th class="w-5 text-center">Units</th>
+                      <th class="w-10 text-right">TaxableAmt (A)</th>
+                      <th class="w-10 text-right">GST (B)</th>
+                      <th class="w-10 text-right">TDS (C)</th>
+                      <th class="w-10 text-right">Total (A+B-C)</th>
+                      <th class="w-5 text-center">Status</th>
+                      <th class="w-10 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll">
+                    <tr *ngFor="let item of purchaseItems;">
+                      <td class="w-25">{{item.sku?.category?.name}}, {{item.sku?.type?.name}}, {{item.sku?.name}}</td>
+                      <td class="w-5 text-center" *ngIf="purchaseOrder.isBill">{{(item.dateFrom | date : 'MMM yyyy') || '-'}}</td>
+                      <td class="w-10 text-right">{{item.unitPrice | inr}}</td>
+                      <td class="w-5 text-center">{{item.units}}</td>
+                      <td class="w-10 text-right">{{item.taxableAmount | inr}}</td>
+                      <td class="w-10 text-right">{{item.gst | inr}}</td>
+                      <td class="w-10 text-right">{{item.tds | inr}}</td>
+                      <td class="w-10 text-right">{{item.amount | inr}}</td>
+                      <td class="w-5 text-center">{{item.status}}</td>
+                      <td class="w-10 text-center">
+                        <a class="btn btn-icon btn-info" ngbTooltip="Comments" (click)="updateItemStatus(item)"><i class="fa fa-comments"></i></a>
+                        <a class="btn btn-icon btn-primary" ngbTooltip="Mark as Delivered" *ngIf="item.isAsset" (click)="markAsDelivered(item)"><i class="fa fa-truck"></i></a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab>
+            <ng-template ngbTabTitle>
+              <div (click)="listPurchaseOrderMilestones()">Payment Milestones</div>
+            </ng-template>
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+              <!--      <div class="row mt-2">
+                <div class="col-md-3 mb-2">
+                  <p class="text-black f-b mb-0">Total Service Charges paid till last PO </p>
+                  <span class="">{{tillLastPoServiceCharges | inr}}</span>
+                </div>
+                <div class="col-md-2 mb-2">
+                  <p class="text-black f-b mb-0">Current Service Charges </p>
+                  <span class="">{{poServiceCharges | inr}}</span>
+                </div>
+                <div class="col-md-2 mb-2">
+                  <p class="text-black f-b mb-0">Previous TDS Deduction</p>
+                  <span class="">{{previousTdsDeduction | inr}}</span>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <p class="text-black f-b mb-0">Current TDS Deduction </p>
+                  <span class="" *ngIf="tdsDeducted>0">{{tdsDeducted | inr}} &nbsp; <small>(TDS deducted @ 2%)</small></span>
+                  <span class="" *ngIf="!tdsDeducted">
+                    <input type="number" class="form-control w-50 float-left mini" [(ngModel)]="tdsDeduction" placeholder="TDS to be deducted" [disabled]="tdsDeduction==0" /> &nbsp; <small>@ 2% TDS</small>
+                  </span>
+                </div>
+                <div class="col-md-1 mb-2 mt-2" *ngIf="tdsDeduction > 0 && tdsDeduction!=tdsDeducted">
+                  <button class="btn btn-outline-info btn-sm" (click)="deductTDS()">
+                    <i class="fa fa-check"></i> &nbsp; Deduct TDS</button>
+                </div>
+                <div class="col-md-1 mb-2 mt-2" *ngIf="tdsDeduction > 0 && tdsDeduction==tdsDeducted">
+                  <button class="btn btn-outline-info btn-sm" [disabled]="true">
+                    <i class="fa fa-check"></i> &nbsp; TDS Deducted</button>
+                </div>
+              </div> -->
+              <div class="row mt-1">
+                <!--  <data-list #milestonesList [filter]="milestonesFilters" [dataUrl]="'internal/purchases/listPurchaseOrderMilestones'" [config]="milestonesConfig" (onAction)="action($event)"></data-list> -->
+                <loading [loading]="loading"></loading>
+                <table class="table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-25">Term</th>
+                      <th class="w-5 text-right">TDS</th>
+                      <th class="w-10 text-right">Amount</th>
+                      <th class="w-10 text-center">Status</th>
+                      <th class="w-15"><span>Released</span> <span class="float-right">Approved</span> </th>
+                      <th class="w-10 text-center">Paid On</th>
+                      <th class="w-15"><span>ExpectedBy</span> <span class="float-right">CompletedOn</span> </th>
+                      <th class="w-10 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="" *ngFor="let item of mileStones;">
+                    <tr>
+                      <td class="w-25"><span [ngClass]="{'float-right w-70': item.parentMilestoneId}">{{item.name}}</span></td>
+                      <td class="w-5 text-right">{{item.tds | inr}}</td>
+                      <td class="w-10 text-right">{{item.amount | inr}}</td>
+                      <td class="w-10 text-center">{{item.status}}</td>
+                      <td class="w-15">
+                        <span ngbTooltip="{{item.releasedBy}}">{{item.releasedOn | date : 'MMM dd,yyyy'}}</span>
+                        <span ngbTooltip="{{item.approvedBy}}" class="float-right">{{item.approvedOn | date : 'MMM dd,yyyy'}}</span>
+                      </td>
+                      <td class="w-10 text-center" ngbTooltip="{{item.paidBy}}">{{item.paidOn | date : 'MMM dd,yyyy'}}</td>
+                      <td class="w-15">
+                        <span>{{item.expectedDate | date : 'MMM dd,yyyy'}}</span>
+                        <span class="float-right">{{item.actualDate | date : 'MMM dd,yyyy'}}</span>
+                      </td>
+                      <td class="w-10 text-center">
+                        <span *checkAccess="'purchases:requestMilestoneRelease'">
+                          <button class="btn btn-icon btn-outline-primary btn-sm" ngbTooltip="Mark MileStone Completed" (click)="markMilestoneCompleted(item)" *ngIf="item.status=='Draft' && item.canMarkComplete"><i class="fa fa-check"></i></button>
+                        </span>
+                        <span *checkAccess="'purchases:confirmPaymentMileStone'">
+                          <button class="btn btn-icon btn-outline-primary btn-sm" ngbTooltip="Confirm MileStone Completed" (click)="confirmMilestoneCompleted(item)" *ngIf="item.status=='Completed'">
+                            <i class="fa fa-thumbs-up"></i></button>
+                        </span>
+                        <span *checkAccess="'purchases:approvePaymentMileStone'">
+                          <div ngbDropdown class="d-inline-block float-left" style="position: static !important;" *ngIf="item.status=='Confirmed' && item.canApprove">
+                            <a class="btn btn-outline-info btn-sm" ngbDropdownToggle>
+                              <i class="fa fa-dollar"></i> Approve </a>
+                            <div ngbDropdownMenu>
+                              <a class="btn btn-sm text-left d-b border-bottom" (click)="approveMileStone(item)">Full Amount</a>
+                              <a class="btn btn-sm text-left d-b border-bottom" (click)="approvePartialMileStone(item)">Partial Amount</a>
+                            </div>
+                          </div>
+                        </span>
+                      </td>
+                    </tr>
+                    <tr *ngFor="let mitem of item.milestones;let i=index;">
+                      <td class="w-25"><span class='float-right w-70'>{{mitem.name}} {{i+1}} </span></td>
+                      <td class="w-5 text-right">{{mitem.tds | inr}}</td>
+                      <td class="w-10 text-right">{{mitem.amount | inr}}</td>
+                      <td class="w-10 text-center">{{mitem.status}}</td>
+                      <td class="w-15">
+                        <span ngbTooltip="{{mitem.releasedBy}}">{{mitem.releasedOn | date : 'MMM dd,yyyy'}}</span>
+                        <span ngbTooltip="{{mitem.approvedBy}}" class="float-right">{{mitem.approvedOn | date : 'MMM dd,yyyy'}}</span>
+                      </td>
+                      <td class="w-10 text-center" ngbTooltip="{{mitem.paidBy}}">{{mitem.paidOn | date : 'MMM dd,yyyy'}}</td>
+                      <td class="w-15"></td>
+                      <td class="w-10 text-center">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab>
+            <ng-template ngbTabTitle>
+              <div (click)="listPurchaseOrderMilestones()">Cashflow Planning</div>
+            </ng-template>
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+              <div style="margin-top: -35px !important;">
+                <button *checkAccess="'purchases:setDueDates'" class="btn btn-outline-info btn-sm float-right mr-1" (click)="openDueDates()">Edit Due Dates</button>
+                <help-notes [context]="'Purchases:MileStoneStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right mr-5"></help-notes>
+                <help-notes [context]="'Purchases:MileStoneStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right mr-5"></help-notes>
+                <div class="clear"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <table class="tableBodyScroll table table-striped table-hover table-sm">
+                    <thead>
+                      <tr>
+                        <th class="w-60">Term</th>
+                        <th class="w-20 text-center">Expected Completion Date</th>
+                        <th class="w-20 text-center">Milestone Completed Date</th>
+                      </tr>
+                    </thead>
+                    <tbody class="tableBodyScroll" style="max-height: 325px;">
+                      <tr *ngFor="let milestone of editingPOMileStones;">
+                        <td class="w-60">{{milestone.name}}</td>
+                        <td class="w-20 text-center">{{milestone.expected | date : 'MMM dd, yyyy'}}</td>
+                        <td class="w-20 text-center">{{milestone.actual | date : 'MMM dd, yyyy'}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </ng-template>
+          </ngb-tab>
+        </ngb-tabset>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #itemDeliveryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{purchaseItem.sku.name}} <small>Deliveries</small> </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p *ngIf="!delivery" class="text-center m-2 mt--10 text-success f-b">All material is delivered for this purchase item.</p>
+    <div class="row" *ngIf="delivery">
+      <div class="col-md-8">
+        <input class="form-control" type="number" [(ngModel)]="delivery.quantity" placeholder="Enter Quantity Received" />
+      </div>
+      <!--    <div class="col-md-3">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="delivery.releasePayment" [ngModelOptions]="{standalone: true}" (ngModelChange)="showMilestones()">
+          <span>Release Payment</span>
+          <span class="checkmark"></span>
+        </label>
+      </div> -->
+      <div class="col-md-4">
+        <button class="btn btn-primary ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!delivery.quantity" (click)="savePurchaseItemDelivery()"><i class="fa fa-check" *ngIf="!loading"></i> Add Delivery</button>
+      </div>
+      <div class="col-md-12 pt-1" *ngIf="delivery.releasePayment">
+        <span *ngIf="!pendingMileStones[0]">
+          <strong>No milestone payment pending to release payment</strong>
+        </span>
+        <span *ngIf="pendingMileStones[0]">
+          <strong>Releasing Payment </strong> : {{pendingMileStones[0].amount | inr}} for {{pendingMileStones[0].name}} term
+        </span>
+      </div>
+    </div>
+    <div class=" mt-1">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-30 text-center">Quantity</th>
+            <th class="w-35">Received By</th>
+            <th class="w-35 text-center">Delivered Date</th>
+          </tr>
+        </thead>
+        <tbody class="tableBodyScroll" style="max-height: 325px;">
+          <tr *ngFor="let item of purchaseItem.deliveries;">
+            <td class="w-30 text-center">{{item.quantity}}</td>
+            <td class="w-35 ">{{item.receivedBy}}</td>
+            <td class="w-35 text-center">{{item.deliveredOn | date : 'MMM dd,yyyy hh:mm a'}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="!purchaseItem.deliveries.length" class="text-cente m-4">No deliveries received yet for this PurchaseItem</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #itemStatusModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Purchase Item Comments </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <button class="btn btn-outline-primary btn-ico float-right" *ngIf="!status.form" (click)="newStatus()"><i class="fa fa-plus"></i> Comment</button>
+    <div class="clear"></div>
+    <form [formGroup]="statusForm" class="mb-10">
+      <div class="row" *ngIf="status.form">
+        <div class="col-md-10">
+          <textarea class="form-control" [(ngModel)]="status.description" placeholder="Enter your comments on this item" formControlName="description"></textarea>
+        </div>
+        <!--        <div class="col-md-2">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="status.releasePayment" [ngModelOptions]="{standalone: true}" (ngModelChange)="showMilestones()">
+            <span>Release Payment</span>
+            <span class="checkmark"></span>
+          </label>
+        </div> -->
+        <div class="col-md-2">
+          <button class="btn btn-primary ladda-button btn-ico" [ladda]="loading" [disabled]="loading||statusForm.invalid" (click)="savePurchaseItemStatus()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+        </div>
+        <div class="col-md-8 pt-1" *ngIf="status.releasePayment">
+          <span *ngIf="!pendingMileStones[0]">
+            <strong>No milestone payment pending to release payment</strong>
+          </span>
+          <span *ngIf="pendingMileStones[0]">
+            <strong>Releasing Payment </strong> : {{pendingMileStones[0].amount | inr}} for {{pendingMileStones[0].name}} term
+          </span>
+          <!-- <ng-select [items]="mileStoneItems" [closeOnSelect]="false" [hideSelected]="true" bindLabel="'label'" placeholder="Select Payment Milestone to release Payment" [(ngModel)]="status.milestoneId" formControlName="milestoneId" name="milestoneId">
+          </ng-select> -->
+        </div>
+      </div>
+    </form>
+    <!-- <data-list #statusesList [filter]="statusesFilters" [dataUrl]="'internal/purchases/listPurchaseItemStatuses'" [config]="statusesConfig" (onAction)="action($event)"></data-list> -->
+    <div class="row mt-3">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-50">Comment</th>
+            <!-- <th class="w-10 text-center">Payment Released</th> -->
+            <th class="w-10 text-center">Images</th>
+            <th class="w-15">By</th>
+            <th class="w-10 text-center">Date</th>
+            <th class="w-5 text-center"></th>
+          </tr>
+        </thead>
+        <tbody class="tableBodyScroll" style="max-height: 325px;">
+          <tr *ngFor="let status of purchaseItemStatuses;">
+            <td class="w-50">{{status.description}}</td>
+            <!--      <td class="w-10 text-center" *ngIf="!status.mileStone">No</td>
+            <td class="w-10 text-center" *ngIf="status.mileStone">{{status.mileStone?.amount|inr}}</td> -->
+            <td class="w-10 text-center">{{status.images?.length}}</td>
+            <td class="w-15 ">{{status.updatedBy}}</td>
+            <td class="w-10">{{status.updated | date : 'MMM dd,yyyy hh:mm a'}}</td>
+            <td class="w-5"><button class="btn btn-icon btn-outline-primary btn-sm" ngbTooltip="Images" (click)="openStatusImagesModal(status.id)">
+                <i class="fa fa-search"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #statusImagesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Status Image Uploads </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row tableBodyScroll">
+      <div class="col-md-5 row">
+        <div class="col-md-5">
+          <h4>Select files</h4>
+          <div ng2FileDrop [ngClass]="{'nv-file-over': hasBaseDropZoneOver}" (fileOver)="fileOverBase($event)" [uploader]="uploader" class="well my-drop-zone" style="width: 100%;height: 120px;border: dotted 3px lightgray; padding-top: 30%;text-align: center;">
+            Files Drop Zone
+          </div>
+          Select Files
+          <input type="file" ng2FileSelect [uploader]="uploader" multiple /><br />
+        </div>
+        <div class="col-md-7" style="margin-bottom: 40px">
+          <!-- <h4>Uploading Images</h4> -->
+          <p class="mb-0">Queue length: {{ uploader?.queue?.length }}</p>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of uploader.queue">
+                <td><strong>{{ item?.file?.name }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="mt-1">
+            <div class="mb-2">
+              <p class="text-right mb-0" *ngIf="uploader.progress">Queue progress : {{uploader.progress}}% </p>
+              <div class="progress" style="">
+                <div class="progress-bar" role="progressbar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-ico btn-success btn-sm float-left" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length">
+              <span class="fa fa-upload"></span> Upload
+            </button>
+            <!--   <button type="button" class="btn btn-ico btn-warning btn-sm ml-1" (click)="uploader.cancelAll()" [disabled]="!uploader.isUploading">
+              <span class="fa fa-times"></span> Cancel
+            </button> -->
+            <button type="button" class="btn btn-ico btn-danger btn-sm float-right" (click)="uploader.clearQueue()" [disabled]="!uploader.queue.length">
+              <span class="fa fa-trash"></span> Remove
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-7 row tableBodyScroll" style="height: calc(100vh - 200px);overflow: auto;">
+        <div class="col-md-4 pl-0 pr-1" *ngFor="let image of statusImages;">
+          <div class="card text-white o-hidden mb-3">
+            <img alt="" class="card-img" [src]="image.image.file">
+            <div class="card-img-overlay">
+              <div class="p-1 text-left card-footer font-weight-light">
+                <div class=""><i class="i-Boy mr-1"></i> {{image.updatedBy}} </div>
+                <div class=""><i class="i-Calendar-4 mr-2"></i> {{image.updated | date: 'medium'}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #milestonesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">PurchaseOrder Milestones </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <loading [loading]="loading"></loading>
+    <div class="row">
+      <div class="col-md-4 mb-2">
+        <p class="text-black f-b mb-0">Total Budget : </p>
+        <span class="">{{editingPO.amount | inr}}</span>
+      </div>
+      <div class="col-md-4 mb-2">
+        <p class="text-black f-b mb-0">Delivery Charges : </p>
+        <input class="form-control" type="number" (ngModelChange)="calculateUpdatedBudget()" [(ngModel)]="editingPO.deliveryCharges" />
+      </div>
+      <div class="col-md-4 mb-2">
+        <p class="text-black f-b mb-0">Additional Charges : </p>
+        <input class="form-control" type="number" (ngModelChange)="calculateUpdatedBudget()" [(ngModel)]="editingPO.additionalCharges" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-8">
+        <table class="tableBodyScroll table table-striped table-hover table-sm">
+          <thead>
+            <tr>
+              <th class="w-80">Term</th>
+              <th class="w-20 text-center">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll" style="max-height: 325px;">
+            <tr *ngFor="let milestone of editingPOMileStones;">
+              <td class="w-65"><input class="w-100 form-control" [(ngModel)]="milestone.name" placeholder="Enter Milestone Name here" /></td>
+              <td class="w-15 text-center">
+                <input type="number" class="form-control" (ngModelChange)="calculateUpdatedBudget()" [(ngModel)]="milestone.tds" placeholder="TDS" [disabled]="milestone.status=='Paid' || milestone.status=='Approved'" />
+              </td>
+              <td class="w-20 text-center">
+                <input type="number" class="form-control" (ngModelChange)="calculateUpdatedBudget()" [(ngModel)]="milestone.amount" placeholder="Amount" [disabled]="milestone.status=='Paid' || milestone.status=='Approved'" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-4">
+        <h5 class="border-bottom p-1">Edit History</h5>
+        <p *ngIf="!editHistory.length" class="text-center"><strong>No editings are made so far</strong></p>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="editHistory.length">
+          <thead>
+            <th class="w-60">User</th>
+            <th class="w-40">Budget</th>
+          </thead>
+          <tbody>
+            <tr *ngFor="let history of editHistory" ngbTooltip="{{history.date| date :'medium'}}">
+              <td class="w-60">{{history.name}}</td>
+              <td class="w-40">{{history.amount | inr}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="float-left btn btn-sm btn-info" (click)="editingPOMileStones.push({status:'Draft'})"><i class="fa fa-plus"></i> Add MileStone</button>
+    <button type="button" class="float-right btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button type="button" class="float-right btn btn-sm btn-primary" (click)="updateAmounts()"><i class="fa fa-check"></i> Update Amounts</button>
+  </div>
+</ng-template>
+<ng-template #duedatesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">PurchaseOrder Milestone Due Dates </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <loading [loading]="loading"></loading>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="tableBodyScroll table table-striped table-hover table-sm">
+          <thead>
+            <tr>
+              <th class="w-60">Term</th>
+              <th class="w-20 text-center">Expected Completion Date</th>
+              <th class="w-20 text-center">Milestone Completed Date</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll" style="max-height: 325px;">
+            <tr *ngFor="let milestone of editingPOMileStones;">
+              <td class="w-60">{{milestone.name}}</td>
+              <td class="w-20 text-center">
+                <input type="text" class="form-control" [(ngModel)]="milestone.expectedDate" placeholder="Expected" ngbDatepicker (dateSelect)="edp.close()" #edp="ngbDatepicker" [ngModelOptions]="{standalone: true}" (focus)="edp.toggle()" />
+              </td>
+              <td class="w-20 text-center">
+                <input type="text" class="form-control" [(ngModel)]="milestone.actualDate" placeholder="Actual" ngbDatepicker (dateSelect)="adp.close()" #adp="ngbDatepicker" [ngModelOptions]="{standalone: true}" (focus)="adp.toggle()" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="float-right btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button type="button" class="float-right btn btn-sm btn-primary mr-1" (click)="updateDueDates()"><i class="fa fa-check"></i> Update Due Dates</button>
+  </div>
+</ng-template>
+<ng-template #editPOModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Edit Purchase Order</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mb-10 p-2" *ngIf="selectedItems.length">
+      <strong class="pl-4 w-100 d-b border-bottom">Purchase Items</strong>
+      <div class="row col-12 border-bottom ml-0 mb-1">
+        <div class="f-b col-5">SKU</div>
+        <div class="f-b col-1 pl-0 pr-0 text-center">Quantity</div>
+        <div class="f-b col-2 pr-0 pl-0 text-center">Price</div>
+        <div class="f-b col-md-1-5 pr-0 pl-0 text-center">TaxableAmount</div>
+        <div class="f-b col-md-1-5 pr-0 pl-0 text-center">Amount</div>
+      </div>
+      <div class="row col-12 ml-0 border-bottom p-1" *ngFor="let item of selectedItems;">
+        <div class="col-5">
+          <div>{{item.skuName}}</div>
+        </div>
+        <div class="col-md-1 p-0">
+          <input type="number" class="form-control" [(ngModel)]="item.units" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-2">
+          <input type="number" class="form-control" [(ngModel)]="item.unitPrice" placeholder="Item Price" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-md-1-5 pr-1">
+          <input type="number" class="form-control" [(ngModel)]="item.taxableAmount" placeholder="Taxable Amount" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-md-1-5">
+          <input type="number" class="form-control" [(ngModel)]="item.taxableAmount" placeholder="Amount" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-1 pr-0 pl-0 mt-2 text-center">
+          <i class="fa fa-times d-b text-danger cursor" style="font-size: 1rem !important;" ngbTooltip="Remove Item" (click)="removeSelectedItem(item)"></i>
+        </div>
+      </div>
+    </div>
+    <form [formGroup]="workOrderForm">
+      <div class="row">
+        <div class="form-group col-md-6" *ngIf="!selectedSkus[0]?.id">
+          <label for="firstName">Select SKU</label>
+          <tag-input [formControl]="skuControl" theme='primary' [(ngModel)]="selectedSkus" secondaryPlaceholder="Type SKU name to search" (onTextChange)="onSkuSearch($event)" maxItems="1" [onlyFromAutocomplete]="true" (onAdd)="skuSelected()">
+            <tag-input-dropdown [autocompleteItems]="autocompleteSkus" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'sku'" [identifyBy]="skuId">
+              <ng-template let-item="item" let-index="index">
+                {{item.sku}} {{item.type}} {{item.category}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="col-md-2 mt-2" *ngIf="showNewVendorSku && !lookingNewVendorSku">
+          <button class="btn btn-sm btn-ico btn-info" ngbTooltip="Search across SKUs" (click)="lookingNewVendorSku=true;"><i class="fa fa-search"></i> Search SKUs</button>
+        </div>
+        <div class="col-md-1" *ngIf="lookingNewVendorSku">
+          <button class="btn btn-sm btn-icon btn-danger float-right" ngbTooltip="Cancel " (click)="lookingNewVendorSku=false;showNewVendorSku=false;"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+      <div class="row" *ngIf="selectedSkus.length">
+        <div class="col-2">
+          <label class="f-b">SKU Category</label>
+          <div>{{selectedSkus[0]?.category}}</div>
+        </div>
+        <div class="col-3">
+          <label class="f-b">SKU Type</label>
+          <div>{{selectedSkus[0]?.type}}</div>
+        </div>
+        <div class="col-md-1 p-0">
+          <label class="f-b">Quantity</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].quantity" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-md-1-5 pr-1">
+          <label class="f-b">Price</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].price" placeholder="Item Price" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-md-1-5 pr-1">
+          <label class="f-b">TaxableAmount</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].taxableAmount" placeholder="TaxableAmount" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-2">
+          <label class="f-b">Amount</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].amount" placeholder="Total Amount" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-md-1 mt-4 pt-2 pr-0 pl-0">
+          <button class="btn btn-sm btn-ico btn-outline-info float-right" (click)="addItem()" [disabled]="!(selectedSkus[0].quantity&&selectedSkus[0].price)" ngbTooltip="Add Item">
+            <i class="fa fa-plus"></i> Add</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!selectedItems.length" (click)="updatePurchaseOrder()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #taxInvoiceModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">PurchaseOrder TaxInvoice </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <loading [loading]="loading"></loading>
+    <form [formGroup]="taxInvoiceForm">
+      <div class="row mb-2">
+        <div class="col-md-2">
+          <label class="mb-0">Invoice No</label>
+          <input type="text" class="form-control" id="invoiceNo" formControlName="invoiceNo" placeholder="Enter Invoice No" [(ngModel)]="taxInvoice.invoiceNo">
+        </div>
+        <div class="col-md-2">
+          <label class="mb-0">Invoice Date</label>
+          <input type="text" class="form-control" id="invoiceDate" formControlName="invoiceDate" placeholder="Enter Invoice Date" ngbDatepicker (dateSelect)="idate.close()" #idate="ngbDatepicker" (focus)="idate.toggle()" [(ngModel)]="taxInvoice.invoiceDate">
+        </div>
+        <div class="col-md-2">
+          <label class="mb-0">Due Date</label>
+          <input type="text" class="form-control" id="invoiceDueDate" formControlName="invoiceDueDate" placeholder="Enter DueDate" ngbDatepicker (dateSelect)="iddate.close()" #iddate="ngbDatepicker" (focus)="iddate.toggle()" [(ngModel)]="taxInvoice.invoiceDueDate">
+        </div>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-3">
+          <label class="mb-0">Taxable Amount (A)</label>
+          <input type="number" class="form-control" id="amount" formControlName="taxableAmount" placeholder="Enter Amount" [(ngModel)]="taxInvoice.taxableAmount">
+        </div>
+        <div class="col-md-2">
+          <label class="mb-0">GST (B)</label>
+          <input type="number" class="form-control" id="amount" formControlName="gstAmount" placeholder="Enter GST Amount" [(ngModel)]="taxInvoice.gst">
+        </div>
+        <div class="col-md-2">
+          <label class="mb-0">TDS (C)</label>
+          <input type="number" class="form-control" id="amount" formControlName="tdsAmount" placeholder="Enter TDS Amount" [(ngModel)]="taxInvoice.tds">
+        </div>
+        <div class="col-md-3">
+          <label class="mb-0">Invoice Amount (A + B - C)</label>
+          <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter Amount" [(ngModel)]="taxInvoice.amount">
+        </div>
+      </div>
+    </form>
+    <div class="row">
+      <div class="col-md-6 mt-2">
+        <label class="mb-0 d-b">Tax Invoice File</label>
+        <a class="f-b badge badge-secondary fs-10" *ngIf="taxInvoice?.file" [href]="taxInvoice?.file?.file" target="_blank" ngbTooltip="Click to View">View Tax Invoice Uploaded File &nbsp;&nbsp;&nbsp; <i class="fa fa-times cursor" ngbTooltip="Delete TaxInvoice PDF" (click)="taxInvoice.file = null;$event.preventDefault();$event.stopPropogation();"></i> </a>
+        <span class="input-group" *ngIf="!taxInvoice?.file">
+          <div class="custom-file" *ngIf="!taxInvoiceFile">
+            <input class="custom-file-input" id="taxInvoiceId" (change)="taxInvoiceFileChange($event)" type="file">
+            <label class="custom-file-label" for="taxInvoiceId">Choose file</label>
+          </div>
+          <div class="custom-file" *ngIf="taxInvoiceFile">
+            <span class="float-left">{{taxInvoiceFile?.name}}</span>
+            <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="taxInvoiceFile=null;"></i>
+            <div class="mb-1">
+              <div *ngIf="taxInvoiceFileError">
+                {{ taxInvoiceFileError.message }}
+              </div>
+              <div *ngIf="taxInvoiceUploadResponse.status === 'error'">
+                {{ taxInvoiceUploadResponse.message }}
+              </div>
+              <div *ngIf="taxInvoiceUploadResponse.status === 'progress'">
+                <div role="progressbar" [style.width.%]="taxInvoiceUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                  {{taxInvoiceUploadResponse.message}}%
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="input-group-append">
+            <span class="input-group-text cursor" (click)="uploadTaxInvoiceFile()">Upload</span>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="float-right btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-sm btn-info btn-ico float-right mr-1" (click)="saveTaxInvoice()" [disabled]="taxInvoiceForm.invalid || !taxInvoice.file"><i class="fa fa-check"></i> Save TaxInvoice
+    </button>
+  </div>
+</ng-template>
+<ng-template #gstModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">GST Posting </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <loading [loading]="loading"></loading>
+    <form [formGroup]="taxInvoiceForm">
+      <div class="row mb-2">
+        <div class="col-md-3 text-right">
+          <label class="mb-0 d-b f-b">Taxable Amount</label>
+          {{taxInvoice.taxableAmount | inr}}
+        </div>
+        <div class="col-md-3 text-right">
+          <label class="mb-0 d-b f-b">GST Amount</label>
+          {{taxInvoice.gst | inr}}
+        </div>
+        <div class="col-md-3 text-right">
+          <label class="mb-0 d-b f-b">Invoice Amount</label>
+          {{taxInvoice.amount | inr}}
+        </div>
+      </div>
+    </form>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="tableBodyScroll table table-striped table-hover table-sm">
+          <thead>
+            <tr>
+              <th class="w-15 text-center">GST Slab</th>
+              <th class="w-20 text-center">IGST</th>
+              <th class="w-15 text-center">CGST</th>
+              <th class="w-15 text-center">SGST</th>
+              <th class="w-20 text-center">Total</th>
+              <th class="w-10 text-center"></th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll">
+            <tr *ngFor="let slab of taxInvoice.gstSlabs;">
+              <td class="w-15 text-center">{{slab.slab}}%</td>
+              <td class="w-20 text-center">{{slab.igst | inr}}</td>
+              <td class="w-15 text-center">{{slab.cgst | inr}}</td>
+              <td class="w-15 text-center">{{slab.sgst | inr}}</td>
+              <td class="w-20 text-center">{{slab.gst | inr}}</td>
+              <td class="w-10 text-center">
+                <button class="btn btn-danger btn-sm btn-icon float-right" ngbTooltip="Delete" (click)="removeGstSlab(slab);"><i class="fa fa-times"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-center p-2" *ngIf="!taxInvoice.gstSlabs.length">No GST slabs are added yet.</p>
+      </div>
+      <div class="col-md-12 row mt-2">
+        <div class="col-md-2 text-center">
+          <ng-select [items]="['0','5','12','14','18','28']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Slab" [(ngModel)]="slab.slab">
+          </ng-select>
+        </div>
+        <div class="col-md-2 text-center"><input type="number" placeholder="IGST" class="form-control" [(ngModel)]="slab.igst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+        <div class="col-md-2 text-center"><input type="number" placeholder="CGST" class="form-control" [(ngModel)]="slab.cgst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+        <div class="col-md-2 text-center"><input type="number" placeholder="SGST" class="form-control" [(ngModel)]="slab.sgst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+        <div class="col-md-2 text-center">{{slab.gst | inr}}</div>
+        <div class="col-md-2 text-center pr-0">
+          <!-- <input type="number" placeholder="TDS" class="form-control float-left w-70" [(ngModel)]="slab.tds" /> -->
+          <button class="btn btn-primary btn-sm btn-icon float-right" ngbTooltip="Add" (click)="addGstSlab(slab);" [disabled]="!slab.gst&&slab.slab!='0'"><i class="fa fa-plus"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="float-right btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-sm btn-info btn-ico float-right mr-1" (click)="saveGst()" [disabled]="!taxInvoice.gstSlabs.length"><i class="fa fa-check"></i> Save
+    </button>
+  </div>
+</ng-template>

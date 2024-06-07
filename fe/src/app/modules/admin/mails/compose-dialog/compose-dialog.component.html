@@ -1,0 +1,24 @@
+<div class="p-3">
+  <loading [loading]="loading"></loading>
+  <form [formGroup]="form">
+    <div class="form-group">
+      <tag-input [formControl]="to" theme='primary' [(ngModel)]="mail.receivers" addOnBlur="true" addOnPaste="true" secondaryPlaceholder="Enter Receiver Email here" placeholder="Can add multiple Emails" (onTextChange)="onTextChange($event)" [editable]='true'>
+        <tag-input-dropdown [autocompleteItems]="autocompleteEmails" [showDropdownIfEmpty]="true" [appendToBody]="false" [identifyBy]="'email'" [displayBy]="'name'">
+          <ng-template let-item="item" let-index="index">
+            {{ item.name }} [{{item.email}}]
+          </ng-template>
+        </tag-input-dropdown>
+      </tag-input>
+    </div>
+    <div class="form-group">
+      <input type="text" class="form-control form" placeholder="Subject comes here" formControlName="subject" name="subject" [(ngModel)]="mail.subject">
+    </div>
+    <div class="mb-3">
+      <editor class="w-100" name="body" placeholder="Your mail content here "></editor>
+    </div>
+    <div class="modal-footer mb-0">
+      <button type="button" class="btn btn-outline-light" (click)="activeModal.close('close click')">Close</button>
+      <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="send()"><i class="fa fa-check" *ngIf="!loading"></i> Send</button>
+    </div>
+  </form>
+</div>

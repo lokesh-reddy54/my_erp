@@ -1,0 +1,166 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Opex <span *ngIf="opexAp">Account Payables</span> Report</h4>
+    <!-- <input type="text" placeholder="Search by building or location" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-20 ml-2 mt--10"> -->
+    <div class="btn-group btn-group-toggle pull-right ml-10 mt--10" data-toggle="buttons" *ngIf="!opexAp">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="reportType" (ngModelChange)="changeView();">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="category"> OpexCodes
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="serviceProvider"> Provider
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="paymentMode"> PaymentMode
+        </label>
+      </div>
+    </div>
+    <div class="mt--5 float-right" *ngIf="!opexAp">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="buildingWise" (ngModelChange)="changeView();" [ngModelOptions]="{standalone: true}">
+        <span>Building Wise</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="btn-group btn-group-toggle pull-right ml-10 mt--10" data-toggle="buttons" *ngIf="opexAp">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="apReportType" (ngModelChange)="changeView();">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="total"> Total
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="building"> Building
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="serviceProvider"> Provider
+        </label>
+      </div>
+    </div>
+    <div class="mt--5 float-right" *ngIf="opexAp">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="overDue" (ngModelChange)="changeView();" [ngModelOptions]="{standalone: true}">
+        <span>OverDue &nbsp; </span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="mt--5 float-right">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="opexAp" (ngModelChange)="loadData();" [ngModelOptions]="{standalone: true}">
+        <span>OpEx AP &nbsp; </span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="clear"></div>
+    <!--  <help-notes [context]="'Reports:RevenueOverAll'" *ngIf="reportType=='overall'"></help-notes>
+    <help-notes [context]="'Reports:RevenueBuilding'" *ngIf="reportType=='buildingWise'"></help-notes>
+    <help-notes [context]="'Reports:RevenueClient'" *ngIf="reportType=='clientWise'"></help-notes> -->
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row" *ngIf="!opexAp">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row">
+          <div class="col-2 pr-0" *ngIf="selectedBuilding">
+            <h5 class="pull-left mt-2 mb-1 ml-2">Buildings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings; trackBy: trackById;" [ngClass]="{'selected': building==selectedBuilding}">
+                  <td class="w-80">{{building}}</td>
+                  <td class="w-20">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Building Revenue" (click)="selectedBuilding=building;changeView()"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pl-0" [ngClass]="{'col-12':!selectedBuilding, 'col-10':selectedBuilding}">
+            <h5 *ngIf="selectedBuilding" class="mt-2 pl-4">'{{selectedBuilding}}' Building Revenue</h5>
+            <div class="table-responsive pl-4 pr-4" [ngClass]="{'fs-12':selectedBuilding}">
+              <table class="revenueTable table table-stripe table-hover table-sm">
+                <thead>
+                  <tr class="bg-primary text-white">
+                    <th *ngFor="let month of monthlyReport.months;trackBy: trackById;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">{{month}}</th>
+                  </tr>
+                </thead>
+                <tbody class="revenueTable" *ngFor="let row of monthlyReport.rows;">
+                  <tr (click)="getTypes(row)" [ngClass]="{'bg-info':row.types&&row.selected,'bg-light':row.types&&selectedRow,'f-b':!row.types}" class="cursor">
+                    <td *ngFor="let col of row.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                  <tr [ngClass]="{'d-none':!row.selected}" *ngFor="let type of row?.types;">
+                    <td *ngFor="let col of type.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row opex-ap-table" *ngIf="opexAp">
+    <div class="col-2 pr-0" *ngIf="selectedBuilding">
+      <h5 class="pull-left mt-2 mb-1 ml-2">Buildings</h5>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <tbody infiniteScroll class="tableBodyScroll">
+          <tr *ngFor="let building of buildings; trackBy: trackById;" [ngClass]="{'selected': building==selectedBuilding}">
+            <td class="w-80">{{building}}</td>
+            <td class="w-20">
+              <button class="btn btn-icon btn-primary" ngbTooltip="View Building Revenue" (click)="selectedBuilding=building;generateOpexApReport(true)"><i class="i-Blinklist"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-3 pr-0" *ngIf="selectedServiceProvider">
+      <h5 class="pull-left mt-2 mb-1 ml-2">Service Providers</h5>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <tbody infiniteScroll class="tableBodyScroll">
+          <tr *ngFor="let provider of serviceProviders; trackBy: trackById;" [ngClass]="{'selected': provider==selectedServiceProvider}">
+            <td class="w-80">{{provider}}</td>
+            <td class="w-20">
+              <button class="btn btn-icon btn-primary" ngbTooltip="View Building Revenue" (click)="selectedServiceProvider=provider;generateOpexApReport(true)"><i class="i-Blinklist"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pl-2 pr-0 row" [ngClass]="{'col-12':!selectedBuilding&&!selectedServiceProvider, 'col-10':selectedBuilding,'col-9':selectedServiceProvider}">
+      <div class=" col-12 table border-bottom">
+        <div class="row">
+          <div class="cell f-b p-1 pl-0 pr-1 w-30 text-center">Opex Type</div>
+          <div class="cell f-b p-1 pl-0 pr-1 text-right" *ngFor="let month of apReport.months" [ngStyle]="{'width':colWidth+'%'}">{{month.name}}</div>
+        </div>
+      </div>
+      <div class="col-12" *ngFor="let category of opexApBills;">
+        <strong class="fs-14 mt-1 d-b">{{category.name}}</strong>
+        <div *ngFor="let type of category.opexTypeBills;" class="table">
+          <div *ngIf="type.itemBills" class="row">
+            <div class="cell f-b p-1 pr-1 w-30 border-bottom" style="padding-left: 10% !important;">{{type.name}}</div>
+            <!-- <div class="cell f-b p-1 pl-0 pr-1 w-70 text-right">{{type.total | inr}}</div> -->
+          </div>
+          <div class="row" *ngFor="let item of type.itemBills;let ti=index;">
+            <div class="cell f-b p-1 pr-1 w-30 border-bottom" style="padding-left: 20% !important;">{{item.name}}</div>
+            <div class="cell border-bottom text-right" [ngStyle]="{'width':colWidth+'%'}" *ngFor="let value of item.values;">
+              {{value | inr}}
+            </div>
+          </div>
+          <div *ngIf="type.values" class="row">
+            <div class="cell f-b p-1 pr-1 w-30 border-bottom" style="padding-left: 10% !important;">{{type.name}}</div>
+            <div class="cell border-bottom text-right" *ngFor="let value of type.values;" [ngStyle]="{'width':colWidth+'%'}">
+              {{value | inr}}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class=" col-12 table border-bottom">
+        <div class="row">
+          <div class="cell f-b p-1 pl-0 pr-1 w-30 text-center">Totals</div>
+          <div class="cell f-b p-1 pl-0 pr-1 text-right f-b" *ngFor="let month of apReport.months" [ngStyle]="{'width':colWidth+'%'}">{{month.total | inr}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br><br>
+</div>

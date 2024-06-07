@@ -1,0 +1,273 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Tickets
+      <help-notes [context]="'Support:StatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+      <help-notes [context]="'Support:StatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+    </h1>
+    <input type="text" placeholder="Search by client name, phone, email, reference number, location, city" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-20">
+    <!-- <button class="btn btn-info btn-icon"><i class="i-Filter-2"></i></button> -->
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Quick Filters" *ngIf="!moreFilters" (click)="moreFilters=true;loadBuildingTickets()"><i class="fa fa-caret-square-o-down"></i></button>
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Hide Filters" *ngIf="moreFilters" (click)="moreFilters=false;"><i class="fa fa-caret-square-o-up"></i></button>
+    <ng-select class="w-40 float-left ml-10" [items]="['New','Attended','AwaitingClientReply','AwaitingInternalReply','Resolved','Closed','ReOpened']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="filter.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="newTicket()">
+      <i class="fa fa-plus"></i> New Ticket
+    </button>
+    <div class="clear"></div>
+  </div>
+  <div class="row" *ngIf="moreFilters">
+    <!--  <div class="col-md-3">
+      <label class="fs-10 mb-0">Exclude</label>
+      <ng-select [items]="['New','Attended','AwaitingClientReply','AwaitingInternalReply','Resolved','Closed','ReOpened']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Exclude Statuses" [(ngModel)]="filter.excludeStatuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    </div> -->
+    <div class="col-md-7 pt-2">
+      <span class="badge fs-12 mr-2 cursor" *ngFor="let building of buildingTickets;" [ngClass]="{'badge-outline-primary':selectedBuilding?.id!=building?.id,'badge-primary':selectedBuilding?.id==building?.id}" (click)="selectBuilding(building)">{{building?.name}} ({{building?.count}})</span>
+    </div>
+    <div class="col-md-4 pt-2">
+      <span class="badge fs-14 mr-2 cursor" *ngIf="totalTicketsCount>0">Total - {{totalTicketsCount}} </span>
+      <span class="badge fs-12 mr-2 cursor" *ngFor="let status of ticketsByStatuses;" [ngClass]="{'badge-outline-primary':filter.statuses[0]!=status.status,'badge-primary':filter.statuses[0]==status.status}" (click)="filter.statuses=[status.status];resetList();">{{status?.status}} ({{status?.count}})</span>
+    </div>
+    <div class="col-md-1 mt-2">
+      <label class="checkbox checkbox-success float-right">
+        <input type="checkbox" [(ngModel)]="filter.setAside" (ngModelChange)="resetList()" [ngModelOptions]="{standalone: true}">
+        <span> RFCs</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="clear"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);padding-top: 20px;margin-top: -10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12 pl-1 pr-1">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <a routerLink="/tickets/view/{{item.id}}" class="w-20 w-sm-100 pr-3" ngbTooltip="Ticket Details">
+
+              <!-- Ref No and  -->
+              <div class="m-0 text-secondary text-smal">
+                <div>{{item.refNo}} <span class="pull-right">{{item.priority?.name}}</span></div>
+              </div>
+              <!-- Priority and Date -->
+              <div>
+                <span ngbTooltip="Assigned To" *ngIf="item.assigned?.active">{{item.assigned?.name}}</span>
+                <span ngbTooltip="Please ReAssign" *ngIf="!item.assigned?.active" class="badge badge-danger">{{item.assigned?.name}}</span>
+                <span class="pull-right"><small>{{item.date | date : 'MMM dd, yyyy'}}</small></span>
+              </div>
+            </a>
+            <!-- Client Information -->
+            <div class="m-0 text-muted text-small w-20 w-sm-100 pr-3" ngbTooltip="{{item.booking?.client.company}}'s Booking">
+            <!-- <div><span class="text-primary"><strong>{{item.booking?.client.company}}</strong></span> -->
+              <div><span class="text-primary"><strong>{{item.booking?.client.company}}<br>{{item.booking?.client.name}}</strong></span>
+                <span class="text-secondary pull-right">{{item.booking.office?.building.name}}- {{item.booking?.offices}}</span>
+              </div>
+              <div>
+                <span class="text-secondary"><i class="i-Telephone"></i> {{item.booking?.client?.phone}}</span>
+                <span class="text-secondary pull-right">{{item.booking?.refNo}}</span>
+              </div>
+            </div>
+            <!-- Categories and info of ticket -->
+            <div class="m-0 text-muted text-small w-20 w-sm-100" ngbTooltip="">
+              <div class="d-b text-info" ngbTooltip="Category & Context"> {{item.category}}, {{item.subCategory}}, {{item.context}}</div>
+              <div class="d-b text-primary">
+                <span class="fs-10 pl-1 pr-1 br-5 mr-1" [ngClass]="{'bg-success text-white':item.attendedInTime, 'bg-danger text-white':item.attendedInTime!=null && !item.attendedInTime}" ngbTooltip="Attend In">A : {{item.priority?.attendIn}} {{item.priority?.attendInType}}, </span>
+                <span class="fs-10 pl-1 pr-1 br-5 mr-1" [ngClass]="{'bg-success text-white':item.resolvedInTime, 'bg-danger text-white':item.resolvedInTime!=null && !item.resolvedInTime}" ngbTooltip="Resolve In">R : {{item.priority?.resolveIn}} {{item.priority?.resolveInType}}, </span>
+                <span class="fs-10 pl-1 pr-1 br-5 mr-1" [ngClass]="{'bg-success text-white':item.closedInTime, 'bg-danger text-white':item.closedInTime!=null && !item.closedInTime}" ngbTooltip="Close In">C : {{item.priority?.closeIn}} {{item.priority?.closeInType}} </span>
+              </div>
+            </div>
+            <!-- Detailed info of the ticket -->
+            <div class="m-0 text-muted text-small w-35 w-sm-100 pl-1">
+              <div class="d-b text-info">{{item.description | ellipses:60}}</div>
+              <!-- <div class="d-b" *ngIf="item.lastMsg">
+                <strong>Last Msg ::</strong> &nbsp; From : <strong>{{item.lastMsg.from}}</strong> &nbsp; To : <strong>{{item.lastMsg.to}}</strong> <span class="f-b text-primary cursor ml-20" (click)="openViewMessage(item.lastMsg)">View Message</span>
+              </div> -->
+              <div class="d-b" *ngIf="item.lastMsg" ngbTooltip="{{item.lastMsg.reply}}"><strong>Last Msg to </strong>
+                <span class="pr-1 badge badge-info" *ngIf="item.lastMsg.to=='InternalTeam' || item.lastMsg.to=='Manager'">InternalTeam</span>
+                <span class="pr-1 badge badge-info" *ngIf="item.lastMsg.to=='Client'">Client</span>
+                <span class="pr-1 badge badge-info" *ngIf="item.lastMsg.to!='Client' && item.lastMsg.to=='InternalTeam' && item.lastMsg.to=='Manager'">InterDepartment</span>
+                {{item.lastMsg.reply | ellipses:40}}</div>
+            </div>
+            <div class="m-0 text-muted text-center text-small w-5 w-sm-100 d-none d-lg-block item-actions">
+              <span class="ticket-status {{item.status}}">{{item.status}}</span>
+              <button class="btn btn-icon btn-sm btn-info" ngbTooltip="View Ticket" routerLink="/support/view/{{item.id}}">
+                <i class="i-Magnifi-Glass1 text-bold"></i>
+              </button>
+              <button class="btn btn-icon btn-sm btn-secondary" *ngIf="!item.setAside" ngbTooltip="Mark RFC" (click)="setAside(item)">
+                <i class="i-Blinklist text-bold"></i>
+              </button>
+              <button class="btn btn-icon btn-sm btn-info" *ngIf="item.setAside" ngbTooltip="Mark Issue" (click)="setAside(item)">
+                <i class="i-Blinklist text-bold"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #newTicketModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ticket.id ? 'Edit Ticket' : 'New Ticket'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="ticketForm">
+      <div class="row">
+        <div class="form-group col-md-2 mb-1 pr-1">
+          <label for="roles">Select Country</label>
+          <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (change)="onCountrySelected()">
+          </ng-select>
+        </div>
+        <div class="form-group col-md-2 mb-1 pl-1 pr-1" *ngIf="selectedCountry.id">
+          <label for="roles">Select City</label>
+          <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (change)="onCitySelected()">
+          </ng-select>
+        </div>
+        <div class="form-group col-md-3 mb-1 pl-1 pr-1" *ngIf="selectedCity.id">
+          <label for="roles">Select Location</label>
+          <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (change)="onLocationSelected()">
+          </ng-select>
+        </div>
+        <div class="form-group col-md-5 mb-1 pl-1 pr-1" *ngIf="selectedLocation.id">
+          <label for="roles">Select Office</label>
+          <ng-select [items]="offices" [hideSelected]="true" bindLabel="officeName" placeholder="Select Office" [(ngModel)]="selectedOffice" [ngModelOptions]="{standalone: true}" (change)="onOfficeSelected()">
+          </ng-select>
+        </div>
+        <div class="form-group col-md-6 mb-1" *ngIf="selectedOffice.id">
+          <label for="roles">Select Booking</label>
+          <ng-select [items]="bookings" [hideSelected]="true" bindLabel="name" placeholder="Select Booking" [(ngModel)]="selectedBooking" formControlName="booking" name="booking">
+            <ng-template ng-option-tmp let-item="item">
+              <div><strong>{{item.company}}</strong></div>
+              <span>{{item.name}} - {{item.office}}</span>
+            </ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="selectedOffice.id">
+          <label for="firstName">Select Cabin <small>(which has issue, if any)</small></label>
+          <div *ngIf="!selectedBooking?.id"><small>Please select booking </small></div>
+          <ng-select [items]="selectedBooking?.cabins" *ngIf="selectedBooking?.id" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Cabin to report" [(ngModel)]="ticket.cabin" formControlName="cabin" name="cabin"> </ng-select>
+        </div>
+      </div>
+      <div class="row" *ngIf="selectedBooking?.id">
+        <!--  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+          <label for="firstName">Issue Category</label>
+          <ng-select [items]="categories" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Category" [(ngModel)]="ticket.category" formControlName="category" name="category"> </ng-select>
+        </div>
+        <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+          <label for="firstName">Sub Category</label>
+          <div *ngIf="!ticket.category"><small>Please select category </small></div>
+          <ng-select [items]="ticket.category.subCategories" *ngIf="ticket.category" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select SubCategory" [(ngModel)]="ticket.subCategory" formControlName="subCategory" name="subCategory"> </ng-select>
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="firstName">Category Context</label>
+          <div *ngIf="!ticket.subCategory"><small>Please select subcategory </small></div>
+          <ng-select [items]="ticket.subCategory.contexts" *ngIf="ticket.subCategory" [hideSelected]="true" [bindLabel]="'context'" placeholder="Select Ticket Context" [(ngModel)]="ticket.context" formControlName="context" name="context"> </ng-select>
+        </div> -->
+        <div class="col-md-3 form-group pr-1  mb-1">
+          <label for="firstName"><span *ngIf="!ticket.category">Select</span> Issue Category</label>
+          <p class="mb-1" *ngIf="ticket.category"><strong>{{ticket.category.name}}</strong> <i class="fa fa-times" style="float: right;color:red;font-size: 1rem !important;padding-right: 20px;" (click)="ticket.category=null;"></i></p>
+          <ul class="list-group list-group-flush" *ngIf="!ticket.category">
+            <li style="padding: 0.25rem 1.25rem;" *ngFor="let category of categories;" (click)="ticket.category=category" class="list-group-item cursor">{{category.name}}</li>
+          </ul>
+        </div>
+        <div class="col-md-3 form-group pl-1 pr-1  mb-1" *ngIf="ticket.category">
+          <label for="firstName"><span *ngIf="!ticket.subCategory">Select</span> Sub Category</label>
+          <p class="mb-1" *ngIf="ticket.subCategory"><strong>{{ticket.subCategory.name}}</strong> <i class="fa fa-times" style="float: right;color:red;font-size: 1rem !important;padding-right: 20px;" (click)="ticket.subCategory=null;"></i></p>
+          <ul class="list-group list-group-flush" *ngIf="!ticket.subCategory">
+            <li style="padding: 0.25rem 1.25rem;" *ngFor="let subCategory of ticket.category?.subCategories;" (click)="ticket.subCategory=subCategory" class="list-group-item cursor">{{subCategory.name}}</li>
+          </ul>
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1  mb-1" *ngIf="ticket.subCategory">
+          <label for="firstName"><span *ngIf="!ticket.context">Select</span> Issue Context</label>
+          <p class="mb-1" *ngIf="ticket.context"><strong>{{ticket.context.context}}</strong> <i class="fa fa-times" style="float: right;color:red;font-size: 1rem !important;padding-right: 20px;" (click)="ticket.context=null;"></i></p>
+          <ul class="list-group list-group-flush" *ngIf="!ticket.context">
+            <li style="padding: 0.25rem 1.25rem;" *ngFor="let context of ticket.subCategory?.contexts;" (click)="ticket.context=context" class="list-group-item cursor">{{context.context}}</li>
+          </ul>
+        </div>
+        <div class="col-md-2 form-group pl-1 pr-1 mb-1" *ngIf="ticket.context">
+          <label for="roles">Priority</label>
+          <div>{{ticket.context?.priority?.name}}</div>
+        </div>
+        <!--   <div class="col-md-12 form-group mb-1" *ngIf="ticket.context">
+          <label for="roles">Issue Title</label>
+          <input type="text" placeholder="Enter Issue title here" class="form-control" name="issue" [(ngModel)]="ticket.issue" formControlName="issue" />
+        </div> -->
+        <div class="col-md-12 form-group mb-1" *ngIf="ticket.context">
+          <label for="roles">Issue Description</label>
+          <textarea placeholder="Describe in detail here" class="form-control" name="description" [(ngModel)]="ticket.description" formControlName="description"></textarea>
+        </div>
+        <!-- <div class="col-md-12 form-group mb-1" *ngIf="ticket.context">
+          <label for="roles">File Attachment (if any)</label>
+          <input type="file" class="form-control" name="attachment" formControlName="attachment" (change)="onFileChange($event)" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <div *ngIf="error">
+            {{ error.message }}
+          </div>
+          <div *ngIf="uploadResponse.status === 'error'">
+            {{ uploadResponse.message }}
+          </div>
+          <div *ngIf="uploadResponse.status === 'progress'">
+            <div role="progressbar" [style.width.%]="uploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+              {{uploadResponse.message}}%
+            </div>
+          </div>
+        </div> -->
+        <div class="col-12 mb-2 form-group" *ngIf="ticket.context">
+          <label for="roles" class="d-b">File Attachment (if any)</label>
+          <a class="f-b badge badge-secondary fs-10 float-left" *ngIf="ticket.attachment?.file" [href]="ticket.attachment?.file" target="_blank" ngbTooltip="Click to View">Attachment</a>
+          <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Remove Attachment" (click)="ticket.attachment=null;" *ngIf="ticket.attachment"></i>
+          <div class="input-group" *ngIf="!ticket.attachment">
+            <div class="custom-file" *ngIf="!attachmentFile">
+              <input class="custom-file-input" id="attachmentId" (change)="attachmentFileChange($event)" type="file">
+              <label class="custom-file-label" for="attachmentId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="attachmentFile">
+              <span class="float-left">{{attachmentFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="attachmentFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="attachmentFileError">
+                  {{ attachmentFileError.message }}
+                </div>
+                <div *ngIf="attachmentUploadResponse.status === 'error'">
+                  {{ attachmentUploadResponse.message }}
+                </div>
+                <div *ngIf="attachmentUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="attachmentUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{attachmentUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadAttachementFile()">Upload</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!ticket.context" (click)="saveTicket()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #viewMessageModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Last Message View</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>{{message.reply}}</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

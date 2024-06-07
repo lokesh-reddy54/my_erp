@@ -1,0 +1,184 @@
+<div class="dashboards">
+  <div class="breadcrumb">
+    <h1>Projects WorkBenches</h1>
+  </div>
+  <div class="separator-breadcrumb border-top mb-2"></div>
+  <loading [loading]="loading"></loading>
+  <div class="row">
+    <div class="col-md-5 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Work Orders</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Drafted WOs ({{workbenches.workOrders?.draft?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches.workOrders?.draft">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/workorder/{{item.id}}">{{item.vendor.name}} - <small class="fs-10">{{item.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Budget : <strong>{{item.budget | inr}}</strong>, Proposed on : <strong>{{item.proposedOn | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/workorder/{{item.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.workOrders?.draft.length">No Items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Approvals ({{workbenches.workOrders?.pendingApproval?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches.workOrders?.pendingApproval">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/workorder/{{item.id}}">{{item.vendor.name}} - <small class="fs-10">{{item.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Budget : <strong>{{item.budget | inr}}</strong>, Proposed on : <strong>{{item.proposedOn | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/workorder/{{item.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.workOrders?.pendingApproval.length">No Items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Vendor Confirmations ({{workbenches.workOrders?.pendingVendorConfirmation?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches.workOrders?.pendingVendorConfirmation">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/workorder/{{item.id}}">{{item.vendor.name}} - <small class="fs-10">{{item.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Budget : <strong>{{item.budget | inr}}</strong>, Proposed on : <strong>{{item.proposedOn | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/workorder/{{item.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.workOrders?.pendingVendorConfirmation.length">No Items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+    <div class="col-md-7 pl-0 pr-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Purchase Orders</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <!-- <ngb-tab title="POs to Start ({{workbenches.purchaseOrders?.pendingStarted?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let po of workbenches?.purchaseOrders?.pendingStarted">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{po.id}}">{{po.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{po.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{po.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - Building : <strong> {{po.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{po.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingStarted.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab> -->
+        <ngb-tab title="Pending Proforma Invoices ({{workbenches.purchaseOrders?.pendingProformaInvoice?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let po of workbenches?.purchaseOrders?.pendingProformaInvoice">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{po.id}}">{{po.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{po.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{po.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - Building : <strong> {{po.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{po.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingProformaInvoice.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="YetTo Release  ({{workbenches.purchaseOrders?.pendingMilestonesRelease?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches?.purchaseOrders?.pendingMilestonesRelease">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">{{item.purchaseOrder.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{item.purchaseOrder.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Milestone : <strong>{{item.name}}</strong>, Amount : <strong>{{item.amount | inr}}</strong> - Building : <strong> {{item.purchaseOrder.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingMilestonesRelease.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="YetTo Approve  ({{workbenches.purchaseOrders?.pendingMilestonesApprovals?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches?.purchaseOrders?.pendingMilestonesApprovals">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">{{item.purchaseOrder.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{item.purchaseOrder.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Milestone : <strong>{{item.name}}</strong>, Amount : <strong>{{item.amount | inr}}</strong> - Building : <strong> {{item.purchaseOrder.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingMilestonesApprovals.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="YetTo Paid ({{workbenches.purchaseOrders?.pendingMilestonesPayments?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches?.purchaseOrders?.pendingMilestonesPayments">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">{{item.purchaseOrder.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{item.purchaseOrder.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Milestone : <strong>{{item.name}}</strong>, Amount : <strong>{{item.amount | inr}}</strong> - Building : <strong> {{item.purchaseOrder.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingMilestonesPayments.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,2027 @@
+<div class="breadcrumb">
+  <h1 class="text-center">Booking View
+    <help-notes [context]="'Booking:OfficeBookingStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-10"></help-notes>
+    <help-notes [context]="'Booking:OfficeBookingStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="ml-10"></help-notes>
+  </h1>
+</div>
+<div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+<div class="card user-profile o-hidden mb-1 d-b">
+  <div class="float-left pt-1">
+    <p class="m-0 pl-3 text-18">{{booking.client.company || booking.client.name}}</p>
+    <p class="text-black f-b m-0 pl-3 text-14" style="margin-top: -5px !important">{{booking.refNo}}</p>
+  </div>
+  <div class="float-right text-right pr-3 pt-1">
+    <p *ngIf="!booking.ended" class="text-secondary text-14 m-0">Reserved : <strong>{{booking.reserved | date :'MMM dd, yyyy'}}</strong></p>
+    <p class="text-info text-14 m-0">MoveIn : <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong></p>
+    <p *ngIf="booking.ended" class="text-dark text-14 m-0">ExitOn : <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong></p>
+  </div>
+  <div class="clear d-block d-lg-none"></div>
+  <div class="card-body pt-1">
+    <loading [loading]="loading"></loading>
+    <ngb-tabset class="nav-center">
+      <ngb-tab title="General">
+        <ng-template ngbTabContent>
+          <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+          <div class="float-right" *ngIf="booking.refNo">
+            <span *checkAccess="'bookings:cancelBooking'">
+              <button class="btn btn-outline-warning btn-sm ml-10 btn-ico pull-right" *ngIf="booking.status=='Booked'||booking.status=='New'" (click)="cancelBooking()" [ladda]="loading" [disabled]="loading">
+                <i class="fa fa-times" *ngIf="!loading"></i> Cancel Booking
+              </button>
+            </span>
+            <span *checkAccess="'bookings:requestExit'">
+              <button class="btn btn-outline-info btn-sm ml-10 btn-ico pull-right" *ngIf="!showExitForm && booking.status=='Active'" (click)="showExitForm=true">
+                <i class="fa fa-sign-out"></i> Request for Exit
+              </button>
+            </span>
+            <form [formGroup]="exitForm" *ngIf="showExitForm">
+              <div class="row">
+                <div class="col-md-6 form-group pr-0">
+                  <input placeholder="Select Exit date " class="form-control" name="exitDate" ngbDatepicker #dp="ngbDatepicker" (dateSelect)="dp.close()" [(ngModel)]="exitDate" formControlName="exitDate" (focus)="dp.toggle()" />
+                </div>
+                <div class="col-md-5 form-group pl-0">
+                  <button class="btn btn-primary btn-sm ml-10 btn-ico pull-right" (click)="requestExit()" [ladda]="loading" [disabled]="loading||!exitForm.valid">
+                    <i class="fa fa-check" *ngIf="!loading"></i> Confirm Exit
+                  </button>
+                </div>
+                <div class="col-md-1 form-group pl-0">
+                  <button class="btn btn-warning btn-sm ml-10 btn-icon pull-right" (click)="showExitForm=false;">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </form>
+            <span *checkAccess="'bookings:requestExit'">
+              <button class="btn btn-outline-warning btn-sm ml-10 btn-ico pull-right" *ngIf="booking.status=='Exiting'" (click)="cancelExitRequest()" [ladda]="loading" [disabled]="loading">
+                <i class="fa fa-times" *ngIf="!loading"></i> Cancel Exit Request
+              </button>
+            </span>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <h4>Booking Information</h4>
+              <hr class="mb-1">
+              <div class="row" *ngIf="!booking.refNo">
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Booked On :</p>
+                  <span class="text-bold">{{booking.reserved | date : 'medium'}}</span>
+                </div>
+                <div class="col-md-9 col-12 mb-2">
+                  <p class="text-black f-b mb-0">Booking Address</p>
+                  <span class="">{{booking.location}}</span>
+                </div>
+              </div>
+              <div class="row" *ngIf="booking.refNo">
+                <div class="col-md-4 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Status</p>
+                  <span class="badge" [ngClass]="{'badge-dark':booking.status=='New','badge-info':booking.status=='Booked','badge-success':booking.status=='Active','badge-warning':booking.status=='Cancelled','badge-secondary':booking.status=='Exiting','badge-light':booking.status=='Exited', 'badge-light':booking.status=='Settled'}">{{booking.status}}</span>
+                </div>
+                <div class="col-md-4 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Contract Type</p>
+                  <span class="">{{booking.contract.type}}</span>
+                </div>
+                <div class="col-md-4 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Office :</p>
+                  <span class="text-bold">{{booking.offices}}</span>
+                </div>
+                <div class="col-md-12 col-12 mb-2">
+                  <p class="text-black f-b mb-0">Address</p>
+                  <span class="">{{booking.location}}</span>
+                </div>
+                <div class="mb-2 col-12" [ngClass]="booking.contract?.signedAgreement?'col-md-8':'col-md-4' ">
+                  <!-- <p class="text-black f-b mb-0">Cabins & Desks</p> -->
+                  <div><span class="text-black f-b">Cabins : </span> {{booking.cabinNames}}</div>
+                  <!--  <div *ngIf="booking.contract.type!='HotDesk'"> <span class="text-black f-b">Desks : </span> {{booking.deskNames | ellipses:200}}
+                <p *ngIf="booking.deskNames?.length>150" class="pull-right"> few more ... </p>
+              </div> -->
+                </div>
+                <div class="col-md-4 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Desks</p>
+                  <span class="">{{booking.desks}}</span>
+                </div>
+                <div class="col-md-4 col-12 mb-2" *ngIf="!booking.contract.agreementId && !booking.contract?.signedAgreement && booking.contract.kind=='LongTerm'">
+                  <p class="text-black f-b mb-0">Generate Agreement</p>
+                  <span class="cursor badge badge-info" (click)="generateAgreement()" ngbTooltip="Click to generate agreement">Generate</span>
+                </div>
+                <div class="col-md-4 col-12 mb-2" *ngIf="booking.contract.agreementId">
+                  <p class="text-black f-b mb-0">{{booking.contract?.signedAgreement ? 'Signed' : '' }} Agrement PDF</p>
+                  <span class="" *ngIf="booking.contract?.signedAgreement"><a class="badge badge-success" href="{{booking.contract.signedAgreement?.file}}" target="_blank" ngbTooltip="Click to view signed agreement">View Signed Agreement</a></span>
+                  <span class="" *ngIf="!booking.contract?.signedAgreement"><a class="badge badge-info" href="{{booking.contract.agreement?.file}}" target="_blank" ngbTooltip="Click to view unsigned agreement">View Agreement</a></span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h4>Client Information</h4>
+              <hr class="mb-1">
+              <div class="row ">
+                <div class="col-md-6 col-12 mb-2">
+                  <p class="text-black f-b mb-0">Company : </p>
+                  <span class="">{{booking.client.company}}</span>
+                </div>
+                <div class="col-md-6 col-12 mb-2">
+                  <p class="text-black f-b mb-0">Name : </p>
+                  <span class="">{{booking.client.name}}</span>
+                </div>
+                <div class="col-md-6 col-12 mb-2">
+                  <p class="text-black f-b mb-0">Email : </p>
+                  <span class="">{{booking.client.email}}</span>
+                </div>
+                <div class="col-md-6 col-12  mb-2">
+                  <p class="text-black f-b mb-0">Phone : </p>
+                  <span class="">{{booking.client.phone}}</span>
+                </div>
+                <div class="col-md-6 col-12 mb-2">
+                  <p class="text-black f-b mb-0">Pan Number: </p>
+                  <span class=""> {{booking.client.panNo || '-'}}
+                    <a class="badge badge-info" href="{{booking.client.panCard.file}}" target="_blank" ngbTooltip="Click to view PAN" *ngIf="booking.client.panCard">View</a></span>
+                </div>
+                <div class="col-md-6 col-12 mb-2" *ngIf="booking.client.companyRegistration">
+                  <p class="text-black f-b mb-0">Company Registration : </p>
+                  <span class="">
+                    <a class="badge badge-info" href="{{booking.client.companyRegistration.file}}" target="_blank" ngbTooltip="Click to view Company Registration Certificate">View</a></span>
+                </div>
+                <div class="col-md-6 col-12 mb-2">
+                  <p class="text-black f-b mb-0">GST Number : </p>
+                  <span class="">{{booking.client.gstNo || '-'}}
+                    <a class="badge badge-info" href="{{booking.client.gstRegistration.file}}" target="_blank" ngbTooltip="Click to view GST Certificate" *ngIf="booking.client.gstRegistration">View</a></span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">State Code : </p>
+                  <span class="">{{booking.client.stateCode || '-'}}</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2" *ngIf="booking.refNo">
+                  <button class="btn btn-outline-secondary btn-sm ml-10 btn-ico pull-right mt-2" (click)="editClient()" *checkAccess="'bookings:editClient'">
+                    <i class="fa fa-pencil"></i> Edit Client
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr class="mb-1">
+          <h4 *ngIf="booking.refNo">
+            <span class="float-left">Contract Information
+              <help-notes [context]="'Booking:ContractStatusFlow'" [type]="'popup'" [placement]="'top'" class="float-right mr-10"></help-notes>
+              <help-notes [context]="'Booking:ContractStatusDefinition'" [type]="'popup'" [placement]="'top'" class="float-right ml-10  mr-10"></help-notes>
+            </span> -
+            <small class="badge badge-light fs-10" *ngIf="booking.contract.status=='Draft'">{{booking.contract.status}}</small>
+            <small class="badge badge-info fs-10" *ngIf="booking.contract.status=='Approved'">{{booking.contract.status}}</small>
+            <small class="badge badge-success fs-10" *ngIf="booking.contract.status=='Confirmed'">{{booking.contract.status}}</small>
+          </h4>
+          <div class="row" *ngIf="booking.refNo">
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Security Deposit</p>
+              <span class="">{{booking.contract.security | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Rent per Month</p>
+              <span class="">{{booking.contract.rent | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.deskPrice">
+              <p class="text-black f-b mb-0">Rent per Desk</p>
+              <span class="">{{booking.contract.deskPrice | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Rent Token Amount</p>
+              <span class="">{{booking.contract.token | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">SD Token Amount</p>
+              <span class="">{{booking.contract.tokenSD | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">RentFree Days</p>
+              <span class="" *ngIf="!editRentFreePeriod">{{booking.contract.rentFreePeriod || 0}} days
+                <button *ngIf="booking.status=='New' || booking.status=='Booked'" class="btn btn-sm btn-outline-primary btn-icon" (click)="editRentFreePeriod=true;" ngbTooltip="Edit RentFree Period"><i class="fa fa-pencil"></i></button> </span>
+              <span class="" *ngIf="editRentFreePeriod">
+                <input type="number" class="form-control float-left w-80" [(ngModel)]="booking.contract.rentFreePeriod" />
+                <button class="btn btn-sm btn-primary btn-icon float-right" (click)="editRentFreePeriod=false;updateRentFreePeriod()" ngbTooltip="Update RentFree Period"><i class="fa fa-check"></i></button> </span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="contract.kind=='NewBooking'">
+              <p class="text-black f-b mb-0">MoveIn Date</p>
+              <span class="">{{booking.started | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="contract.kind!='NewBooking'">
+              <p class="text-black f-b mb-0">Effective Date</p>
+              <span class="">{{booking.contract.effectiveDate | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Date</p>
+              <span class="">{{booking.contract.date | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Period</p>
+              <span class="">{{booking.contract.contractPeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Period</p>
+              <span class="">{{booking.contract.lockIn}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty Type</p>
+              <span class="">{{booking.contract.lockInPenaltyType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty</p>
+              <span class="" *ngIf="booking.contract.lockInPenaltyType=='Fixed'">{{booking.contract.lockInPenalty | inr}}</span>
+              <span class="" *ngIf="booking.contract.lockInPenaltyType=='MonthRent'">{{booking.contract.lockInPenalty}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Period</p>
+              <span class="">{{booking.contract.noticePeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Type</p>
+              <span class="">{{booking.contract.noticePeriodViolationType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Charge</p>
+              <span class="" *ngIf="booking.contract.noticePeriodViolationType=='Fixed'">{{booking.contract.noticePeriodViolation | inr}} </span>
+              <span class="" *ngIf="booking.contract.noticePeriodViolationType=='MonthRent'">{{booking.contract.noticePeriodViolation}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.deskType=='FixedDesk'">
+              <p class="text-black f-b mb-0">Monthly Free Credits</p>
+              <span class="">{{booking.contract.freeCredits || 10}} credits per month</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.sqFt">
+              <p class="text-black f-b mb-0">Total SqFt</p>
+              <span class="">{{booking.contract.sqFt}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.sqFtPrice">
+              <p class="text-black f-b mb-0">SqFt Price</p>
+              <span class="">{{booking.contract.sqFtPrice | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+            </div>
+            viewContractHistory
+            <div class="col-md-12 col-12 mb-2" *ngIf="booking.status=='New'||booking.status=='Booked'||booking.status=='Active'">
+              <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openContracsHistory()">
+                <i class="fa fa-search"></i> View Contracts History
+              </button>
+              <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" *ngIf="booking.status=='Active'&&booking.contract.term=='ShortTerm'&&!showExtendContract" (click)="showExtendContract=true;">
+                <i class="fa fa-refresh"></i> Extend Contract
+              </button>
+              <form [formGroup]="extendContractForm" class="w-40" *ngIf="showExtendContract">
+                <div class="row">
+                  <div class="col-md-6 form-group pr-0">
+                    <input placeholder="Select Exit date " class="form-control" name="exitDate" ngbDatepicker #dp="ngbDatepicker" (dateSelect)="dp.close()" [(ngModel)]="exitDate" formControlName="exitDate" (focus)="dp.toggle()" placement="top" />
+                  </div>
+                  <div class="col-md-5 form-group pl-0">
+                    <button class="btn btn-primary btn-sm ml-10 btn-ico pull-right" (click)="extendContract()" [ladda]="loading" [disabled]="loading||!extendContractForm.valid">
+                      <i class="fa fa-check" *ngIf="!loading"></i> Confirm Extension
+                    </button>
+                  </div>
+                  <div class="col-md-1 form-group pl-0">
+                    <button class="btn btn-warning btn-sm ml-10 btn-icon pull-right" (click)="showExtendContract=false;">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </form>
+              <span *checkAccess="'bookings:cancelContract'">
+                <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" *ngIf="booking.contract.status=='Draft'||booking.contract.status=='Approved'" (click)="editContract()">
+                  <i class="fa fa-pencil"></i> Edit Contract
+                </button>
+              </span>
+              <span *checkAccess="'bookings:contraction'">
+                <button class="btn btn-outline-secondary btn-sm ml-10 btn-ico pull-right" (click)="openContraction()">
+                  <i class="fa fa-minus-square"></i> Contraction
+                </button>
+              </span>
+              <span *checkAccess="'bookings:expansion'">
+                <button class="btn btn-outline-info btn-sm ml-10 btn-ico pull-right" *ngIf="booking.status=='Active'&&booking.contract.term=='LongTerm'" (click)="openExpansion()">
+                  <i class="fa fa-plus-square"></i> Expansion
+                </button>
+              </span>
+              <span *checkAccess="'bookings:relocation'">
+                <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" *ngIf="booking.status=='Active'&&booking.contract.term=='LongTerm'" (click)="openRelocation()">
+                  <i class="fa fa-retweet"></i> ReLocation
+                </button>
+              </span>
+            </div>
+          </div>
+          <hr class="mb-1">
+          <h4 *ngIf="booking.futureContract">Upcoming '{{booking.futureContract.kind}}' Contract Information -
+            <small class="badge badge-light fs-10" *ngIf="booking.futureContract.status=='Draft'">{{booking.futureContract.status}}</small>
+            <small class="badge badge-info fs-10" *ngIf="booking.futureContract.status=='Approved'">{{booking.futureContract.status}}</small>
+            <small class="badge badge-success fs-10" *ngIf="booking.futureContract.status=='Confirmed'">{{booking.contract.status}}</small>
+          </h4>
+          <div class="row" *ngIf="booking.futureContract">
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Security Deposit</p>
+              <span class="">{{booking.futureContract.security | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Rent per Month</p>
+              <span class="">{{booking.futureContract.rent | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Booking Token Amount</p>
+              <span class="">{{booking.futureContract.token | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Date</p>
+              <span class="">{{booking.futureContract.date | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Effective Date</p>
+              <span class="">{{booking.futureContract.effectiveDate | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Period</p>
+              <span class="">{{booking.futureContract.contractPeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Period</p>
+              <span class="">{{booking.futureContract.lockIn}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty Type</p>
+              <span class="">{{booking.futureContract.lockInPenaltyType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty</p>
+              <span class="" *ngIf="booking.futureContract.lockInPenaltyType=='Fixed'">{{booking.futureContract.lockInPenalty | inr}}</span>
+              <span class="" *ngIf="booking.futureContract.lockInPenaltyType=='MonthRent'">{{booking.futureContract.lockInPenalty}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Period</p>
+              <span class="">{{booking.futureContract.noticePeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Type</p>
+              <span class="">{{booking.futureContract.noticePeriodViolationType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Charge</p>
+              <span class="" *ngIf="booking.futureContract.noticePeriodViolationType=='Fixed'">{{booking.futureContract.noticePeriodViolation | inr}} </span>
+              <span class="" *ngIf="booking.futureContract.noticePeriodViolationType=='MonthRent'">{{booking.futureContract.noticePeriodViolation}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Monthly Free Credits</p>
+              <span class="">{{booking.futureContract.freeCredits || 10}} credits per month</span>
+            </div>
+            <div class="col-md-4 col-6 mb-2">
+            </div>
+            <div class="col-md-6 col-6 mb-2">
+              <span *checkAccess="'bookings:editContract'">
+                <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" *ngIf="booking.futureContract.status=='Draft'||booking.futureContract.status=='Approved'" (click)="editContract(booking.futureContract)">
+                  <i class="fa fa-pencil"></i> Edit Contract
+                </button>
+              </span>
+              <span *checkAccess="'bookings:cancelContract'">
+                <button class="btn btn-outline-warning btn-sm ml-10 btn-ico pull-right" *ngIf="booking.futureContract.status=='Draft'||booking.futureContract.status=='Approved'" (click)="cancelContract(booking.futureContract)">
+                  <i class="fa fa-times"></i> Cancel Contract
+                </button>
+              </span>
+              <span *checkAccess="'bookings:cancelConfirmedFutureContract'">
+                <button class="btn btn-danger btn-sm ml-10 btn-ico pull-right" *ngIf="booking.futureContract.status=='Confirmed'" (click)="cancelContract(booking.futureContract)">
+                  <i class="fa fa-times"></i> Cancel Contract
+                </button>
+              </span>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Invoices">
+        <ng-template ngbTabContent>
+          <div style="margin-top: -30px">
+            <div class="float-right" *ngIf="!user.clientId">
+              <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="openPaymentsList()">
+                <i class="fa fa-list"></i> Payments List
+              </button>
+              <span *ngIf="!(booking.status=='Cancelled'||booking.status=='Settled')">
+                <span *checkAccess="'bookings:addPayment'">
+                  <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="openPaymentModal()">
+                    <i class="fa fa-dollar"></i> Add Payment
+                  </button>
+                </span>
+                <span *checkAccess="'bookings:raiseInvoice'">
+                  <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="openInvoiceModal()">
+                    <i class="fa fa-plus"></i> Add Invoice
+                  </button>
+                </span>
+                <span *checkAccess="'bookings:raiseInvoice'">
+                  <button disabled="{{true}}" class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="raiseInvoices()">
+                    <i class="fa fa-flash"></i> Raise Invoices
+                  </button>
+                </span>
+                <span *checkAccess="'bookings:raiseInvoice'">
+                  <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="raiseNextMonthInvoice()">
+                    <i class="fa fa-flash"></i> Raise Next Month Invoices
+                  </button>
+                </span>
+                <span *checkAccess="'bookings:raiseInvoice'">
+                  <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="updateBookingsLedger()">
+                    <i class="fa fa-refresh"></i> Update Ledger
+                  </button>
+                </span>
+              </span>
+            </div>
+            <div class="float-left">
+              <div class="pull-left mr-10"> 
+              <!-- btn btn-primary rounded-pill btn-sm m-1 ml-10" disabled -->
+                  <strong>Deposit : </strong> {{deposit|inr}} <i *ngIf="liabilityPaid" class="fa fa-check fa-2x bg-success"></i>
+              </div>
+
+              <div class="pull-left mr-10"> <strong>Invoiced : </strong> {{invoiceAmount|inr}}</div>
+             
+              <!-- <div class="pull-left mr-10">
+                <button class="btn btn-primary rounded-pill btn-sm m-1 ml-10" disabled> 
+                   <strong>Total Paid : </strong> {{paidAmount|inr}}
+                </button>
+              </div> -->
+
+              <div class="pull-left mr-10"> <strong>Paid : </strong> {{paidAmount|inr}}</div>
+              <div class="pull-left mr-10" *ngIf="extraAmount<=0"> <strong>Due : </strong> {{dueAmount|inr}}</div>
+              <div class="pull-left mr-10" *ngIf="liabilityClearedAmount<=0 && extraAmount>0"> <strong>Extra Paid : </strong> {{extraAmount|inr}}</div>
+              <div class="pull-left mr-10" *ngIf="toRefund>0"> <strong>To Refund : </strong> {{toRefund|inr}}</div>
+              <div class="pull-left mr-10 mt-1 badge badge-success" *ngIf="booking.exitRequest?.fcpStatus=='Refunded'">Refunded ({{booking.exitRequest?.refund | inr}})</div>
+            </div>
+            <div class="clear"></div>
+          </div>
+          <!-- infiniteScroll (onScroll)="loadMoreInvoices()"  -->
+          <div class="list-horizontal tableBodyScroll" style="overflow:auto;height: calc(100vh - 250px);padding-top: 10px;">
+            <loading [loading]="loading"></loading>
+            <div *ngFor="let item of invoices;let i=index" class="list-item">
+              <div class="card mb-2 d-flex flex-row">
+                <div class="flex-grow-1 d-flex">
+                  <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+                    <div class="w-30 w-sm-100 d-b">
+                      <div class="m-0 text-muted text-small text-center w-20 float-left">
+                        <div class="text-primary">{{item.date | date : 'MMM'}}</div>
+                        <span class="text-secondary">{{item.date | date : 'yyyy'}}</span>
+                      </div>
+                      <div class="w-80 float-right">
+                        <div class="item-titl">{{item.name}}</div>
+                        <span *ngIf="item.pdf?.file" class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf?.file" target="_blank">{{item.refNo}}</a></span>
+                        <span *ngIf="!item.pdf?.file" class="m-0 text-primary font-weight-bold">{{item.refNo}}</span>
+                      </div>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100  d-md-none d-block">
+                      <div class="d-b text-primary mb-1">
+                        <span class="d-ib text-secondary w-50 text-right">Invoice Date : </span>
+                        <span class="d-ib w-50 text-right">{{item.date | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                      <div class="d-b text-primary mb-1">
+                        <span class="d-ib text-secondary w-50 text-right">Due Date : </span>
+                        <span class="d-ib w-50 text-right">{{item.dueDate | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                      <div class="d-b text-primary mb-1">
+                        <span class="d-ib text-secondary w-50 text-right">Charge : </span>
+                        <span class="d-ib w-50 text-right">{{item.taxableAmount | inr}}</span>
+                      </div>
+                      <div class="d-b text-primary mb-1">
+                        <span class="d-ib text-secondary w-50 text-right">GST : </span>
+                        <span class="d-ib w-50 text-right">{{item.gst | inr}}</span>
+                      </div>
+                      <div class="d-b text-primary mb-1">
+                        <span class="d-ib text-secondary w-50 text-right">TDS : </span>
+                        <span class="d-ib w-50 text-right">{{item.tds | inr}}</span>
+                      </div>
+                      <div class="d-b text-primary mb-1">
+                        <span class="d-ib text-secondary w-50 text-right">Total : </span>
+                        <span class="d-ib w-50 text-right">{{item.amount | inr}}</span>
+                      </div>
+                      <div class="d-b text-primary mb-1">
+                        <span class="d-ib text-secondary w-50 text-right">Paid : </span>
+                        <span class="d-ib w-50 text-right">{{item.paid | inr}}</span>
+                      </div>
+                      <div class="d-b text-primary mb-1" *ngIf="item.due > 0">
+                        <span class="d-ib text-secondary w-50 text-right">Due : </span>
+                        <span class="d-ib w-50 text-right">{{item.due | inr}}</span>
+                      </div>
+                      <div class="d-ib text-primary mb-1 w-50 text-right">
+                        <span *ngIf="item.pdf?.file" class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf?.file" target="_blank">Invoice</a></span>
+                      </div>
+                      <div class="d-ib text-primary mb-1 w-50 ">
+                        <div class="float-right badge badge-success" *ngIf="item.status=='Paid'">PAID</div>
+                        <div class="float-right badge badge-warning" *ngIf="item.status=='Cancelled'">CANCELLED</div>
+                        <div class="float-right badge badge-info" *ngIf="item.status=='Pending'">PENDING</div>
+                        <div class="float-right badge badge-warning" *ngIf="item.status=='Due'">DUE</div>
+                        <div class="float-right badge badge-success" *ngIf="item.status=='Cleared'">CLEARED</div>
+                        <div class="clear"></div>
+                      </div>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                      <div class="d-b text-primary">
+                        <span class="text-secondary w-10 pull-left">I </span>
+                        <span class="d-b text-right pull-left pr-3"> : {{item.date | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                      <div class="clear"></div>
+                      <div class="d-b text-info">
+                        <span class="text-secondary w-10 pull-left">D </span>
+                        <span class="d-b text-right pull-left pr-3"> : {{item.dueDate | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                      <div class="text-primary"><span class="text-secondary d-ib w-30">Charge </span> : {{item.taxableAmount | inr }}</div>
+                      <span class="text-info"><span class="text-secondary d-ib w-30">GST </span> : {{item.gst | inr}}</span>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                      <div class="text-primary"><span class="text-secondary d-ib w-30">TDS </span> : {{item.tds | inr }}</div>
+                      <span class="text-info"><span class="text-secondary d-ib w-30">Total </span> : {{item.amount | inr}}</span>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                      <div class="text-primary"><span class="text-secondary d-ib w-30">Paid </span> : {{item.paid | inr }}</div>
+                      <span class="text-info"><span class="text-secondary d-ib w-30">Due </span> : <span>{{item.due | inr}}</span></span>
+                    </div>
+                    <div class="w-15 w-sm-100 d-none d-md-block">
+                      <div class="m-0 text-black f-b text-small w-30 item-actions float-left">
+                        <div class="badge badge-success" *ngIf="item.status=='Paid'">PAID</div>
+                        <div class="badge badge-warning" *ngIf="item.status=='Cancelled'">CANCELLED</div>
+                        <div class="badge badge-info" *ngIf="item.status=='Pending'">PENDING</div>
+                        <div class="badge badge-warning" *ngIf="item.status=='Due'">DUE</div>
+                        <div class="badge badge-success" *ngIf="item.status=='Cleared'">CLEARED</div>
+                      </div>
+                      <div class="m-0 text-black f-b text-small w-60 float-right item-actions">
+                        <span *checkAccess="'bookings:editInvoices'">
+                          <button class="btn btn-icon btn-info" ngbTooltip="Edit Invoice" (click)="editInvoice(item)">
+                            <i class="i-Pen-5 text-bold"></i>
+                          </button>
+                        </span>
+                        <span *checkAccess="'bookings:cancelInvoice'">
+                          <button class="btn btn-icon btn-danger btn-sm" ngbTooltip="Cancel Invoice" (click)="cancelInvoice(item)" *ngIf="isCancellable(item) && !(item.isLiability&&booking.status=='TDSHolded')">
+                            <i class="i-Close-Window text-bold"></i>
+                          </button>
+                        </span>
+                        <span *checkAccess="'bookings:refundLiability'">
+                          <button class="btn btn-icon btn-success btn-sm" ngbTooltip="Refund Liability" (click)="refundLiability(item)" *ngIf="item.isLiability && item.isLiabilityCleared==0&&booking.status=='TDSHolded'">
+                            <i class="i-Dollar-Sign text-bold"></i>
+                          </button>
+                        </span>
+                        <span *checkAccess="'bookings:sendInvoiceNotification'">
+                          <button class="btn btn-icon btn-light" ngbTooltip="Send Invoice Mail" (click)="sendInvoice(item)">
+                            <i class="i-Mail-Send text-bold"></i>
+                          </button>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Resource Bookings">
+        <ng-template ngbTabContent>
+          <div style="margin-top: -30px">
+            <div class="float-right" *checkAccess="'bookings:newResourceBooking'">
+              <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="newResourceBooking()" *checkAccess="'bookings:resourceBooking'">
+                <i class="fa fa-plus"></i> Resource Booking
+              </button>
+            </div>
+            <div class="float-right">
+              <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openCreditsHistory()">
+                <i class="fa fa-dollar"></i> View Credits History
+              </button>
+            </div>
+            <div class="clear"></div>
+          </div>
+          <!-- infiniteScroll (onScroll)="loadMoreResourceBookings()" -->
+          <div class="row mt-1">
+            <div class="col-12 pl-1 pr-1 row list-horizontal tableBodyScroll" style="overflow:auto;max-height: calc(100vh - 220px);padding-top: 20px;">
+              <loading [loading]="loading"></loading>
+              <div *ngFor="let item of resourceBookings;let i=index" class="list-item col-md-12 pr-1 pl-1">
+                <div class="card mb-2 d-flex flex-row">
+                  <div class="flex-grow-1 d-flex">
+                    <div class="card-body pl-2 align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+                      <a href="" class="w-25 w-sm-100">
+                        <div class="item-title">{{item.resource.name}}</div>
+                        <span class="m-0 text-secondary text-smal">{{item.refNo}}</span>
+                      </a>
+                      <div class="m-0 text-black f-b text-small w-25 w-sm-100">
+                        <!-- <div class="text-primary"><i class="i-Building"></i> H202</div> -->
+                        <div class="d-b text-primary">
+                          <span class="text-secondary w-40 pull-left">Booked On </span> <span class="d-b text-right pull-left pr-3"> : {{item.date | date:'MMM dd, yyyy'}}</span>
+                          <div class="clear"></div>
+                        </div>
+                        <div class="text-secondary"><span class="text-secondary w-40 pull-left">Type </span><span class="d-b text-right pull-left pr-3"> : {{item.resource.type}}</span></div>
+                      </div>
+                      <div class="m-0 text-black f-b text-small w-30 w-sm-100">
+                        <div class="clear"></div>
+                        <div class="d-b text-info">
+                          <span class="text-secondary w-100 pull-left">Booked Time :</span> <span class="d-b text-right pull-left pr-3"> {{item.from | date:'MMM dd, yyyy hh:mm a'}} - {{item.to | date:'hh:mm a'}}</span></div>
+                      </div>
+                      <div class="m-0 text-black f-b text-small w-20 w-sm-100">
+                        <div class="text-primary"><span class="text-secondary  w-50 pull-left">Charge </span> : {{item.amount | inr}}</div>
+                        <span class="text-secondary"><span class="text-secondary w-50 pull-left">Credits Used </span> : {{item.creditUsed ? item.creditUsed.credits : '-'}}</span>
+                      </div>
+                      <div class="m-0 text-black f-b text-small w-15 w-sm-100 d-none d-lg-block item-actions  mr-1 ml-5">
+                        <div class="badge badge-info">{{item.status}}</div>
+                        <!--   <button class="btn btn-icon btn-info" routerLink="/bookings/view/{{item.parentBookingId}}">
+                          <i class="i-Magnifi-Glass1 text-bold"></i>
+                        </button> -->
+                        <span *checkAccess="'bookings:cancelResourceBooking'">
+                          <button class="btn btn-icon btn-danger btn-sm" *ngIf="item.status!='Done'" (click)="cancelResourceBooking(item)" ngbTooltip="Cancel Booking">
+                            <i class="i-Close-Window text-bold"></i>
+                          </button>
+                        </span>
+                        <span *checkAccess="'bookings:markResouceBooked'">
+                          <button class="btn btn-icon btn-success btn-sm" *ngIf="item.status=='Pending'" (click)="markAsBooked(item)" ngbTooltip="Mark as Booked">
+                            <i class="fa fa-check text-bold"></i>
+                          </button>
+                        </span>
+                        <!-- <button class="btn btn-icon btn-light" ngbTooltip="Mail Invoice">
+                          <i class="i-Mail-Send text-bold"></i>
+                        </button> -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Employees" *ngIf="booking.refNo">
+        <ng-template ngbTabContent>
+          <div style="margin-top: -30px">
+            <div class="float-right" *checkAccess="'bookings:editEmployees'">
+              <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openEmployeeModal()">
+                <i class="fa fa-plus"></i> Employee
+              </button>
+              <button *ngIf="hasUnverifiedEmployees" class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="sendEmployeeVerification()" [ladda]="loading" [disabled]="loading">
+                <i class="fa fa-check" *ngIf="!loading"></i> Request Employee Verifications
+              </button>
+            </div>
+            <div class="clear"></div>
+          </div>
+          <div class="row mt-1">
+            <div class="col-md-2 col-sm-4 col-12 pl-1 pr-1" *ngFor="let employee of employees">
+              <div class="card card-profile-1 mb-1">
+                <div class="card-body text-center p-2 on-hover">
+                  <div>
+                    <h5 class="m-0 d-ib">{{employee.name}}</h5>
+                    <i class="fa fa-pencil float-right cursor text-primary on-hover-item" (click)="openEmployeeModal(employee);"></i>
+                    <div class="clear"></div>
+                  </div>
+                  <!-- <p class="m-0">{{getDepartment(employee.department)}}</p> -->
+                  <p class="m-0">{{employee.contactPurposes}}</p>
+                  <button class="btn btn-outline-info btn-icon btn-rounded" ngbTooltip="Mail to {{employee.email}}"><i class="i-Mail"></i></button>
+                  <button class="btn btn-outline-info btn-icon btn-rounded" ngbTooltip="SMS to {{employee.phone}}"><i class="i-Mail-3"></i></button>
+                  <button class="btn btn-outline-info btn-icon btn-rounded" ngbTooltip="Call to {{employee.phone}}"><i class="i-Telephone"></i></button>
+                  <button class="btn btn-outline-info btn-icon btn-rounded" *ngIf="employee.hasAccess" ngbTooltip="Has access to SelfCare"><i class="i-Computer-Secure"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Exit Statement" *ngIf="booking.exitRequest">
+        <ng-template ngbTabContent>
+          <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+          <div class="row pr-0 pl-0">
+            <div class="col-md-6 col-12">
+              <ngb-accordion #acc="ngbAccordion" [activeIds]="['panel-0','panel-1','panel-2','panel-3']">
+                <ngb-panel id="panel-0">
+                  <ng-template ngbPanelTitle>
+                    <span class="pull-left d-ib f-b fs-14">Exit Charges and Penality Calculation</span>
+                  </ng-template>
+                  <ng-template ngbPanelContent>
+                    <div class="mb-0">
+                      <span class="f-b">Exit Requested Date : </span> <span>{{booking.exitRequest.requestedDate | date}}</span>
+                      <span class="f-b ml-1">Exit Date : </span> <span>{{booking.exitRequest.exitDate | date}}</span>
+                    </div>
+                    <div class="mb-2">
+                      <span class="f-b">Exit Requested : </span> before {{exitCalculations.requestedBeforeDays}} days<span></span>
+                      <span class="f-b ml-1">Stay Duration : </span> <span>{{exitCalculations.stayDuration}} days</span>
+                    </div>
+                    <div class="mb-2">
+                      <h5 class="border-bottom mb-2">Early Exit Charge</h5>
+                      <p class="mb-0"><span class="f-b w-30">Statement : </span> {{exitCalculations.earlyExitCharge.statement}}</p>
+                      <p class="mb-0" *ngIf="exitCalculations.earlyExitCharge.charge && booking.contract.lockInPenaltyType!='Fixed'">
+                        <span class="f-b w-30">Penality Type : </span> Charge of {{booking.contract.lockInPenalty}} month(s) rent on prorata basis for remaining {{(booking.contract.lockIn * 30) - exitCalculations.stayDuration}} days </p>
+                      <p class="mb-0" *ngIf="exitCalculations.noticePeriodPenality.charge && booking.contract.lockInPenaltyType=='Fixed'">
+                        <span class="f-b w-30">Penality Type : </span> Fixed amount of {{booking.contract.lockInPenalty | inr}} </p>
+                      <p class="mb-0"><span class="f-b w-30">Penality Charge : </span> {{exitCalculations.earlyExitCharge.charge | inr}}</p>
+                    </div>
+                    <div class="mb-0">
+                      <h5 class="border-bottom  mb-2">Notice Period Penality</h5>
+                      <p class="mb-0"><span class="f-b w-30">Statement : </span> {{exitCalculations.noticePeriodPenality.statement}}</p>
+                      <p class="mb-0" *ngIf="exitCalculations.noticePeriodPenality.charge && booking.contract.noticePeriodViolationType!='Fixed'">
+                        <span class="f-b w-30">Penality Type : </span> Charge of {{booking.contract.noticePeriodViolation}} month(s) rent on prorata basis for remaining {{exitCalculations.requestedBeforeDays}} days </p>
+                      <p class="mb-0" *ngIf="exitCalculations.noticePeriodPenality.charge && booking.contract.noticePeriodViolationType=='Fixed'">
+                        <span class="f-b w-30">Penality Type : </span> Fixed amount of {{booking.contract.noticePeriodViolation | inr}} </p>
+                      <p class="mb-0"><span class="f-b w-30">Penality Charge : </span> {{exitCalculations.noticePeriodPenality.charge | inr}}</p>
+                    </div>
+                  </ng-template>
+                </ngb-panel>
+                <ngb-panel id="panel-1">
+                  <ng-template ngbPanelTitle>
+                    <span class="pull-left d-ib f-b fs-14">Asset Damage Charges</span>
+                  </ng-template>
+                  <ng-template ngbPanelContent>
+                    <loading [loading]="savingAcr"></loading>
+                    <span *checkAccess="'bookings:exitProcess'">
+                      <button class="btn btn-ico btn-sm btn-outline-info float-right" (click)="addAcr()" style="margin-top: -15px !important;" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-plus"></i> Add Asset Damage Item</button>
+                    </span>
+                    <div class="clear mb-2"></div>
+                    <form [formGroup]="acrForm">
+                      <div class="row" *ngIf="acr">
+                        <div class="col-8 pl-0 pr-0">
+                          <textarea class="form-control" placeholder="Item damage Description here" formControlName="damage" [(ngModel)]="acr.damage"></textarea>
+                        </div>
+                        <div class="col-2 pl-1 pr-0">
+                          <input type="number" class="form-control" name="charge" formControlName="charge" [(ngModel)]="acr.charge" placeholder="Charge">
+                        </div>
+                        <div class="col-2 pl-1 pr-0">
+                          <button class="btn btn-ico btn-info" (click)="saveAcr()" [ladda]="savingAcr" [disabled]="savingAcr||acrForm.invalid"><i class="fa fa-check" *ngIf="!savingAcr"></i> Save</button>
+                        </div>
+                      </div>
+                    </form>
+                    <table class="tableBodyScroll table table-striped table-hover table-sm mb-0" *ngIf="booking.exitRequest.acrs.length">
+                      <thead>
+                        <tr>
+                          <th class="w-75">Damage</th>
+                          <th class="w-15">Charge</th>
+                          <th class="w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody style="overflow:auto;max-height: 400px;">
+                        <tr *ngFor="let acr of booking.exitRequest.acrs;">
+                          <td class="w-75"> {{acr.damage}}</td>
+                          <td class="w-15">{{acr.charge | inr}}</td>
+                          <td class="w-10"><button class="btn btn-icon btn-outline-danger btn-sm" (click)="deleteAcr(acr)" ngbTooltip="Delete Charge" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-times"></i></button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </ng-template>
+                </ngb-panel>
+                <ngb-panel id="panel-2">
+                  <ng-template ngbPanelTitle>
+                    <span class="pull-left d-ib f-b fs-14">Other Deductions</span>
+                  </ng-template>
+                  <ng-template ngbPanelContent>
+                    <loading [loading]="savingDeduction"></loading>
+                    <span *checkAccess="'bookings:exitProcess'">
+                      <button class="btn btn-ico btn-sm btn-outline-info float-right" (click)="addDeduction()" style="margin-top: -15px !important;" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-plus"></i> Add Other Deduction</button>
+                    </span>
+                    <div class="clear mb-2"></div>
+                    <form [formGroup]="deductionForm">
+                      <div class="row" *ngIf="deduction">
+                        <div class="col-8 pl-0 pr-0">
+                          <textarea class="form-control" placeholder="Deduction Description here" formControlName="description" [(ngModel)]="deduction.description"></textarea>
+                        </div>
+                        <div class="col-2 pl-1 pr-0">
+                          <input type="number" class="form-control" name="charge" formControlName="charge" [(ngModel)]="deduction.charge" placeholder="Charge">
+                        </div>
+                        <div class="col-2 pl-1 pr-0">
+                          <button class="btn btn-ico btn-info" (click)="saveDeduction()" [ladda]="savingDeduction" [disabled]="savingDeduction||deductionForm.invalid"><i class="fa fa-check" *ngIf="!savingDeduction"></i> Save</button>
+                        </div>
+                      </div>
+                    </form>
+                    <table class="tableBodyScroll table table-striped table-hover table-sm mb-0" *ngIf="booking.exitRequest.deductions.length">
+                      <thead>
+                        <tr>
+                          <th class="w-75">Description</th>
+                          <th class="w-15">Deduction</th>
+                          <th class="w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody style="overflow:auto;max-height: 400px;">
+                        <tr *ngFor="let deduction of booking.exitRequest.deductions;">
+                          <td class="w-75"> {{deduction.description}}</td>
+                          <td class="w-15">{{deduction.charge | inr}}</td>
+                          <td class="w-10"><button class="btn btn-icon btn-outline-danger btn-sm" (click)="deleteDeduction(deduction)" ngbTooltip="Delete Deduction" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-times"></i></button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </ng-template>
+                </ngb-panel>
+                <ngb-panel id="panel-3">
+                  <ng-template ngbPanelTitle>
+                    <span class="pull-left d-ib f-b fs-14">Comments</span>
+                  </ng-template>
+                  <ng-template ngbPanelContent>
+                    <loading [loading]="savingComment"></loading>
+                    <span *checkAccess="'bookings:exitProcess'">
+                      <button class="btn btn-ico btn-sm btn-outline-info float-right" (click)="addComment()" style="margin-top: -15px !important;"><i class="fa fa-plus"></i> Add Comment</button>
+                    </span>
+                    <div class="clear mb-2"></div>
+                    <form [formGroup]="commentForm">
+                      <div class="row" *ngIf="comment">
+                        <div class="col-10 pl-0 pr-0">
+                          <textarea class="form-control" placeholder="Comment here" formControlName="comment" [(ngModel)]="comment.comment"></textarea>
+                        </div>
+                        <div class="col-2 pl-1 pr-0">
+                          <button class="btn btn-ico btn-info" (click)="saveComment()" [ladda]="savingComment" [disabled]="savingComment||commentForm.invalid"><i class="fa fa-check" *ngIf="!savingComment"></i> Save</button>
+                        </div>
+                      </div>
+                    </form>
+                    <table class="tableBodyScroll table table-striped table-hover table-sm mb-0" *ngIf="booking.exitRequest.comments.length">
+                      <thead>
+                        <tr>
+                          <th class="w-90">Comment</th>
+                          <th class="w-10"></th>
+                        </tr>
+                      </thead>
+                      <tbody style="overflow:auto;max-height: 400px;">
+                        <tr *ngFor="let comment of booking.exitRequest.comments;">
+                          <td class="w-90"> {{comment.comment}}</td>
+                          <td class="w-10"><button class="btn btn-icon btn-outline-danger btn-sm" (click)="deleteComment(comment)" ngbTooltip="Delete Comment" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-times"></i></button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </ng-template>
+                </ngb-panel>
+                <ngb-panel id="panel-3">
+                  <ng-template ngbPanelTitle>
+                    <span class="pull-left d-ib f-b fs-14">Exit Form</span>
+                  </ng-template>
+                  <ng-template ngbPanelContent>
+                    <a class="f-b badge badge-success fs-12 w-30 float-left" *ngIf="booking.exitRequest?.exitForm?.file" [href]="booking.exitRequest?.exitForm?.file" target="_blank" ngbTooltip="Click to View">View Exit Form</a>
+                    <span *checkAccess="'bookings:exitProcess'" class="w-60 float-right">
+                      <span class="input-group">
+                        <div class="custom-file" *ngIf="!exitFormFile">
+                          <input class="custom-file-input" id="exitFormId" (change)="exitFormFileChange($event)" type="file">
+                          <label class="custom-file-label" for="exitFormId">Choose file</label>
+                        </div>
+                        <div class="custom-file" *ngIf="exitFormFile">
+                          <span class="float-left">{{exitFormFile?.name}}</span>
+                          <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="exitFormFile=null;"></i>
+                          <div class="mb-1">
+                            <div *ngIf="exitFormFileError">
+                              {{ exitFormFileError.message }}
+                            </div>
+                            <div *ngIf="exitFormUploadResponse.status === 'error'">
+                              {{ exitFormUploadResponse.message }}
+                            </div>
+                            <div *ngIf="exitFormUploadResponse.status === 'progress'">
+                              <div role="progressbar" [style.width.%]="exitFormUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                                {{exitFormUploadResponse.message}}%
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="input-group-append">
+                          <span class="input-group-text cursor" (click)="uploadExitFormFile()">Upload</span>
+                        </div>
+                      </span>
+                    </span>
+                  </ng-template>
+                </ngb-panel>
+              </ngb-accordion>
+            </div>
+            <div class="col-md-6 col-12 accordion">
+              <div class="card">
+                <div class="card-header" role="tab">
+                  <button class="btn btn-link" type="button">
+                    <span class="f-b fs-14">Exit Final Statement</span>
+                    <span class="mt-1 badge badge-info pull-right fs-12" *ngIf="booking.exitRequest.fcpStatus=='Accepted'">Accepted</span>
+                    <span class="mt-1 badge badge-danger pull-right fs-12" *ngIf="booking.exitRequest.fcpStatus=='Rejected'">Rejected</span>
+                    <span class="mt-1 badge badge-success pull-right fs-12" *ngIf="booking.exitRequest.fcpStatus=='Refunded'">Refunded</span>
+                    <span class="mt-1 badge badge-primary pull-right fs-12" *ngIf="booking.exitRequest.fcpStatus=='Approved'">Approved</span>
+                    <span class="mt-1 badge badge-light pull-right fs-12" *ngIf="booking.exitRequest.fcpStatus=='Requested'">Requested</span>
+                  </button>
+                </div>
+                <div class="card-body">
+                  <loading [loading]="loading"></loading>
+                  <table class="tableBodyScroll table table-striped table-hover table-sm mb-3">
+                    <thead>
+                      <tr>
+                        <th class="w-70">Item</th>
+                        <th class="w-30 text-right">Charge</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="w-70">Monthly payments till exit date</td>
+                        <td class="w-30 text-right">{{booking.exitRequest.monthlyInvoices | inr}}</td>
+                      </tr>
+                      <tr>
+                        <td class="w-70">Early Exit Charge</td>
+                        <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.earlyExitCharge | inr}}</td>
+                        <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                          <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.earlyExitCharge" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" [disabled]="!checkForAccess('bookings:exitProcess')" />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="w-70">Notice Penalty Charge</td>
+                        <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.noticePeriodPenalty | inr}}</td>
+                        <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                          <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.noticePeriodPenalty" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" [disabled]="!checkForAccess('bookings:exitProcess')" />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="w-70">Asset Damage Charges <small>(plus 18% GST)</small></td>
+                        <td class="w-30 text-right">{{booking.exitRequest.assetDamages | inr}}</td>
+                      </tr>
+                      <tr>
+                        <td class="w-70">Other Deductions <small>(plus 18% GST)</small></td>
+                        <td class="w-30 text-right">{{booking.exitRequest.otherDeductions | inr}}</td>
+                      </tr>
+                      <tr>
+                        <td class="w-70">TDS Liability</td>
+                        <td class="w-30 text-right">{{booking.exitRequest.tdsLiability | inr}}</td>
+                      </tr>
+                      <tr>
+                        <td class="w-70">De-Registration Liability</td>
+                        <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.deregistrationLiability | inr}}</td>
+                        <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                          <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.deregistrationLiability" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" [disabled]="!checkForAccess('bookings:exitProcess')" />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="w-70">TDS Penality</td>
+                        <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.tdsPenalty | inr}}</td>
+                        <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                          <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.tdsPenalty" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" [disabled]="!checkForAccess('bookings:exitProcess')" />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="w-70 f-b">Total Expected Amount</td>
+                        <td class="w-30 text-right">{{booking.exitRequest.expectedAmount | inr}}</td>
+                      </tr>
+                      <tr>
+                        <td class="w-70 f-b">Total Paid (including Security Deposit)</td>
+                        <td class="w-30 text-right f-b ">{{booking.paid | inr}}</td>
+                      </tr>
+                      <tr *ngIf="booking.exitRequest.due" class="">
+                        <td class="w-70 f-b">Total Due</td>
+                        <td class="w-30 text-right f-b" style="background: #d22346;color:#fff;">{{booking.exitRequest.due | inr}}</td>
+                      </tr>
+                      <tr *ngIf="booking.exitRequest.refund" class="">
+                        <td class="w-70 f-b">To Refund</td>
+                        <td class="w-30 text-right f-b" style="background: #82A0DF;color:#fff;">{{booking.exitRequest.refund | inr}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <span *checkAccess="'bookings:exitProcess'">
+                    <p *ngIf="booking.exitRequest.fcpStatus=='Rejected'"><strong>Rejected Message : </strong> : {{booking.exitRequest?.rejectedMessage}}</p>
+                    <button class="btn btn-info btn-sm btn-sm ladda-button btn-ico float-right" [ladda]="loading" (click)="approveFinalStatement()" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-check" *ngIf="!loading"></i> Approve Final Statement</button>
+                  </span>
+                  <span class="float-right" *ngIf="booking.exitRequest?.finalStatement && booking.exitRequest.fcpStatus=='Approved'"><a class="badge badge-success fs-14" href="{{booking.exitRequest.finalStatement?.file}}" target="_blank" ngbTooltip="Click to view Final Statement">View Final Statement</a></span>
+                  <span *checkAccess="'bookings:exitProcess'">
+                    <button class="btn btn-sm btn-outline-warning ladda-button btn-ico float-left" [ladda]="loading" (click)="acceptFinalStatement()" *ngIf="booking.exitRequest.fcpStatus=='Approved'"><i class="fa fa-check" *ngIf="!loading"></i> Force Accept Final Statement</button>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Sent Emails">
+        <ng-template ngbTabContent>
+          <div style="margin-top: -30px">
+            <!-- <div class="float-right">
+              <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openEmployeeModal()">
+                <i class="fa fa-plus"></i> Add Employee
+              </button>
+            </div>
+            <div class="clear"></div> -->
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card  o-hidden">
+                <data-list #list [filter]="mailsListFilter" [dataUrl]="'internal/bookings/listBookingMails'" [config]="mailsListConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+</div>
+<ng-template #invoiceModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{invoice.id ? 'Edit Invoice' : 'New Invoice'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="invoiceForm">
+      <div class="row">
+        <div class="col-md-8 form-group mb-1">
+          <label for="firstName">Invoice Service</label>
+          <ng-select [items]="invoiceServices" [hideSelected]="true" [bindLabel]="'name'" bindValue="id" placeholder="Select Invoice Service" [(ngModel)]="invoice.invoiceServiceId" formControlName="type" name="type"> </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1 pt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="invoice.sendNotification" [ngModelOptions]="{standalone: true}">
+            <span>Send Notification</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-4 form-group mb-1">
+          <label for="firstName">Amount</label>
+          <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter taxable amount" [(ngModel)]="invoice.taxableAmount">
+        </div>
+        <div class="col-md-4 form-group mb-1">
+          <label for="roles">Invoice Date</label>
+          <input placeholder="Select invoice date " class="form-control" name="date" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="invoice.date" formControlName="date" (dateSelect)="dp.close()" (focus)="dp.toggle()" />
+        </div>
+        <div class="col-md-4 form-group mb-1">
+          <label for="roles">Invoice Due Date</label>
+          <input placeholder="Select invoice due date " class="form-control" name="dueDate" ngbDatepicker #ddp="ngbDatepicker" (dateSelect)="ddp.close()" [(ngModel)]="invoice.dueDate" formControlName="dueDate" (focus)="ddp.toggle()" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Description</label>
+          <textarea class="form-control" id="description" formControlName="description" placeholder="Enter Invoice description" [(ngModel)]="invoice.description"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||invoiceForm.invalid" (click)="saveInvoice()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #paymentModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{payment.id ? 'Edit Payment' : 'New Payment'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="paymentForm">
+      <div class="row">
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Payment Type</label>
+          <ng-select [items]="paymentTypes" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Payment Type" [(ngModel)]="payment.type" formControlName="type" name="type"> </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Amount</label>
+          <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter Paid Amount" [(ngModel)]="payment.amount">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Payment Date</label>
+          <input placeholder="Select payment date " class="form-control" name="date" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="payment.date" formControlName="date" (dateSelect)="dp.close()" (focus)="dp.toggle()" />
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Payment Reference Number</label>
+          <input placeholder="Enter UTR number" class="form-control" name="utr" [(ngModel)]="payment.utr" formControlName="utr" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Comments</label>
+          <textarea placeholder="Select payment due date " class="form-control" name="comments" [(ngModel)]="payment.comments" formControlName="comments"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||paymentForm.invalid" (click)="savePayment()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #paymentsListModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">Payments List</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <div class="ml-20 d-ib mt-1 mr-4 float-right">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="showCancelled" [ngModelOptions]="{standalone: true}" (ngModelChange)="showCancelledPayments(showCancelled)">
+        <span class="d-ib mt--10 fs-10">Show Cancelled</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr *ngIf="!showCancelled">
+            <th class="w-15">Type</th>
+            <th class="w-10">Amount</th>
+            <th class="w-20">UTR</th>
+            <th class="w-15">Date</th>
+            <th class="w-15">Updated On</th>
+            <th class="w-15">Updated By</th>
+          </tr>
+          <tr *ngIf="showCancelled">
+            <th class="w-15">Type</th>
+            <th class="w-10">Amount</th>
+            <th class="w-20">Reason</th>
+            <th class="w-15">PaidOn</th>
+            <th class="w-15">Cancelled On</th>
+            <th class="w-15">Cancelled By</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of paymentsList;">
+            <td class="w-15">{{item.type}}</td>
+            <td class="w-10">{{item.amount | inr}}</td>
+            <td class="w-20" *ngIf="!showCancelled">{{item.utr}}</td>
+            <td class="w-20" *ngIf="showCancelled">{{item.cancelledReason}}</td>
+            <td class="w-15">{{item.date | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-15" *ngIf="!showCancelled">{{item.updated | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-15" *ngIf="showCancelled">{{item.cancelledDate | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-15" *ngIf="!showCancelled">{{item.updatedBy}}
+              <span class="i-db float-right cursor p-1" placement="left" *ngIf="item.comments" ngbTooltip="{{item.comments}}"><i class="fa fa-info"></i></span></td>
+            <td class="w-15" *ngIf="showCancelled">{{item.cancelledBy}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #employeeModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{payment.id ? 'Edit Employee' : 'New Employee'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="employeeForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Employee Name" [(ngModel)]="employee.name">
+        </div>
+        <!--  <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Department</label>
+          <ng-select [items]="departments" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Department" [(ngModel)]="employee.department" formControlName="department" name="department"> </ng-select>
+        </div> -->
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Email</label>
+          <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="employee.email">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Phone</label>
+          <input type="number" placeholder="Enter Phone number" class="form-control" name="phone" [(ngModel)]="employee.phone" formControlName="phone" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Contact Purposes</label>
+          <ng-select [items]="contactPurposes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Contact Puposes" [(ngModel)]="employee.contactPurposes" formControlName="contactPurposes" name="contactPurposes"> </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1 pt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="employee.hasAccess" [ngModelOptions]="{standalone: true}">
+            <span>Has Account Access</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1" *ngIf="employee.hasAccess">
+          <label for="roles">Password</label>
+          <input type="password" placeholder="Enter Password for ERP" class="form-control" name="password" [(ngModel)]="employee.password" formControlName="password" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||employeeForm.invalid" (click)="saveEmployee()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #creditsHistoryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left" id="modal-basic-title">Credits History</h4>
+    <div class="pull-right row w-60 ml-100 mt-1">
+      <div class="col-md-4">
+        <strong>Total Credits : </strong> {{creditsHistory.validCredits}}
+      </div>
+      <div class="col-md-4">
+        <strong>Used Credits : </strong> {{creditsHistory.usedCredits}}
+      </div>
+      <div class="col-md-4">
+        <strong>Available Credits : </strong> {{creditsHistory.availableCredits}}
+      </div>
+    </div>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-6">
+        <h5 class="pull-left">Credit Entries</h5>
+        <div class="table-responsive">
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-15 text-center">Credits</th>
+                <th class="w-15 text-center">Value</th>
+                <th class="w-15 text-center">Type</th>
+                <th class="w-15">Added By</th>
+                <th class="w-15">Added On</th>
+                <th class="w-10 text-center"></th>
+              </tr>
+            </thead>
+            <tbody style="max-height: 300px">
+              <tr *ngFor="let item of creditsHistory.entries;">
+                <td class="w-15 text-center">{{item.credits}}</td>
+                <td class="w-15 text-center">{{item.value | inr}}</td>
+                <td class="w-15 text-center">{{item.type}}</td>
+                <td class="w-15">{{item.addedBy}}</td>
+                <td class="w-15">{{item.addedOn | date : 'MMM dd, yyyy'}}</td>
+                <td class="w-10 text-center">
+                  <button class="btn btn-icon btn-warning" (click)="deleteCreditEntry(item)" ngbTooltip="Delete Credit Entry"><i class="i-Close-Window text-bold"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-6">
+        <h5>Credit Usage</h5>
+        <div class="table-responsive">
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-55 text-center">Booked Resource</th>
+                <th class="w-10 text-center">Credits</th>
+                <th class="w-10 text-center">Value</th>
+                <th class="w-25 text-center">Used On</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll" style="max-height: 300px">
+              <tr *ngFor="let item of creditsHistory.used;">
+                <td class="w-55 ">{{item.resourceBooking.name}} <small>for {{item.resourceBooking.from | date : 'MMM dd, yyyy'}}</small></td>
+                <td class="w-10 text-center">{{item.credits}}</td>
+                <td class="w-10 text-center">{{item.value | inr}}</td>
+                <td class="w-25 text-center">{{item.usedOn | date : 'MMM dd, yyyy'}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <div class="w-50">
+      <span *checkAccess="'bookings:addCredits'">
+        <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-left" *ngIf="!showEntryForm" (click)="showEntryForm=true">
+          <i class="fa fa-plus"></i> Add Credits
+        </button>
+      </span>
+      <div class="pull-left row" *ngIf="showEntryForm">
+        <div class="col-md-7 form-grou">
+          <!-- <span for="firstName" class="pull-left mr-10">Credits</span> -->
+          <input type="number" class="pull-left form-control" id="credits" placeholder="Enter Credits to Add" [(ngModel)]="creditEntry.credits">
+        </div>
+        <div class="col-md-5 form-grou">
+          <button class="btn btn-primary btn-sm btn-ico pull-left" [disabled]="!creditEntry.credits" (click)="saveCreditEntry()">
+            <i class="fa fa-check"></i> Confirm
+          </button>
+          <button class="btn btn-warning btn-s btn-icon pull-left" ngbTooltip="Cancel" (click)="creditEntry.credits=0;showEntryForm=false;"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-outline-light pull-right" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #expansionModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left" id="modal-basic-title">{{expansionType}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pt-0 mt--10">
+    <loading [loading]="loading"></loading>
+    <div class="row p-2 ml-0 mr-0">
+      <div class="form-group p-1 col-md-2" *ngIf="expansionType=='Expansion'">
+        <label for="roles">No of Expanding Desks</label>
+        <input type="number" class="form-control" placeholder="Desks Count" [(ngModel)]="expansionDesks" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchOffices()" />
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="expansionType=='ReLocation'">
+        <label for="roles">No of Desks</label>
+        <input type="number" class="form-control" placeholder="Desks Count" [(ngModel)]="expansionDesks" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchOffices()" />
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="expansionType=='ReLocation'||expansionDesks">
+        <label for="roles">{{expansionType}} Date</label>
+        <input placeholder="Select Date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="expansionDate" [ngModelOptions]="{standalone: true}" (dateSelect)="dp.close()" (focus)="dp.toggle()" (ngModelChange)="searchOffices()" />
+      </div>
+    </div>
+    <div class="row" *ngIf="buildings.length>0 && !selectedBuilding">
+      <div class="col-6" *ngIf="isMapReady">
+        <agm-map [latitude]="lat" [longitude]="lng" [zoom]="13">
+          <agm-marker *ngFor="let marker of markers" [label]="marker.label" [latitude]="marker.lat" [longitude]="marker.lng" [opacity]="marker.alpha" [animation]="marker.animation" [markerDraggable]="false" (mouseOut)="markerOut(marker)" (mouseOver)="markerOver(marker)">
+          </agm-marker>
+        </agm-map>
+      </div>
+      <div class="col-6">
+        <span class="text-secondary d-ib p-1 fs-16">Total <strong>{{buildings.length}} buildings</strong> are found for above criteria.</span>
+        <div class="tableBodyScroll cabins" style="height: calc(300px - 30px);overflow-y: auto;">
+          <div class="hot-desk card p-2 m-1 cursor" (click)="selectedBuilding=building; offices= selectedBuilding.offices" [ngClass]="{'selected':building.selected}" *ngFor="let building of buildings" (mouseenter)="hoverBuilding(building, true)" (mouseleave)="hoverBuilding(building, false)">
+            <h5 class="item-title mb-1">{{building.name}}</h5>
+            <div>
+              <p class="mb-0">{{building.address}}</p>
+              <span class="d-ib w-50">
+                <span class="text-secondary">Total Desks : </span> <span class="text-primary f-b">{{building.total}}</span>
+              </span>
+              <span class="text-secondary">Available Desks : </span> <span class="text-info f-b">{{building.available}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="selectedBuilding">
+      <span class="text-secondary d-ib w-50 p-1 fs-16">Total <strong>{{selectedBuilding.offices.length}} floors</strong> are there in '{{selectedBuilding.name}}'.
+        <button class="btn btn-sm btn-icon ml-1 cursor" ngbTooltip="Click to Cancel Building Selection" (click)="selectedBuilding=null;selectedOffices=[]"><i class="fa fa-times"></i> </button>
+      </span>
+      <span class="d-ib pull-right">
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-primary" ngbTooltip="Selected"></div>
+        </div>
+        <div class="pull-left mr-10">Selected </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-success" ngbTooltip="Available"></div>
+        </div>
+        <div class="pull-left mr-10">Available </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-warning" ngbTooltip="Will be Available"></div>
+        </div>
+        <div class="pull-left mr-10">Will be available in few days </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-light" ngbTooltip="Booked"></div>
+        </div>
+        <div class="pull-left mr-10">Booked </div>
+      </span>
+    </div>
+    <!-- ngb-panel-0 -->
+    <ngb-accordion #acc="ngbAccordion" activeIds="[]" [closeOthers]="true">
+      <ngb-panel *ngFor="let office of selectedBuilding?.offices;let i=index;">
+        <ng-template ngbPanelTitle>
+          <span class="pull-left d-ib">{{office.name}} </span>
+          <span class="pull-right d-ib"> Desks : {{office.available}} available / {{office.total}} total </span>
+          <span class="pull-right d-ib mr-50"> WorkStations : {{office.workstations}}</span>
+          <span class="pull-right d-ib mr-50"> Selected : {{desks.length}} out of {{expansionDesks}} desks</span>
+        </ng-template>
+        <ng-template ngbPanelContent>
+          <div class="row p-1 cabins">
+            <div class="row" [ngClass]="{'col-4 ml-0 hot-desk cursor':selectedDeskType=='FlexiDesk','col-12':selectedDeskType!='FlexiDesk'}" *ngFor="let cabin of office.cabins">
+              <div class="card p-2 m-1" [ngClass]="{'col-12':selectedDeskType=='FlexiDesk','col-3':selectedDeskType!='FlexiDesk'||selectedDeskType.type=='EnterpriseOffice','selected':cabin.selected}">
+                <div *ngIf="booking.type=='EnterpriseOffice'" class="cursor" (click)="selectCabin(office, cabin)">
+                  <h5 class="item-title mb-1">{{cabin.name}}</h5>
+                  <span class="d-ib w-100">
+                    <span class="pull-right">
+                      <span class="text-secondary">Total Desks : </span> <span class="text-info">{{cabin.total}}</span>
+                    </span>
+                    <span class="text-secondary">Total Area : </span> <span class="text-primary">{{cabin.totalArea}} SqFt</span>
+                  </span>
+                  <span class="text-secondary">Available Area : </span> <span class="text-info">{{cabin.totalArea - cabin.usedArea}} SqFt</span>
+                </div>
+                <div *ngIf="booking.type!='EnterpriseOffice'">
+                  <h5 class="item-title mb-1 d-ib">{{cabin.name}}</h5>
+                  <button class="btn btn-sm btn-icon float-right" *ngIf="cabin.available && !cabin.selectedAll" (click)="selectAllDesks(cabin, true)" ngbTooltip="Select All Desks"><i class="fa fa-check-square-o"></i></button>
+                  <button class="btn btn-sm btn-icon float-right" *ngIf="cabin.selectedAll" (click)="selectAllDesks(cabin, false)" ngbTooltip="UnSelect All Desks"><i class="fa fa-check-square"></i></button>
+                  <div class="clear"></div>
+                  <span class="d-ib w-50">
+                    <span class="text-secondary">Total Desks : </span> <span class="text-primary">{{cabin.total}}</span>
+                  </span>
+                  <span class="text-secondary">Available Desks : </span> <span class="text-info">{{cabin.available}}</span>
+                 
+                </div>
+                <div *ngIf="cabin.price">
+                  <span class="text-secondary d-ib w-50">Price per desk : </span> <span class="text-info">{{cabin.price | inr}}</span>
+                </div>
+                <div *ngIf="cabin.minPrice && cabin.maxPrice">
+                  <span class="d-ib w-50">
+                    <span class="text-secondary">Price Range : </span>
+                  </span>
+                  <span class="text-primary">{{cabin.minPrice | inr}}</span> - <span class="text-primary">{{cabin.maxPrice | inr}}</span>
+                </div>
+              </div>
+              <div class="col-9 row" [ngClass]="{'d-none':selectedDeskType=='FlexiDesk'}">
+                <div class="desk pull-left card m-1" *ngFor="let desk of cabin.desks;let i=index;" (click)="selectDesk(desk)" [ngClass]="{'selected':desk.selected}">
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-success" *ngIf="desk.status=='Available'" ngbTooltip="{{desk.name}}">{{i+1}}</div>
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-warning" *ngIf="desk.status=='Releasing'" ngbTooltip="Available from {{desk.releaseDate}}">{{i+1}}</div>
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-light" *ngIf="desk.status=='Booked'||desk.status=='InUse'" ngbTooltip="Booked">{{i+1}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+    <div *ngIf="selectedOffices?.length" class="mt-20">
+      <h5 class="pull-left">Selected Cabins </h5> - <span>Please review your cabin selection and select facilities to update effective price accordingly</span>
+      <div *ngFor="let office of selectedOffices;" style="border-bottom: 1px solid #82A0DF;padding-top: 10px;">
+        <p class="mb-1"><strong>{{office.office}}</strong></p>
+        <div *ngFor="let cabin of office.cabins;" class="row p-1 ml-0">
+          <div class="col-md-2 col-12 card p-2">
+            <h5 class="item-title mb-1">{{cabin.deskType}}</h5>
+            <span class="text-primary">{{cabin.names}}</span>
+          </div>
+          <div class="col-5 p-1">
+            <ng-select [items]="cabin.pricings" [hideSelected]="true" placeholder="Select Facilities" [(ngModel)]="cabin.value" [ngModelOptions]="{standalone: true}" [bindLabel]="'facilities'" [bindValue]="'value'" (change)="updateBookingPrice()"> </ng-select>
+          </div>
+          <div class="col-2 p-1 pl-3" style="max-width: 12% !important">
+            <div>No of Desks : {{cabin.desksCount}}</div>
+            <div *ngIf="cabin.price">Price : {{cabin.price | inr}}</div>
+          </div>
+          <div class="col-1 p-1" *ngIf="cabin.price">
+            <div>Total : <strong>{{cabin.price*cabin.desksCount | inr}}</strong></div>
+          </div>
+          <!-- <div class="col-1 p-1" *ngIf="cabin.price">
+            <div>Final Discount<input type="number" class="form-control" placeholder="Final Discount" [(ngModel)]="contract.discount" [ngModelOptions]="{standalone: true}" /></div>
+          </div> -->
+          <div class="col-1 p-1" *ngIf="cabin.price">
+            <!-- <div>New Rent : <strong>{{(totalBookingPrice - (contract.discount||0)) | inr}}</strong></div> -->
+            <div>New Rent<input type="number" class="form-control" placeholder="Final New Rent" [(ngModel)]=" contract.rent" [ngModelOptions]="{standalone: true}" /></div>
+          </div>
+          <div class="col-1 p-1" *ngIf="cabin.price">
+            <div>New SD<input type="number" class="form-control" placeholder="Final Security Deposit" [(ngModel)]="contract.security" [ngModelOptions]="{standalone: true}" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-sm btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading" (click)="confirmExpansion()" *ngIf="expansionType=='Expansion'"><i class="fa fa-check" *ngIf="!loading"></i> Confirm</button>
+    <button class="btn btn-sm btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading" (click)="confirmRelocation()" *ngIf="expansionType=='ReLocation'"><i class="fa fa-check" *ngIf="!loading"></i> Confirm</button>
+  </div>
+</ng-template>
+<ng-template #contractionModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left" id="modal-basic-title">Booking Desks Contraction</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pt-0 mt--10">
+    <loading [loading]="loading"></loading>
+    <div class="row p-2 ml-0 mr-0">
+      <div class="form-group p-1 col-md-1-5">
+        <label for="roles">No of Desks</label>
+        <input type="number" class="form-control" placeholder="Desks Count" [(ngModel)]="contractionDesks" [ngModelOptions]="{standalone: true}" />
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="contractionDesks && contractionDesks<booking.desks">
+        <label for="roles">Contraction Date</label>
+        <input placeholder="Select Date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="contractionDate" [ngModelOptions]="{standalone: true}" (dateSelect)="dp.close()" (focus)="dp.toggle()" (ngModelChange)="checkForValidContraction()" />
+      </div>
+      <div class="form-group p-1 col-md-9 mt-2 pt-4" *ngIf="contractionDesks && contractionDate && !validContractionDate">
+        <p class="badge badge-danger fs-12">As per agreed Notice Period, you cannot request for contract on or before {{minContractionDate | date : 'MMM dd, yyyy'}}. Please select a date after specified date to proceed. </p>
+      </div>
+      <div class="form-group p-1 col-md-9 mt-2 pt-4" *ngIf="contractionDesks && contractionDesks>=booking.desks">
+        <p class="badge badge-danger fs-12">You cant do contraction for more than current number of booked desks. </p>
+      </div>
+    </div>
+    <div *ngIf="offices.length>0 && validContractionDate && contractionDesks<booking.desks">
+      <span class="d-ib pull-right">
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-primary" ngbTooltip="Selected"></div>
+        </div>
+        <div class="pull-left mr-10">Selected </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-success" ngbTooltip="Booked"></div>
+        </div>
+        <div class="pull-left mr-10">Booked </div>
+      </span>
+      <div class="clear"></div>
+    </div>
+    <div *ngIf="validContractionDate && contractionDesks<booking.desks">
+      <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0" [closeOthers]="true">
+        <ngb-panel *ngFor="let office of offices;let i=index;">
+          <ng-template ngbPanelTitle>
+            <span class="pull-left d-ib">{{office.name}} </span>
+            <span class="pull-right d-ib mr-50"> Selected : {{desks.length}} out of {{contractionDesks}} desks</span>
+          </ng-template>
+          <ng-template ngbPanelContent>
+            <div class="row p-1 cabins" style="border-bottom: 1px solid #82A0DF;">
+              <div class="row" [ngClass]="{'col-4 ml-0 hot-desk cursor':contract.type=='HotDesk','col-12':contract.type!='HotDesk'}" *ngFor="let cabin of office.cabins">
+                <div class="card p-2 m-1" (click)="selectHotDesks(office, cabin)" [ngClass]="{'col-12':contract.type=='HotDesk','col-3':contract.type!='HotDesk','selected':cabin.selected}">
+                  <h5 class="item-title mb-1">{{cabin.name}} <small class="float-right">Desks : {{cabin.desks.length}}</small></h5>
+                </div>
+                <div class="col-9 row" [ngClass]="{'d-none':contract.type=='HotDesk'}">
+                  <div class="desk pull-left card m-1" *ngFor="let desk of cabin.desks;let i=index;" (click)="selectDeskForContraction(desk)">
+                    <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-primary" *ngIf="desk.selected" ngbTooltip="{{desk.name}}">{{i+1}}</div>
+                    <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-success" *ngIf="!desk.selected" ngbTooltip="{{desk.name}}">{{i+1}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-panel>
+      </ngb-accordion>
+      <div *ngIf="desks?.length == contractionDesks" class="mt-20">
+        <h5 class="pull-left">Selected Cabins </h5> - <span>Please review your desks selection</span>
+        <div class="row">
+          <div class="col-3 p-1 pl-3" style="max-width: 12% !important">
+            <div>No of Desks : {{desks.length}}</div>
+          </div>
+          <div class="col-3 p-1">
+            <div>Total Deductions : <strong>{{deductionPrice | inr}}</strong></div>
+          </div>
+          <div class="col-3" style="margin-top: -30px;" *ngIf="deductionPrice">
+            <div>New Rent <input type="number" class="form-control" placeholder="Final New Rent" [(ngModel)]="deductionNewRent" [ngModelOptions]="{standalone: true}" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-sm btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading" (click)="confirmContraction()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm</button>
+  </div>
+</ng-template>
+<ng-template #contractModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Edit {{contract.kind}} Contract</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form *ngIf="contract.term=='ShortTerm'">
+      <div class="col-md-3 form-group mb-1 p-1">
+        <label for="rent">Monthly Rent</label>
+        <input type="number" class="form-control" id="rent" placeholder="Enter Monthly Rent" [(ngModel)]="contract.rent" [ngModelOptions]="{'standalone':true}">
+      </div>
+    </form>
+    <form [formGroup]="contractForm" *ngIf="contract.term!='ShortTerm'">
+      <div class="row">
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="security">Security Deposit</label>
+          <input type="number" class="form-control" id="security" placeholder="Enter Security Deposit amount" formControlName="security" [(ngModel)]="contract.security">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="rent">Monthly Rent</label>
+          <input type="number" class="form-control" id="rent" placeholder="Enter Monthly Rent" formControlName="rent" [(ngModel)]="contract.rent">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="Token">Rent Token Amount</label>
+          <input type="number" class="form-control" id="token" placeholder="Token to pay" formControlName="token" [(ngModel)]="contract.token">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="Token">SD Token Amount</label>
+          <input type="number" class="form-control" id="token" placeholder="Token to pay" formControlName="tokenSD" [(ngModel)]="contract.tokenSD">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="contract.isSqftRent" [ngModelOptions]="{standalone: true}">
+            <span>Is SqFt Based ?</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-1 form-group mb-1 p-1">
+          <div *ngIf="contract.isSqftRent">
+            <label for="Token">Total SqFt</label>
+            <input type="number" class="form-control" id="sqFt" placeholder="No of SqFt" [ngModelOptions]="{standalone: true}" [(ngModel)]="contract.sqFt">
+          </div>
+        </div>
+        <div class="col-md-1 form-group mb-1 p-1">
+          <div *ngIf="contract.isSqftRent">
+            <label for="Token">SqFt Price</label>
+            <input type="number" class="form-control" id="sqFtPrice" placeholder="SqFt Price" [ngModelOptions]="{standalone: true}" [(ngModel)]="contract.sqFtPrice">
+          </div>
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="lockin">LockIn Period</label>
+          <input type="number" class="form-control" id="lockin" placeholder="months" formControlName="lockin" [(ngModel)]="contract.lockIn">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="lockin">LockIn Penalty Type</label>
+          <select class="form-control" id="lockinPenaltyType" placeholder="Type" formControlName="lockinPenaltyType" [(ngModel)]="contract.lockInPenaltyType">
+            <option value="Fixed">Fixed</option>
+            <option value="MonthRent">Month's Rent</option>
+          </select>
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="lockin">LockIn Penalty</label>
+          <input type="number" class="form-control" id="lockInPenalty" placeholder="LockIn Penalty" formControlName="lockInPenalty" [(ngModel)]="contract.lockInPenalty">
+        </div>
+        <div class="col-md-5 form-group mb-1 p-1"></div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="lockin">Notice Period</label>
+          <input type="number" class="form-control" id="noticePeriod" placeholder="months " formControlName="noticePeriod" [(ngModel)]="contract.noticePeriod">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="lockin">Notice Penalty Type</label>
+          <select class="form-control" id="noticePeriodViolationType" placeholder="Type" formControlName="noticePeriodViolationType" [(ngModel)]="contract.noticePeriodViolationType">
+            <option value="Fixed">Fixed</option>
+            <option value="MonthRent">Month's Rent</option>
+          </select>
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="lockin">Notice Period Penalty</label>
+          <input type="number" class="form-control" id="noticePeriodViolation" placeholder="Notice Period Violation" formControlName="noticePeriodViolation" [(ngModel)]="contract.noticePeriodViolation">
+        </div>
+        <div class="col-md-12 form-group mb-1 row">
+          <div class="col-md-3 form-group mb-1">
+            <label class="d-b">PAX Price <small>(for this Office Resource)</small></label>
+            {{contract.paxPrice | inr}}
+          </div>
+          <div class="col-md-5 form-group mb-1 p-1">
+            <label class="d-b">Percent of Rent <small>(to get Free Credits)</small> </label>
+            <input type="number" class="form-control" placeholder="Enter % of Rent to calculate free credits" [(ngModel)]="contract.paxPercent" [ngModelOptions]="{standalone:true}" (ngModelChange)="calculateFreeCredits()" />
+          </div>
+          <div class="col-md-4 form-group mb-1 p-1">
+            <label class="d-b">Free Credits <small>(calculated based on % of rent amount)</small></label>
+            {{contract.freeCredits}}
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="btn btn-outline-info btn-sm float-left" (click)="openAdditionalInvoices(contract)">Additional Monthly Invoices</button>
+    <button type="button" class="btn btn-outline-light float-right" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="contract.term!='ShortTerm'" class="btn btn-info btn-sm ladda-button float-right btn-ico" [ladda]="loading" [disabled]="loading||contractForm.invalid" (click)="saveContract()"><i class="fa fa-save" *ngIf="!loading"></i> Save</button>
+    <button *ngIf="contract.term=='ShortTerm'" class="btn btn-info btn-sm ladda-button float-right btn-ico" [ladda]="loading" [disabled]="loading||!contract.rent" (click)="saveContract()"><i class="fa fa-save" *ngIf="!loading"></i> Save</button>
+    <span *checkAccess="'bookings:approveContract'">
+      <button *ngIf="contract.term!='ShortTerm'&&contract.status=='Draft'" class="btn btn-info btn-sm ladda-button float-right btn-ico" [ladda]="loading" [disabled]="loading||contractForm.invalid" (click)="approveContract()"><i class="fa fa-check" *ngIf="!loading"></i> Approve Contract</button>
+    </span>
+    <span *checkAccess="'bookings:confirmContract'">
+      <button *ngIf="contract.term!='ShortTerm'&&contract.status=='Approved'" class="btn btn-success ladda-button float-right btn-ico" [ladda]="loading" [disabled]="loading||contractForm.invalid" (click)="confirmContract()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Contract</button>
+    </span>
+    <span *checkAccess="'bookings:approveContract'">
+      <button *ngIf="contract.term=='ShortTerm'&&contract.status=='Draft'" class="btn btn-info btn-sm ladda-button float-right btn-ico" [ladda]="loading" [disabled]="loading||!contract.rent" (click)="approveContract()"><i class="fa fa-check" *ngIf="!loading"></i> Approve Contract</button>
+    </span>
+    <span *checkAccess="'bookings:confirmContract'">
+      <button *ngIf="contract.term=='ShortTerm'&&contract.status=='Approved'" class="btn btn-success ladda-button float-right btn-ico" [ladda]="loading" [disabled]="loading||!contract.rent" (click)="confirmContract()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Contract</button>
+    </span>
+  </div>
+</ng-template>
+<ng-template #clientModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{client.id ? 'Edit Client' : 'New Client'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="clientForm" *ngIf="client.term!='ShortTerm'">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1 p-1">
+          <label for="firstName">Client Registered Company Name</label>
+          <input type="text" class="form-control" id="company" formControlName="company" placeholder="Enter Client  Company" [(ngModel)]="client.company">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="name">Contact Name</label>
+          <input class="form-control" id="name" placeholder="Enter Contact Name" formControlName="name" [(ngModel)]="client.name">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Authorised person email" formControlName="email" [(ngModel)]="client.email">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="phone">Phone</label>
+          <input class="form-control" id="phone" placeholder="Authorised person phone" formControlName="phone" [(ngModel)]="client.phone">
+        </div>
+        <div class="col-md-12 form-group mb-1 p-1">
+          <label for="address">Registered Address</label>
+          <input class="form-control" id="address" placeholder="Enter client registered address" formControlName="address" [(ngModel)]="client.address">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="gstNo">GST No</label>
+          <input class="form-control" id="gstNo" placeholder="Registered GST Number" formControlName="gstNo" [(ngModel)]="client.gstNo">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="panNo">PAN No</label>
+          <input class="form-control" type="text" id="panNo" placeholder="Registered PAN Number" formControlName="panNo" [(ngModel)]="client.panNo">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 p-1">
+          <label for="stateCode">State Code</label>
+          <input class="form-control" type="text" id="stateCode" placeholder="State Code" formControlName="stateCode" [(ngModel)]="client.stateCode">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="website">Website</label>
+          <input class="form-control" id="website" placeholder="Enter website URL" formControlName="website" [(ngModel)]="client.website">
+        </div>
+        <div class="col-md-4 col-12 mb-2">
+          <p class="text-muted mb-0">Company Registration Certificate:</p>
+          <a class="f-b badge badge-success fs-12" *ngIf="booking.client?.companyRegistration?.file" [href]="booking.client?.companyRegistration?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+          <span class="input-group" *ngIf="!booking.client?.companyRegistration?.file">
+            <div class="custom-file" *ngIf="!companyRegistrationFile">
+              <input class="custom-file-input" id="companyRegistrationId" (change)="companyRegistrationFileChange($event)" type="file">
+              <label class="custom-file-label" for="companyRegistrationId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="companyRegistrationFile">
+              <span class="float-left">{{companyRegistrationFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="companyRegistrationFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="companyRegistrationFileError">
+                  {{ companyRegistrationFileError.message }}
+                </div>
+                <div *ngIf="companyRegistrationUploadResponse.status === 'error'">
+                  {{ companyRegistrationUploadResponse.message }}
+                </div>
+                <div *ngIf="companyRegistrationUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="companyRegistrationUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{companyRegistrationUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadCompanyRegistrationFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-4 col-12 mb-2">
+          <p class="text-muted mb-0">PAN :</p>
+          <a class="f-b badge badge-success fs-12" *ngIf="booking.client?.panCard?.file" [href]="booking.client?.panCard?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+          <span class="input-group" *ngIf="!booking.client?.panCard?.file">
+            <div class="custom-file" *ngIf="!panCardFile">
+              <input class="custom-file-input" id="panCardId" (change)="panCardFileChange($event)" type="file">
+              <label class="custom-file-label" for="panCardId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="panCardFile">
+              <span class="float-left">{{panCardFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="panCardFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="panCardFileError">
+                  {{ panCardFileError.message }}
+                </div>
+                <div *ngIf="panCardUploadResponse.status === 'error'">
+                  {{ panCardUploadResponse.message }}
+                </div>
+                <div *ngIf="panCardUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="panCardUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{panCardUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadPanCardFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-4 col-12 mb-2">
+          <p class="text-muted mb-0">GST Certificate</p>
+          <a class="f-b badge badge-success fs-12" *ngIf="booking.client?.gstRegistration?.file" [href]="booking.client?.gstRegistration?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+          <span class="input-group" *ngIf="!booking.client?.gstRegistration?.file">
+            <div class="custom-file" *ngIf="!gstRegistrationFile">
+              <input class="custom-file-input" id="gstRegistrationId" (change)="gstRegistrationFileChange($event)" type="file">
+              <label class="custom-file-label" for="gstRegistrationId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="gstRegistrationFile">
+              <span class="float-left">{{gstRegistrationFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="gstRegistrationFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="gstRegistrationFileError">
+                  {{ gstRegistrationFileError.message }}
+                </div>
+                <div *ngIf="gstRegistrationUploadResponse.status === 'error'">
+                  {{ gstRegistrationUploadResponse.message }}
+                </div>
+                <div *ngIf="gstRegistrationUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="gstRegistrationUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{gstRegistrationUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadGstRegistrationFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||clientForm.invalid" (click)="saveClient()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #contractsHistoryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Contracts History</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0" [closeOthers]="true">
+      <ngb-panel *ngFor="let contract of contractsHistory;let i=index;">
+        <ng-template ngbPanelTitle>
+          <span class="pull-left d-ib">{{contract.contract.kind}} Contract #{{i+1}}, Effective From {{contract.contract.effectiveDate | date:'MMM dd, yyyy'}} </span>
+          <span class="pull-right d-ib"> Desks : {{contract.contract.desks}} </span>
+          <span class="pull-right d-ib mr-50"> Rent : {{contract.contract.rent | inr}}</span>
+        </ng-template>
+        <ng-template ngbPanelContent>
+          <div style="margin-top:-20px;">
+            <div class="float-right" *ngIf="contract?.contract?.signedAgreement"><a class="badge badge-success" href="{{contract.contract.signedAgreement?.file}}" target="_blank" placement="bottom" ngbTooltip="Click to view signed agreement">View Signed Agreement</a></div>
+            <div class="float-right mb-2" *ngIf="(contract?.contract.status=='Confirmed' || contract?.contract.status=='Approved')&&!contract?.contract?.signedAgreementId">
+              <p class="text-black f-b mb-0">Upload Signed Agreement</p>
+              <span class="input-group">
+                <div class="custom-file" *ngIf="!signedAgreementFile">
+                  <input class="custom-file-input" id="signedAgreementId" (change)="signedAgreementFileChange($event)" type="file">
+                  <label class="custom-file-label" for="signedAgreementId">Choose file</label>
+                </div>
+                <div class="custom-file" *ngIf="signedAgreementFile">
+                  <span class="float-left">{{signedAgreementFile?.name}}</span>
+                  <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="signedAgreementFile=null;"></i>
+                  <div class="mb-1">
+                    <div *ngIf="signedAgreementFileError">
+                      {{ signedAgreementFileError.message }}
+                    </div>
+                    <div *ngIf="signedAgreementUploadResponse.status === 'error'">
+                      {{ signedAgreementUploadResponse.message }}
+                    </div>
+                    <div *ngIf="signedAgreementUploadResponse.status === 'progress'">
+                      <div role="progressbar" [style.width.%]="signedAgreementUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                        {{signedAgreementUploadResponse.message}}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="input-group-append">
+                  <span class="input-group-text cursor" (click)="uploadSignedAgreementFile(contract.contract)">Upload</span>
+                </div>
+              </span>
+            </div>
+            <div class="row p-1 cabins d-b mb-1" style="border-bottom: 1px solid #82A0DF;" *ngFor="let office of contract.offices">
+              <span class="mb-1 fs-16 border-bottom float-left">{{office.office}}</span>
+              <div class="row col-12" *ngFor="let cabin of office.cabins">
+                <div class="col-3 card p-2 m-1">
+                  <h5 class="item-title mb-1 float-left">{{cabin.cabin}}</h5>
+                  <div class="text-secondary float-right">Total Desks : <span class="text-primary">{{cabin.desks.length}}</span></div>
+                </div>
+                <div class="col-9 row">
+                  <div class="desk pull-left card m-1" *ngFor="let desk of cabin.desks;let i=index;">
+                    <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-light" *ngIf="desk.status=='Released'" ngbTooltip="Released">{{i+1}}</div>
+                    <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-warning" *ngIf="desk.status=='Releasing'" ngbTooltip="Available from {{desk.releaseDate}}">{{i+1}}</div>
+                    <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-success" *ngIf="desk.status=='Booked'||desk.status=='New'||desk.status=='InUse'" ngbTooltip="{{desk.status}}">{{i+1}}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline-info btn-sm float-right" (click)="openContractTerm(contract)">Contract Terms</button>
+            <button type="button" class="btn btn-outline-info btn-sm float-right mr-10" (click)="openAdditionalInvoices(contract)">Additional Monthly Invoices</button>
+          </div>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #viewEmailModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">View Email - <small>sent on {{email.date | date:'MMM dd, yyyy hh:mm a'}} <small>by</small> {{email.by}}</small></h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Subject : </label>
+        {{email.subject}}
+      </div>
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Body : </label>
+        <div [innerHTML]="email.body | safeHtml"></div>
+      </div>
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Receipients : </label>
+        {{email.receivers}}
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #additionalInvoicesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Additional Monthly Invoices</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="additionalInvoiceForm" *ngIf="additionalInvoice" class="mt--10">
+      <div class="row">
+        <div class="col-md-4 form-group mb-1 pl-1 pr-0">
+          <label for="firstName">Invoice Service</label>
+          <ng-select [items]="invoiceServices" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Invoice Service" [(ngModel)]="additionalInvoice.invoiceService" formControlName="invoiceServiceId" name="invoiceServiceId"> </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-0">
+          <label for="firstName">Amount</label>
+          <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter Amount" [(ngModel)]="additionalInvoice.amount">
+        </div>
+        <div class="col-md-6 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Description</label>
+          <textarea class="form-control" id="item" formControlName="item" placeholder="Enter Invoice Item description" [(ngModel)]="additionalInvoice.item"></textarea>
+        </div>
+      </div>
+    </form>
+    <div>
+      <button class="btn btn-sm btn-info ladda-button float-right btn-ico" *ngIf="additionalInvoice" [ladda]="loading" [disabled]="loading||additionalInvoiceForm.invalid" (click)="saveAdditionalInvoice()"><i class="fa fa-check" *ngIf="!loading"></i> Save Invoice</button>
+      <button type="button" *ngIf="additionalInvoice" class="btn btn-sm btn-outline-info float-right btn-ico mr-5" (click)="additionalInvoice=null">Cancel</button>
+      <button type="button" *ngIf="!additionalInvoice" class="btn btn-sm btn-outline-info float-right btn-ico" (click)="additionalInvoice={}"><i class="fa fa-plus"></i> Add New Invoice</button>
+    </div>
+    <div class="clear"></div>
+    <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="contract.additionalInvoices?.length">
+      <thead>
+        <tr>
+          <th class="w-25">Invoice Service </th>
+          <th class="w-15 text-right">Amount</th>
+          <th class="w-50">Item Description</th>
+          <th class="w-10"></th>
+        </tr>
+      </thead>
+      <tbody style="max-height: 300px">
+        <tr *ngFor="let item of contract.additionalInvoices;">
+          <td class="w-25">{{item.invoiceService?.name}}</td>
+          <td class="w-15 text-right">{{item.amount | inr}}</td>
+          <td class="w-50">{{item.item}}</td>
+          <td class="w-10">
+            <button class="btn btn-icon btn-info" (click)="additionalInvoice=item" ngbTooltip="Edit"><i class="i-Pen-5 text-bold"></i></button>
+            <button class="btn btn-icon btn-warning" (click)="item.status='Archived';saveAdditionalInvoice(item);" ngbTooltip="Delete"><i class="i-Close-Window text-bold"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div *ngIf="!contract.additionalInvoices?.length" class="text-center">
+      No Additional Invoice are added to this contract yet .
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #contractTermModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Contract Terms</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="contractTermForm" *ngIf="contractTerm" class="mt--10">
+      <div class="row">
+        <div class="col-md-3 form-group mb-1 pl-1 pr-0">
+          <label for="firstName">Term</label>
+          <ng-select [items]="['SecurityDeposit','Rent','Services','Consumables','SLA']" [hideSelected]="true" placeholder="Select Term" [(ngModel)]="contractTerm.term" formControlName="term" name="term"> </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-1 pr-0">
+          <label for="firstName">Image</label>
+          <a *ngIf="contractTerm.image" [href]="contractTerm.image" target="_blank" ngbTooltip="Click to View"><img [src]="contractTerm.image" /></a>
+          <span class="input-group">
+            <div class="custom-file" *ngIf="!termImageFile">
+              <input class="custom-file-input" id="termImageId" (change)="termImageFileChange($event)" type="file">
+              <label class="custom-file-label" for="termImageId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="termImageFile">
+              <span class="float-left">{{termImageFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="termImageFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="termImageFileError">
+                  {{ termImageFileError.message }}
+                </div>
+                <div *ngIf="termImageUploadResponse.status === 'error'">
+                  {{ termImageUploadResponse.message }}
+                </div>
+                <div *ngIf="termImageUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="termImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{termImageUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadTermImageFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-5 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Info</label>
+          <textarea class="form-control" id="info" formControlName="info" placeholder="Enter Invoice Item description" [(ngModel)]="contractTerm.info"></textarea>
+        </div>
+      </div>
+    </form>
+    <div>
+      <button class="btn btn-sm btn-info ladda-button float-right btn-ico" *ngIf="contractTerm" [ladda]="loading" [disabled]="loading||contractTermForm.invalid" (click)="saveContractTerm()"><i class="fa fa-check" *ngIf="!loading"></i> Save Term</button>
+      <button type="button" *ngIf="contractTerm" class="btn btn-sm btn-outline-danger float-right btn-ico mr-2" (click)="contractTerm=null"> Cancel </button>
+      <button type="button" *ngIf="!contractTerm" class="btn btn-sm btn-outline-info float-right btn-ico" (click)="contractTerm={}"><i class="fa fa-plus"></i> Add New Term</button>
+    </div>
+    <div class="clear mb-1"></div>
+    <div class="row">
+      <div class="col-md-4" *ngFor="let item of contract.terms">
+        <button class="btn btn-icon btn-sm btn-info" style="position: absolute;right: 24px;z-index: 9;" (click)="contractTerm=item" ngbTooltip="Edit"><i class="i-Pen-5 text-bold"></i></button>
+        <button class="btn btn-sm btn-icon btn-danger" style="position: absolute;right: 0;z-index: 9;" (click)="item.status='Archived';saveContractTerm(item);" ngbTooltip="Delete"><i class="fa fa-times text-bold"></i></button>
+        <div class="f-b"> {{item.term}} </div>
+        <div class="card text-white o-hidden mb-1">
+          <a [href]="item.image" target="_blank"><img alt="" class="card-img" [src]="item.image"></a>
+        </div>
+        <div class="text-black"><small>{{item.info}}</small></div>
+      </div>
+    </div>
+    <div *ngIf="!contract.terms?.length" class="text-center">
+      No Tenant Terms are added to this contract yet .
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

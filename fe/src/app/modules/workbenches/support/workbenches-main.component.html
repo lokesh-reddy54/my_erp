@@ -1,0 +1,119 @@
+<div class="dashboards">
+  <div class="breadcrumb">
+    <h1>WorkBenches</h1>
+  </div>
+  <div class="separator-breadcrumb border-top mb-2"></div>
+  <loading [loading]="loading"></loading>
+  <div class="row">
+    <div class="col-md-12 pl-0 pr-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Support Tickets</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="New Tickets ({{workbenches.support?.new?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.new">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.new.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="UnAttened ({{workbenches.support?.unattended?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.unattended">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.unattended.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="To Resolve ({{workbenches.support?.yetToResolve?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.yetToResolve">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.yetToResolve?.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="To Close ({{workbenches.support?.yetToClosed?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.yetToClosed">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.yetToClosed?.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="SLA Violated ({{workbenches.support?.slaViolated?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.slaViolated">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.slaViolated?.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+</div>

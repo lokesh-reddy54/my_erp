@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+  <!--  <link rel="stylesheet" type="text/css" href="../styles.css"> -->
+  <title></title>
+  <style type="text/css">
+  body {
+    font-family: Nunito, sans-serif;
+    letter-spacing: .3px;
+    line-height: 1.6;
+    font-size: .813rem;
+    font-weight: 400;
+    color: #141415;
+  }
+
+  .h4,
+  h4 {
+    font-size: 1.21625rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 0;
+  }
+
+  .h5,
+  h5 {
+    font-size: 1.01625rem;
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .card {
+    border-radius: 10px;
+    box-shadow: none;
+    /*box-shadow: 0 4px 20px 1px rgba(0, 0, 0, .06), 0 1px 4px rgba(0, 0, 0, .08);*/
+    border: 0;
+  }
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 2rem;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+  }
+
+  .card-body {
+    flex: 1 1 auto;
+    padding: 1.25rem;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+  }
+
+  .col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+  .col-md-7 {
+    flex: 0 0 65%;
+    max-width: 65%;
+  }
+  .col-md-8 {
+    flex: 0 0 35%;
+    max-width: 35%;
+  }
+
+  .font-weight-bold {
+    font-weight: 700 !important;
+  }
+
+  dl,
+  ol,
+  p,
+  ul {
+    margin-top: 0;
+    margin-bottom: 0rem;
+  }
+
+  .text-sm-right {
+    text-align: right !important;
+  }
+
+  .mb-4,
+  .my-4 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .mt-1,
+  .my-1 {
+    margin-top: 0.4rem !important;
+  }
+
+  .border-top {
+    border-top: 1px solid #dee2e6 !important;
+  }
+
+  .mb-sm-0,
+  .my-sm-0 {
+    margin-bottom: 0 !important;
+  }
+
+  .text-sm-right {
+    text-align: right !important;
+  }
+
+  .d-sm-flex {
+    display: flex !important;
+  }
+
+  .bg-gray-300 {
+    background-color: #dee2e6 !important;
+  }
+  .vl {
+  border-left: 6px solid green;
+  height: 500px;
+}
+  .invoice-summary {
+    width: 220px;
+    text-align: right;
+  }
+
+  .float-right {
+    float: right !important;
+  }
+
+  .invoice-summary h5,
+  .invoice-summary p {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .account-summary p {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .invoice-summary h5 span,
+  .invoice-summary p span {
+    width: 120px;
+  }
+
+  .account-summary p span {
+    width: 120px;
+  }
+
+  .font-weight-bold {
+    font-weight: 700 !important;
+  }
+
+  .mb-4,
+  .my-4 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  .border-bottom,
+  .table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+  }
+  .gst-border{
+    border-bottom: 2px solid #2062a4;
+  }
+
+  .table td,
+  .table th {
+    padding: .3rem;
+    vertical-align: center;
+    text-align: left;
+    border: 1px solid #dee2e6;    
+  }
+
+  .mb-5,
+  .my-5 {
+    margin-bottom: 3rem !important;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="card-body">
+      <div id="print-area">
+        <div class="row">
+          <div class="col-md-6 text-sm-left">
+            <!-- <img src="https://www.instantoffices.com/-/media/images/logos/logo-dark-grey.png" style="max-height: 120px;"> -->
+            <!-- <img src="https://static.wixstatic.com/media/5dde6e_b352f9f779424d748e52972493f62f7b~mv2.png" style="max-height: 120px;"> -->
+            <img src="${companyLogo}" style="max-height: 60px;">
+          </div>
+          <div class="col-md-6 text-sm-right" style="margin-top: 12px">
+            <h5 class="font-weight-bold">${companyName}</h5>
+            <p style="white-space: pre-line">${companyAddress}</p>
+              <p><span>GSTIN</span> : ${gstIn}</p>
+              <p><span>PAN</span> : ${pan}</p>
+              <p><span>CIN</span> : ${cin}</p>
+              <p><span>Email</span>: ${companyEmail}</p>
+          </div>
+        </div>
+        <div class="mb-4"></div>
+        <div class="row">
+          <div class="col-md-6">
+            <h4 class="font-weight-bold">${title}</h4>
+            <p>${refNo}</p>
+          </div>
+          <div class="col-md-6 text-sm-right">
+            <p><strong>Date: </strong> ${date}</p>
+            <p><strong>Due Date: </strong> ${dueDate}</p>
+            <!-- <p><strong>Place: </strong> ${place}</p> -->
+          </div>
+        </div>
+        <div class="border-top mt-1"></div>
+        <div class="row mb-4">
+          <div class="col-md-6 ">
+            <h5 class="font-weight-bold">Invoice To</h5>
+            <p>${clientName}</p>
+            <p style="white-space: pre-line">${clientAddress}</p>
+            <!-- <p style="white-space: pre-line">${clientEmail}</p>
+            <p style="white-space: pre-line">${clientPhone}</p> -->
+            <p style="white-space: pre-line">GST : ${clientGst}</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <table  class="table table-hover mb-4">
+              <thead class="bg-gray-300">
+                <tr>
+                  <th style='white-space: nowrap;'>S.No</th>
+                  <th style="text-align: left; white-space: nowrap">HSN/SAC</th>
+                  <th>Item Description</th>
+                  <th style="border-left: none;"></th>
+                  <th style="text-align: right;">Amount</th>
+                  <!-- <th style="text-align: right;">Total</th> -->
+                </tr>
+              </thead>
+              <tbody>
+                <#list items as item>
+                  <tr style="text-align: center; vertical-align: top;">
+                    <td >${item?counter}</td>
+                    <td>${item['sacCode']}</td>
+                    <td>${item['item']}
+                    <td style="border-left: 0px solid #4b1111;">
+                      <#if hasIgst==1>
+                      <br>
+                      <small style="text-align: right;">IGST (${igst}%)</small>
+                    </#if>
+                    <#if hasIgst==0>
+                    <br>
+                    <br>
+                      <strong>cgst@${cgst}%</strong>
+                    <br>
+                      <strong>sgst@${sgst}%</strong>
+                    </#if>
+                    <#if hasTds==1>
+                    <br>
+                      <strong>tds@${tds}%</strong>
+                    </#if>
+                  </td>
+                    </td>
+                    <td class="gst-border" style="text-align: right; vertical-align: bottom;">${item['amount']}
+                    <#if hasIgst==1>
+                    <br>
+                      ${item['igst']}
+                    </#if>
+                    <#if hasIgst==0>
+                    <br>
+                    <br>
+                      ${item['cgst']}
+                    <br>
+                      ${item['sgst']}
+                    </#if>
+                    <#if hasTds==1>
+                    <br>
+                     (-) ${item['tds']}
+                    </#if>
+                  </td>
+                    <!-- <td style="text-align: right;">${item['total']}</td> -->
+                  </tr>
+                </#list>
+              </tbody>
+            </table>
+          </div>        
+          <div class="col-md-12 mb-4">
+            <div class="invoice-summary float-right">
+              <h5 class="font-weight-bold">Grand Total: <span> Rs.${grandTotal} </span></h5>
+            </div>
+          </div>
+          <div >
+            <div class="float-left" style="display: flex; justify-content: space-between;">
+              <h5 class="font-weight-bold">Grand Total</h5><div> <h5>(in words):</h5>&nbsp; </div><h5 class="font-weight-bold"><span> Rs.${grandTotalText} </span></h5>
+            </div>
+          </div>  
+          <div class="col-md-12 border-top">
+            <br>
+          <div class="row">
+            <div class="account-summary col-md-7 text-sm-left">
+              <p class="font-weight-bold">You can pay to below bank account details : </p>
+              <p> <span>Account Name </span> : ${accountName}</p>
+              <p> <span>Bank Name </span> : ${bankName}</p>
+              <p> <span>Bank Branch </span>: ${bankBranch}</p>
+              <p> <span>Account Number </span>: ${accountNumber}</p>
+              <p> <span>IFSC Code </span>: ${ifscCode}</p>
+            </div>
+            <div class="col-md-8 text-sm-right" style="margin-top: 12px">
+              <!-- <img src="https://www.instantoffices.com/-/media/images/logos/logo-dark-grey.png" style="max-height: 120px;"> -->
+              <!-- <img src="https://static.wixstatic.com/media/5dde6e_b352f9f779424d748e52972493f62f7b~mv2.png" style="max-height: 120px;"> -->
+              <img src="http://135.181.20.185:9000/download/sign.png" style="max-height: 100px;">
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

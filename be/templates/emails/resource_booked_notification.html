@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title></title>
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+  <style type="text/css">
+  body {
+    font-family: Nunito, sans-serif;
+    letter-spacing: .3px;
+    line-height: 1.6;
+    font-size: .813rem;
+    font-weight: 400;
+    color: #47404f;
+  }
+
+  .h4,
+  h4 {
+    font-size: 1.21625rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 0;
+  }
+
+  .h5,
+  h5 {
+    font-size: 1.01625rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px 1px rgba(0, 0, 0, .06), 0 1px 4px rgba(0, 0, 0, .08);
+    border: 0;
+  }
+
+  .card {
+    position: relative;
+    display: block;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+  }
+
+  .card-body {
+    flex: 1 1 auto;
+    padding: 1.25rem;
+  }
+
+  .row {
+    display: block;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+  }
+
+  .col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .invoice-summary {
+    width: 220px;
+    text-align: right;
+  }
+
+  .float-right {
+    float: right !important;
+  }
+
+  .invoice-summary h5,
+  .invoice-summary p {
+    display: block;
+    justify-content: flex-end;
+  }
+
+  .account-summary p {
+    display: block;
+    justify-content: flex-start;
+  }
+
+  .invoice-summary h5 span,
+  .invoice-summary p span {
+    width: 120px;
+  }
+
+  .account-summary p span {
+    width: 120px;
+  }
+
+
+
+  dl,
+  ol,
+  p,
+  ul {
+    margin-top: 0;
+    margin-bottom: 0rem;
+  }
+
+  p {
+    margin-bottom: 0.3rem !important;
+  }
+
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  .table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .bg-gray-300 {
+    background-color: #dee2e6 !important;
+  }
+
+  .table td,
+  .table th {
+    padding: .3rem;
+    vertical-align: center;
+    text-align: left;
+    border-top: 1px solid #dee2e6;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="card-body">
+      <div class="row mb-4">
+        <div class="col-12">
+          Dear ${clientName},<br><br>
+          <p>You have booked our resource '${resourceName}' in our office at ${address} for a duration of ${minutes} mins starting from ${startTime}. You have used ${credits} credits to book our resource. </p>
+          <#if hasPendings==1>
+            <p>Please pay the below charge to buy required credits to complete the booking and make resource available for you for that time period. <a href="${link}" target="_blank"><strong>Pay Now</strong></a></p>
+          </#if>
+        </div>
+      </div>
+      <#if hasPendings==1>
+        <div class="row">
+          <div class="col-md-12">
+            <table class="table table-hover mb-4">
+              <thead class="bg-gray-300">
+                <tr>
+                  <th>ID</th>
+                  <th>Description</th>
+                  <th>Credit-Price</th>
+                  <th>Credits</th>
+                  <th>Cost</th>
+                  <#if hasIgst==1>
+                    <th><small>IGST</small></th>
+                  </#if>
+                  <#if hasIgst==0>
+                    <th><small>CGST</small></th>
+                  </#if>
+                  <#if hasIgst==0>
+                    <th><small>SGST</small></th>
+                  </#if>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <#list items as item>
+                  <tr>
+                    <td>${item?counter}</td>
+                    <td>${item['item']}</td>
+                    <td>Rs.${item.price}</td>
+                    <td>${item.qty}</td>
+                    <td>Rs.${item.amount}</td>
+                    <#if hasIgst==1>
+                      <td>Rs.${item['igst']}</td>
+                    </#if>
+                    <#if hasIgst==0>
+                      <td>Rs.${item['cgst']}</td>
+                    </#if>
+                    <#if hasIgst==0>
+                      <td>Rs.${item['sgst']}</td>
+                    </#if>
+                    <td>Rs.${item.total}</td>
+                  </tr>
+                </#list>
+              </tbody>
+            </table>
+          </div>
+          <div style="clear:both;"></div>
+          <div class="col-md-12">
+            <div class="invoice-summary float-right">
+              <h5 class="font-weight-bold">Grand Total: <span> Rs.${grandTotal} </span></h5>
+            </div>
+            <div class="account-summary float-left">
+              <strong>You can pay to below bank account details : </strong>
+              <p> <span>Account Name </span> : ${accountName}</p>
+              <p> <span>Bank Name </span> : ${bankName}</p>
+              <p> <span>Bank Branch </span>: ${bankBranch}</p>
+              <p> <span>Account Number </span>: ${accountNumber}</p>
+              <p> <span>IFSC Code </span>: ${ifscCode}</p>
+            </div>
+          </div>
+        </div>
+      </#if>
+      <div style="clear:both;" class="mb-4"></div>
+      <p>
+        <center>You can reach us for any of your assistance on <strong>${supportPhone} </strong> and write us at <strong>${supportEmail}</strong>.</center>
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

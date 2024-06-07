@@ -1,0 +1,65 @@
+<div class="main-header row pl-4" style="background: #008080; margin: 0;padding: 10px !important;">
+  <div class="logo" style="width: 160px !important;">
+    <img [src]="logo" alt="" style="width: 100% !important;height: auto !important;">
+  </div>
+  <div style="margin: auto" class="d-none d-md-block"></div>
+  <div class="header-part-right ">
+    <!-- <i class="i-Shop header-icon" role="button" (click)="gotoDashboards()" style="color:#fff !important;"></i> -->
+    <!-- <div ngbDropdown [placement]="'bottom-right'" class="">
+      <i ngbDropdownToggle class="i-Posterous text-muted header-icon" style="color:#fff !important;"></i>
+      <div ngbDropdownMenu class="menu-icon-grid-dropdown">
+        <div class="menu-icon-grid">
+          <a href="#/client/dashboard"><i class="i-Bar-Chart"></i> Dashboard</a>
+          <a href="javascript:void(0)" (click)="viewBooking()"><i class="i-Library"></i> Bookings</a>
+          <a href="javascript:void(0)" (click)="viewEmployees()" class="cursor"><i class="i-MaleFemale"></i> Employees</a>
+          <a href="#/client/resource-bookings" *ngIf="authService.myBookings[0]?.contract.deskType!='EnterpriseOffice' && authService.myBookings[0]?.contract.deskType!='PrivateOffice'"><i class="i-File-Horizontal-Text"></i> Resource Bookings</a>
+          <a href="javascript:void(0)" (click)="viewCredits()" class="cursor" *ngIf="authService.myBookings[0]?.contract.deskType!='EnterpriseOffice' && authService.myBookings[0]?.contract.deskType!='PrivateOffice'"><i class="i-Dollar-Sign"></i> CreditBalance</a>
+          <a href="#/client/tickets/0"><i class="i-Support"></i> SupportTickets</a>
+        </div>
+      </div>
+    </div> -->
+    <div ngbDropdown [placement]="'bottom-right'" *ngIf="notifications?.length">
+      <div class="badge-top-container">
+        <span class="badge badge-primary">{{notifications?.length}}</span>
+        <i ngbDropdownToggle class="i-Bell text-muted header-icon" role="button"></i>
+      </div>
+      <div ngbDropdownMenu class="notification-dropdown rtl-ps-none" perfectScrollbar>
+        <div class="dropdown-item d-flex" *ngFor="let item of notifications">
+          <div class="notification-icon">
+            <i class="{{item.icon}} text-{{item.status}} mr-1"></i>
+          </div>
+          <a class="notification-details flex-grow-1">
+            <p class="m-0 d-flex align-items-center">
+              <span class="f-b">{{item.title}}</span>
+              <span *ngIf="item.badge" class="badge badge-pill badge-{{item.status}} ml-1 mr-1">{{item.badge}}</span>
+              <span class="flex-grow-1"></span>
+            </p>
+            <p class="text-small text-muted m-0">{{item.text | excerpt:30}}</p>
+            <span class="text-small text-muted ml-auto float-right">{{item.time | relativeTime}}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div ngbDropdown [placement]="'bottom-right'" class="">
+      <i ngbDropdownToggle class="i-Big-Data header-icon"></i>
+      <div ngbDropdownMenu aria-labelledby="userDropdown" class="header-account-dropdown">
+        <div class="dropdown-header" *ngFor="let role of roles" (click)="updateRole(role)">{{role.name}}</div>
+      </div>
+    </div>
+    <div ngbDropdown [placement]="'bottom-right'" class="">
+      <i ngbDropdownToggle class="i-Building header-icon"></i>
+      <div ngbDropdownMenu aria-labelledby="userDropdown" class="header-account-dropdown">
+        <div class="dropdown-header" [ngClass]="{'bg-primary text-white': building.id==selectedBuilding?.id}" *ngFor="let building of buildings" (click)="updateBuilding(building)">{{building.name}}, {{building.location.name}}</div>
+      </div>
+    </div>
+    <div ngbDropdown [placement]="'bottom-right'" class="user col align-self-end">
+      <img src="./assets/images/faces/default.png" id="userDropdown" ngbDropdownToggle alt="">
+      <div ngbDropdownMenu aria-labelledby="userDropdown" class="header-account-dropdown">
+        <div class="dropdown-header">
+          <i class="i-Lock-User mr-1"></i> {{user.name}}
+        </div>
+        <button class="dropdown-item" (click)="signout()">Sign out</button>
+      </div>
+    </div>
+  </div>
+</div>

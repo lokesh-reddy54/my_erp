@@ -1,0 +1,353 @@
+<div class="row">
+  <div class="col-md-11 col-12 m-auto">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Request to Verify Client Details </h1>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="card  mb-1 d-b m-auto mt-4" *ngIf="!data">
+      <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+    </div>
+    <div class="card user-profile o-hidden mb-10 d-b" *ngIf="data">
+      <div class="card-body pt-1">
+        <loading [loading]="loading"></loading>
+      <div class="row mb-10">
+        <div class="col-md-5 mb-2">
+        <h5 class="f-b">Company Information</h5>
+        </div>
+        <div class="col-md-7 col-6 mb-2" >
+          <button class="btn btn-outline-secondary btn-sm ml-10 btn-ico pull-right mt-2" (click)="editClient()" >
+            <i class="fa fa-pencil"></i> Edit Client
+          </button>
+        </div>
+      </div>
+        <div class="row ">
+          <div class="col-md-5 mb-2">
+            <p class="f-b mb-0"><strong>Company Name: </strong>{{data.client?.company}}</p>
+          </div>
+          <div class="col-md-7 mb-2">
+            <p class="f-b mb-0"><strong>Address: </strong>{{data.client?.address}}</p>
+          </div>
+          <div class="col-md-5 mb-2">
+            <p class="f-b mb-0"><strong>GSTIN : </strong> {{data.client?.gstNo}}</p>
+          </div>
+          <div class="col-md-7 mb-2">
+            <p class="f-b mb-0"><strong>Pan: </strong>{{data.client?.panNO}}</p>
+          </div>
+
+        </div>
+        <div>
+          <h5 class="mt-2 f-b">Primary Contact Details : </h5>
+          <div class="row">
+          <div class="col-md-4 mb-2">
+            <p class="text-black f-b mb-0"><strong> Name : </strong>{{data.client?.name}}</p>
+          </div>
+          <div class="col-md-4 mb-2">
+            <p class="text-black f-b mb-0"><strong> Email : </strong>{{data.client?.email}}</p>
+          </div>
+          <div class="col-md-4 mb-2">
+            <p class="text-black f-b mb-0"><strong> Phone : </strong>{{data.client?.phone}}</p>
+          </div>
+          </div>
+          <!-- <form [formGroup]="form">
+            <div class="row">
+              <div class="col-md-3 form-group mb-1">
+                <label for="firstName">Contact Name</label>
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Contact Name" [(ngModel)]="data.name">
+              </div>
+              <div class="col-md-3 form-group mb-1">
+                <label for="firstName">Contact Email</label>
+                <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Contact Email" [(ngModel)]="data.email">
+              </div>
+              <div class="col-md-3 form-group mb-1">
+                <label for="firstName">Contact Phone</label>
+                <input type="text" class="form-control" id="phone" formControlName="phone" placeholder="Enter Contact Phone" [(ngModel)]="data.phone">
+              </div>
+              <div class="col-md-4 form-group mb-1 mt-4 pt-1" *ngIf="data.verified">
+                <strong class="text-success">You are verified successfully, please set password for your account .. !!</strong>
+              </div>
+              <div class="col-md-3 form-group mb-1" *ngIf="data.verified">
+                <label for="firstName">Password</label>
+                <input type="password" class="form-control" id="password" formControlName="password" placeholder="Enter Password" [(ngModel)]="data.password">
+              </div>
+              <div class="col-md-3 form-group mb-1" *ngIf="data.verified">
+                <label for="firstName">Confirm Password</label>
+                <input type="password" class="form-control" id="confirmPassword" formControlName="confirmPassword" placeholder="Confirm Password" [(ngModel)]="confirmPassword">
+              </div>
+              <div class="col-md-2 form-group mb-1 mt-4 pt-1" *ngIf="data.verified">
+                <button class="btn btn-primary btn-sm ladda-button btn-ico float-right" [ladda]="loading" (click)="saveEmployee()" [disabled]="!data.password || data.password=='' || data.password!=confirmPassword"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Password</button>
+              </div>
+              <div class="col-md-3 form-group mb-1 mt-4 pt-1" *ngIf="!otpSent && !data.verified">
+                <button class="btn btn-primary btn-sm ladda-button btn-ico float-right" [ladda]="loading" (click)="requestOTP()" [disabled]="form.invalid||loading"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Details</button>
+              </div>
+              <div class="col-md-3 form-group mb-1 mt-4 pt-1" *ngIf="otpSent && !data.verified">
+                <input type="number" class="form-control w-50 float-left" placeholder="Enter OTP here" [(ngModel)]="otp" [ngModelOptions]="{standalone:true}">
+                <button class="btn btn-primary btn-sm ladda-button btn-ico float-right" [ladda]="loading" (click)="confirm()" [disabled]="!otp||loading"><i class="fa fa-check" *ngIf="!loading"></i> Verify OTP</button>
+              </div>
+            </div>
+          </form> -->
+        </div>
+
+
+        <div class="row mt-10">
+          <div class="col-md-12">
+            <div class="card  o-hidden">
+              <data-list #skusList [filter]="skusFilters" [data]="clientEmployees" [config]="skusConfig"></data-list>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="row">
+    <div class="col-md-11 col-12 m-auto">
+      <div class="breadcrumb">
+        <h4 class="pull-left ml-20 f-b">SKUs List</h4>
+        <input type="text" placeholder="Search by Category, Type or SKU name" [formControl]="skuSearch" class="form-control form-control-rounde pull-left w-30 ml-2">
+        <div class="ml-20 mr-10 float-left">
+          <label class="radio radio-success float-left mr-4">
+            <input type="radio" name="radio" [value]="0" [(ngModel)]="skusFilters.isService" [ngModelOptions]="{standalone: true}">
+            <span>Material</span>
+            <span class="checkmark"></span>
+          </label>
+          <label class="radio radio-success float-left mr-4">
+            <input type="radio" name="radio" [value]="1" [(ngModel)]="skusFilters.isService" [ngModelOptions]="{standalone: true}">
+            <span>Service</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="float-left mr-10">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="skusFilters.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="float-left mr-10" *ngIf="skusFilters.isService==0">
+          <label class="checkbox checkbox-success d-b">
+            <input type="checkbox" [(ngModel)]="skusFilters.isAsset" [ngModelOptions]="{standalone: true}">
+            <span>Is Asset</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div class="clear"></div>
+      <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card  o-hidden">
+            <data-list #skusList [filter]="skusFilters" [dataUrl]="'internal/purchases/listSkus'" [config]="skusConfig"></data-list>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>  
+</div> -->
+
+
+<ng-template #clientModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{client.id ? 'Edit Client' : 'New Client'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="clientForm" *ngIf="client.term!='ShortTerm'">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1 p-1">
+          <label for="firstName">Client Registered Company Name</label>
+          <input type="text" class="form-control" id="company" formControlName="company" placeholder="Enter Client  Company" [(ngModel)]="client.company">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="name">Contact Name</label>
+          <input class="form-control" id="name" placeholder="Enter Contact Name" formControlName="name" [(ngModel)]="client.name">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Authorised person email" formControlName="email" [(ngModel)]="client.email">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="phone">Phone</label>
+          <input class="form-control" id="phone" placeholder="Authorised person phone" formControlName="phone" [(ngModel)]="client.phone">
+        </div>
+        <div class="col-md-12 form-group mb-1 p-1">
+          <label for="address">Registered Address</label>
+          <input class="form-control" id="address" placeholder="Enter client registered address" formControlName="address" [(ngModel)]="client.address">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="gstNo">GST No</label>
+          <input class="form-control" id="gstNo" placeholder="Registered GST Number" formControlName="gstNo" [(ngModel)]="client.gstNo">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="panNo">PAN No</label>
+          <input class="form-control" type="text" id="panNo" placeholder="Registered PAN Number" formControlName="panNo" [(ngModel)]="client.panNo">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 p-1">
+          <label for="stateCode">State Code</label>
+          <input class="form-control" type="text" id="stateCode" placeholder="State Code" formControlName="stateCode" [(ngModel)]="client.stateCode">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="website">Website</label>
+          <input class="form-control" id="website" placeholder="Enter website URL" formControlName="website" [(ngModel)]="client.website">
+        </div>
+        <!-- <div class="col-md-4 col-12 mb-2">
+          <p class="text-muted mb-0">Company Registration Certificate:</p>
+          <a class="f-b badge badge-success fs-12" *ngIf="client?.companyRegistration?.file" [href]="booking.client?.companyRegistration?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+          <span class="input-group" *ngIf="!client?.companyRegistration?.file">
+            <div class="custom-file" *ngIf="!companyRegistrationFile">
+              <input class="custom-file-input" id="companyRegistrationId" (change)="companyRegistrationFileChange($event)" type="file">
+              <label class="custom-file-label" for="companyRegistrationId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="companyRegistrationFile">
+              <span class="float-left">{{companyRegistrationFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="companyRegistrationFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="companyRegistrationFileError">
+                  {{ companyRegistrationFileError.message }}
+                </div>
+                <div *ngIf="companyRegistrationUploadResponse.status === 'error'">
+                  {{ companyRegistrationUploadResponse.message }}
+                </div>
+                <div *ngIf="companyRegistrationUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="companyRegistrationUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{companyRegistrationUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadCompanyRegistrationFile()">Upload</span>
+            </div>
+          </span>
+        </div> -->
+        <div class="col-md-4 col-12 mb-2">
+          <p class="text-muted mb-0">PAN :</p>
+          <a class="f-b badge badge-success fs-12" *ngIf="booking.client?.panCard?.file" [href]="booking.client?.panCard?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+          <span class="input-group" *ngIf="!booking.client?.panCard?.file">
+            <div class="custom-file" *ngIf="!panCardFile">
+              <input class="custom-file-input" id="panCardId" (change)="panCardFileChange($event)" type="file">
+              <label class="custom-file-label" for="panCardId">Choose file</label>
+            </div>
+            <!-- <div class="custom-file" *ngIf="panCardFile">
+              <span class="float-left">{{panCardFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="panCardFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="panCardFileError">
+                  {{ panCardFileError.message }}
+                </div>
+                <div *ngIf="panCardUploadResponse.status === 'error'">
+                  {{ panCardUploadResponse.message }}
+                </div>
+                <div *ngIf="panCardUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="panCardUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{panCardUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div> -->
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadPanCardFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-4 col-12 mb-2">
+          <p class="text-muted mb-0">GST Certificate</p>
+          <a class="f-b badge badge-success fs-12" *ngIf="booking.client?.gstRegistration?.file" [href]="booking.client?.gstRegistration?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+          <span class="input-group" *ngIf="!booking.client?.gstRegistration?.file">
+            <div class="custom-file" *ngIf="!gstRegistrationFile">
+              <input class="custom-file-input" id="gstRegistrationId" (change)="gstRegistrationFileChange($event)" type="file">
+              <label class="custom-file-label" for="gstRegistrationId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="gstRegistrationFile">
+              <span class="float-left">{{gstRegistrationFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="gstRegistrationFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="gstRegistrationFileError">
+                  {{ gstRegistrationFileError.message }}
+                </div>
+                <div *ngIf="gstRegistrationUploadResponse.status === 'error'">
+                  {{ gstRegistrationUploadResponse.message }}
+                </div>
+                <div *ngIf="gstRegistrationUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="gstRegistrationUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{gstRegistrationUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadGstRegistrationFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||clientForm.invalid" (click)="saveClient()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+
+<ng-template #employeeModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{payment.id ? 'Edit Employee' : 'New Employee'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="employeeForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Employee Name" [(ngModel)]="employee.name">
+        </div>
+        <!--  <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Department</label>
+          <ng-select [items]="departments" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Department" [(ngModel)]="employee.department" formControlName="department" name="department"> </ng-select>
+        </div> -->
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Email</label>
+          <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="employee.email">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Phone</label>
+          <input type="number" placeholder="Enter Phone number" class="form-control" name="phone" [(ngModel)]="employee.phone" formControlName="phone" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Contact Purposes</label>
+          <ng-select [items]="contactPurposes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Contact Puposes" [(ngModel)]="employee.contactPurposes" formControlName="contactPurposes" name="contactPurposes"> </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1 pt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="employee.hasAccess" [ngModelOptions]="{standalone: true}">
+            <span>Has Account Access</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1 pt-4 float-right">          
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="employee.sendInvoice" [ngModelOptions]="{standalone: true}">
+            <span>Send Invoice Email</span>
+            <span class="checkmark"></span>
+          </label>
+       </div>
+        <div class="col-md-6 form-group mb-1" *ngIf="employee.hasAccess">
+          <label for="roles">Password</label>
+          <input type="password" placeholder="Enter Password for ERP" class="form-control" name="password" [(ngModel)]="employee.password" formControlName="password" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||employeeForm.invalid" (click)="saveEmployee()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

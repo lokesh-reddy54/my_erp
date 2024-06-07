@@ -1,0 +1,269 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">SD Liability Report</h4>
+    <input type="text" placeholder="Search by client" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2 mt--10">
+    <div class="btn-group btn-group-toggle pull-right ml-10 mt--10" data-toggle="buttons">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="reportType">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="selectedBuilding=null;generateReport(false)">
+          <input ngbButton type="radio" value="overall"> OverAll
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="generateReport(true);">
+          <input ngbButton type="radio" value="buildingWise"> Building
+        </label>
+      </div>
+    </div>
+    <div class="float-right mr-10 mt--10 fs-14 pt-1">OverAll Liability : <strong>{{overAllLiability | inr}}</strong></div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:SDLiability'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <loading [loading]="loading"></loading>
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row">
+          <div class="col-3 pr-0" *ngIf="selectedBuilding">
+            <h5 class="pull-left mb-1 ml-2">Buildings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings;" [ngClass]="{'selected': building==selectedBuilding}">
+                  <td class="w-80">{{building}}</td>
+                  <td class="w-20">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Building Revenue" (click)="selectedBuilding=building;generateReport(true)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pl-0" [ngClass]="{'col-12':!selectedBuilding, 'col-9':selectedBuilding}">
+            <h5 *ngIf="selectedBuilding" class="mt-2 pl-4 float-left">'{{selectedBuilding}}' Building Liability</h5>
+            <h5 *ngIf="selectedBuilding" class="mt-2 pr-4 float-right">Total Liability : <strong>{{totalLiability|inr}}</strong></h5>
+            <div class="clear"></div>
+            <ngb-tabset class="nav-center">
+              <ngb-tab title="Summary">
+                <ng-template ngbTabContent>
+                  <hr style="margin-top:-30px;" />
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="width: 40%;margin: auto;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="totalLiability">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-30 text-right">Booking Status</th>
+                          <th class="cursor w-25 text-right">Bookings</th>
+                          <th class="cursor text-right w-40 mr-20">Liability</th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngIf="report.failed.count">
+                          <td class="w-30 text-right">Failed</td>
+                          <td class="w-25 text-right">{{report.failed.count}}</td>
+                          <td class="w-40 text-right f-b mr-20">{{report.failed.total | inr}}</td>
+                        </tr>
+                        <tr>
+                          <td class="w-30 text-right">Booked</td>
+                          <td class="w-25 text-right">{{report.booked.count}}</td>
+                          <td class="w-40 text-right f-b mr-20">{{report.booked.total | inr}}</td>
+                        </tr>
+                        <tr>
+                          <td class="w-30 text-right">Active</td>
+                          <td class="w-25 text-right">{{report.active.count}}</td>
+                          <td class="w-40 text-right f-b mr-20">{{report.active.total | inr}}</td>
+                        </tr>
+                        <tr>
+                          <td class="w-30 text-right">Exiting</td>
+                          <td class="w-25 text-right">{{report.exiting.count}}</td>
+                          <td class="w-40 text-right f-b mr-20">{{report.exiting.total | inr}}</td>
+                        </tr>
+                        <tr>
+                          <td class="w-30 text-right">Exited</td>
+                          <td class="w-25 text-right">{{report.exited.count}}</td>
+                          <td class="w-40 text-right f-b mr-20">{{report.exited.total | inr}}</td>
+                        </tr>
+                        <tr *ngIf="report.tdsHolded.total">
+                          <td class="w-30 text-right">TDSHolded</td>
+                          <td class="w-25 text-right">{{report.tdsHolded.count}}</td>
+                          <td class="w-40 text-right f-b mr-20">{{report.tdsHolded.total | inr}}</td>
+                        </tr>
+                        <tr *ngIf="report.settled.total">
+                          <td class="w-30 text-right">Settled</td>
+                          <td class="w-25 text-right">{{report.settled.count}}</td>
+                          <td class="w-40 text-right f-b mr-20">{{report.settled.total | inr}}</td>
+                        </tr>
+                        <tr class="bg-info">
+                          <td class="w-50 text-center f-b" colspan="2">Total Liability</td>
+                          <td class="w-40 text-right f-b mr-20">{{totalLiability | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="Failed ({{report.failed.count}})" *ngIf="report.failed.count">
+                <ng-template ngbTabContent>
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="margin-top:-30px;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-50" (click)="sortBy('failed', 'client')">Client &nbsp; <i *ngIf="sort.client?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.client?.desc" class="fa fa-caret-down"></i></th>
+                          <th class="cursor w-25">MoveIn Date</th>
+                          <th class="cursor text-right w-25 mr-20" (click)="sortBy('failed', 'amount')">Liability &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngFor="let client of failed;">
+                          <td class="w-50">{{client.client}}</td>
+                          <td class="w-25">{{client.started | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-25 text-right f-b mr-20">{{client.amount | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="Booked ({{report.booked.count}})">
+                <ng-template ngbTabContent>
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="margin-top:-30px;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-50" (click)="sortBy('booked', 'client')">Client &nbsp; <i *ngIf="sort.client?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.client?.desc" class="fa fa-caret-down"></i></th>
+                          <th class="cursor w-25">MoveIn Date</th>
+                          <th class="cursor text-right w-25 mr-20" (click)="sortBy('booked', 'amount')">Liability &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngFor="let client of booked;">
+                          <td class="w-50">{{client.client}}</td>
+                          <td class="w-25">{{client.started | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-25 text-right f-b mr-20">{{client.amount | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="Active ({{report.active.count}})">
+                <ng-template ngbTabContent>
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="margin-top:-30px;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-50" (click)="sortBy('active', 'client')">Client &nbsp; <i *ngIf="sort.client?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.client?.desc" class="fa fa-caret-down"></i></th>
+                          <th class="cursor w-25">MoveIn Date</th>
+                          <th class="cursor text-right w-25 mr-20" (click)="sortBy('active', 'amount')">Liability &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngFor="let client of active;">
+                          <td class="w-50">{{client.client}}</td>
+                          <td class="w-25">{{client.started | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-25 text-right f-b mr-20">{{client.amount | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="Exiting ({{report.exiting.count}})">
+                <ng-template ngbTabContent>
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="margin-top:-30px;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-50" (click)="sortBy('exiting', 'client')">Client &nbsp; <i *ngIf="sort.client?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.client?.desc" class="fa fa-caret-down"></i></th>
+                          <th class="cursor w-15">MoveIn Date</th>
+                          <th class="cursor w-15">Exit Date</th>
+                          <th class="cursor text-right w-20 mr-10" (click)="sortBy('exiting', 'amount')">Liability &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngFor="let client of exiting;">
+                          <td class="w-50">{{client.client}}</td>
+                          <td class="w-15">{{client.started | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-15">{{client.ended | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-20 text-right f-b mr-10">{{client.amount | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab title="Exited ({{report.exited.count}})">
+                <ng-template ngbTabContent>
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="margin-top:-30px;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-50" (click)="sortBy('exited', 'client')">Client &nbsp; <i *ngIf="sort.client?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.client?.desc" class="fa fa-caret-down"></i></th>
+                          <th class="cursor w-15">MoveIn Date</th>
+                          <th class="cursor w-15">Exit Date</th>
+                          <th class="cursor text-right w-20 mr-10 " (click)="sortBy('exited', 'amount')">Liability &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngFor="let client of exited;">
+                          <td class="w-50">{{client.client}}</td>
+                          <td class="w-15">{{client.started | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-15">{{client.ended | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-20 text-right f-b mr-10">{{client.amount | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab *ngIf="report.tdsHolded.total" title="TDSHolded ({{report.tdsHolded.count}})">
+                <ng-template ngbTabContent>
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="margin-top:-30px;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-50" (click)="sortBy('tdsHolded', 'client')">Client &nbsp; <i *ngIf="sort.client?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.client?.desc" class="fa fa-caret-down"></i></th>
+                          <th class="cursor w-15">MoveIn Date</th>
+                          <th class="cursor w-15">Exit Date</th>
+                          <th class="cursor text-right w-20 mr-10 " (click)="sortBy('tdsHolded', 'amount')">Liability &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngFor="let client of tdsHolded;">
+                          <td class="w-50">{{client.client}}</td>
+                          <td class="w-15">{{client.started | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-15">{{client.ended | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-20 text-right f-b mr-10">{{client.amount | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+              <ngb-tab *ngIf="report.settled.total" title="Settled ({{report.settled.count}})">
+                <ng-template ngbTabContent>
+                  <div class="table-responsive pt-0 pl-4 pr-4" style="margin-top:-30px;">
+                    <table class="tableBodyScroll table table-striped table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th class="cursor w-50" (click)="sortBy('settled', 'client')">Client &nbsp; <i *ngIf="sort.client?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.client?.desc" class="fa fa-caret-down"></i></th>
+                          <th class="cursor w-15">MoveIn Date</th>
+                          <th class="cursor w-15">Exit Date</th>
+                          <th class="cursor text-right w-20 mr-10 " (click)="sortBy('settled', 'amount')">Liability &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        </tr>
+                      </thead>
+                      <tbody infiniteScroll class="tableBodyScroll">
+                        <tr *ngFor="let client of settled;">
+                          <td class="w-50">{{client.client}}</td>
+                          <td class="w-15">{{client.started | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-15">{{client.ended | date :'MMM dd, yyyy'}}</td>
+                          <td class="w-20 text-right f-b mr-10">{{client.amount | inr}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </ng-template>
+              </ngb-tab>
+            </ngb-tabset>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

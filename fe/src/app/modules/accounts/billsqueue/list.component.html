@@ -1,0 +1,378 @@
+<div class="">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Bill Queue <help-notes [context]="'Purchases:BillsQueueStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="ml-10 float-right"></help-notes>
+    </h4>
+    <input type="text" placeholder="Search Bills by Service, Provider, Building" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-20">
+    <input class="form-control pull-left w-10 ml-5" autocomplete="off" placeholder="Bill From - To " name="dp" id="daterangepicker">
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Quick Filters" *ngIf="!moreFilters" (click)="moreFilters=true;loadBuildingBills()"><i class="fa fa-caret-square-o-down"></i></button>
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Hide Filters" *ngIf="moreFilters" (click)="moreFilters=false;"><i class="fa fa-caret-square-o-up"></i></button>
+    <ng-select class="w-35 float-left ml-10" [items]="['Draft','New','Raised','Mapped','Archieved']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="filter.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    <help-notes [context]="'Purchases:BillsQueueStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-10"></help-notes>
+    <button *checkAccess="'accounts:addBillQueue'" class="btn btn-outline-primar btn-sm  btn-primary btn-rounde btn-ico pull-right" (click)="openBillModal({})"><i class="fa fa-plus"></i> Bill</button>
+    <div class="clear"></div>
+  </div>
+  <div class="row" *ngIf="moreFilters">
+    <div class="col-md-7 pt-2">
+      <span class="badge fs-12 mr-2 cursor" *ngFor="let building of buildingBills;" [ngClass]="{'badge-outline-primary':selectedBuilding?.id!=building?.id,'badge-primary':selectedBuilding?.id==building?.id}" (click)="selectBuilding(building)">{{building?.name}} ({{building?.count}})</span>
+    </div>
+    <div class="col-md-5 pt-2">
+      <span class="badge fs-14 mr-2 cursor" *ngIf="totalBillsCount>0">Total - {{totalBillsCount}} </span>
+      <span class="badge fs-12 mr-2 cursor badge-outline-primary" *ngFor="let status of billsByStatuses;" (click)="filter.statuses=[status.status];resetList();">{{status?.status}} ({{status?.count}})</span>
+    </div>
+  </div>
+  <!-- <div class="separator-breadcrumb border-top mb-10 mt-10"></div> -->
+  <div class="row mt-1">
+    <div class="col-md-12">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-10" (click)="sortColBy('building.name')">Building &nbsp; <i *ngIf="sort['building.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['building.name']?.desc" class="fa fa-caret-down"></i></th>
+            <!-- <th class="w-10" (click)="sortColBy('opexType.name')">Service &nbsp; <i *ngIf="sort['opexType.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['opexType.name']?.desc" class="fa fa-caret-down"></i></th> -->
+            <th class="w-20" (click)="sortColBy('serviceProvider.name')">Provider &nbsp; <i *ngIf="sort['serviceProvider.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['serviceProvider.name']?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-5 text-center" (click)="sortColBy('paymentType')">Payment &nbsp; <i *ngIf="sort.paymentType?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paymentType?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-10 text-center" (click)="sortColBy('billType')">BillType &nbsp; <i *ngIf="sort.billType?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.billType?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-5 text-center">Bill</th>
+            <th class="w-5 text-right" (click)="sortColBy('amount')">Amount &nbsp; <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-5 text-center" (click)="sortColBy('status')">Status &nbsp; <i *ngIf="sort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.status?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-15">
+              <span (click)="sortColBy('billDate')" class="d-ib float-left">BillDate &nbsp; <i *ngIf="sort.billDate?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.billDate?.desc" class="fa fa-caret-down"></i></span>
+              <span (click)="sortColBy('addedOn')" class="d-ib float-right pr-2">AddedOn &nbsp; <i *ngIf="sort.addedOn?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.addedOn?.desc" class="fa fa-caret-down"></i></span>
+            </th>
+            <th class="w-10">
+              <span (click)="sortColBy('paidOn')" class="d-ib float-left">PaidOn &nbsp; <i *ngIf="sort.paidOn?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paidOn?.desc" class="fa fa-caret-down"></i></span>
+              <span class="float-right pr-2">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <p *ngIf="!items.length" class="text-center mt-2 pt-2 f-b">No bills are queued yet.</p>
+        <tbody class="tableBodyScroll" infiniteScroll (onScroll)="loadMore()">
+          <tr *ngFor="let bill of items;" class="{{bill.raisedMarker}}">
+            <td class="w-10">{{bill.building || '-'}}</td>
+            <!-- <td class="w-10">{{bill.opexCategory || '-'}} {{bill.opexType}} {{bill.opexItem}}</td> -->
+            <td class="w-20">{{bill.providerName || bill.serviceProviderText || '-'}}</td>
+            <td class="w-5 text-center">{{bill.paymentType || '-'}}</td>
+            <td class="w-10 text-center">{{bill.billType || '-'}}</td>
+            <td class="w-5 text-center"><a [href]="bill.image?.file" *ngIf="bill.image" target="_blank">View</a> <span *ngIf="!bill.image">-</span></td>
+            <td class="w-5 text-right">{{bill.amount | inr}}</td>
+            <td class="w-5 text-center" *ngIf="bill.status!='Archieved'">{{bill.status}}</td>
+            <td class="w-5 text-center" *ngIf="bill.status=='Archieved'"><span ngbTooltip="{{bill.notes}}">{{bill.status}}</span></td>
+            <td class="w-15">
+              <span *ngIf="bill.billDueDate" class="float-left d-ib" ngbTooltip="Due by : {{bill.billDueDate | date : 'MMM dd, yyyy'}}">{{bill.billDate | date : 'MMM dd, yyyy'}}</span>
+              <span *ngIf="!bill.billDueDate" class="float-left d-ib">{{bill.billDate | date : 'MMM dd, yyyy'}}</span>
+              <span class="float-right d-ib pr-2" ngbTooltip="By : {{bill.addedBy}}">{{bill.addedOn | date : 'MMM dd, yyyy'}}</span></td>
+            <td class="w-10 text-center">
+              <span class="d-ib float-left"> {{bill.paidOn | date : 'MMM dd, yyyy'}}</span>
+              <div class="float-right">
+                <!-- <button class="btn btn-sm btn-icon btn-primary" (click)="viewBill(bill)" ngbTooltip="View"><i class="fa fa-search"></i></button> -->
+                <span *checkAccess="'accounts:mapBillQueue'">
+                  <button class="btn btn-icon btn-sm btn-primary" ngbTooltip="Map Bill" *ngIf="bill.status=='Raised'" (click)="mapBillsQueue(bill)">
+                    <i class="fa fa-sign-out"></i>
+                  </button>
+                </span>
+                <span *checkAccess="'accounts:editBillQueue'">
+                  <button class="btn btn-sm btn-icon btn-info" *ngIf="bill.status=='Draft' || bill.status=='New' || 1==1" (click)="openBillModal(bill)" ngbTooltip="Edit"><i class="fa fa-pencil"></i></button>
+                </span>
+                <span *checkAccess="'accounts:archieveBillQueue'">
+                  <button class="btn btn-sm btn-icon btn-danger" *ngIf="bill.status=='Draft' || bill.status=='New' || 1==1" (click)="archieveBill(bill)" ngbTooltip="Archieve"><i class="fa fa-ban"></i></button>
+                </span>
+                <span *checkAccess="'accounts:archieveBillQueue'">
+                  <button class="btn btn-sm btn-icon btn-outline-primary" *ngIf="bill.status=='Archieved'" (click)="unarchieveBill(bill)" ngbTooltip="UnArchieve"><i class="fa fa-refresh"></i></button>
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<ng-template #billModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{bill.id ? 'Edit Expense Bill' : 'New Expense Bill'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-2 pr-1 form-group mb-1">
+          <label for="roles">Bill Type</label>
+          <ng-select [items]="['PrePaid','PostPaid']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select  Type" [(ngModel)]="bill.paymentType" formControlName="paymentType"></ng-select>
+        </div>
+        <div class="col-md-2 pr-0 pl-1 form-group mb-1">
+          <label for="roles">Bill Amount </label>
+          <input type="number" class="form-control" placeholder="Enter Bill Amount" [(ngModel)]="bill.amount" formControlName="amount">
+        </div>
+        <div class="col-md-2 pr-0 pl-1 form-group mb-1">
+          <label for="roles">Bill Date</label>
+          <input class="form-control" placeholder="Bill Date" [(ngModel)]="bill.billDate" formControlName="billDate" name="dp" ngbDatepicker #dp="ngbDatepicker" (dateSelect)="dp.close()" (focus)="dp.toggle()">
+        </div>
+        <div class="col-md-6 pl-1 mb-1 pt-1">
+          <p class="text-muted mb-0">Bill Image </p>
+          <span *ngIf="bill.image?.file"><a class="f-b badge badge-success fs-12" [href]="bill.image?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a> &nbsp; <i class="fa fa-times" ngbTooltip="Remove Bill Image" (click)="bill.image=null;"></i></span>
+          <span class="input-group" *ngIf="!bill.image?.file">
+            <div class="custom-file" *ngIf="!billImageFile">
+              <input class="custom-file-input" id="billImageId" (change)="billImageFileChange($event)" type="file">
+              <label class="custom-file-label" for="billImageId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="billImageFile">
+              <span class="float-left">{{billImageFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="billImageFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="billImageFileError">
+                  {{ billImageFileError.message }}
+                </div>
+                <div *ngIf="billImageUploadResponse.status === 'error'">
+                  {{ billImageUploadResponse.message }}
+                </div>
+                <div *ngIf="billImageUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="billImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{billImageUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadOpexBillImage()">Upload</span>
+            </div>
+          </span>
+        </div>
+      </div>
+      <div class="row mt-2" *ngIf="(bill.image?.file && bill.amount && bill.billDate)">
+        <div class="col-md-3 text-right f-b">Select Bill Type : </div>
+        <div class="btn-group btn-group-toggle col-md-5 pl-0" data-toggle="buttons">
+          <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="bill.billType" (ngModelChange)="getPostingData()" [ngModelOptions]="{standalone:true}">
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="Capex"> Projects
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="BuildingOpex"> Building Expense
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="HOOpex"> HO Expense
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4 f-b" *ngIf="bill.billType!='Capex' && bill.building">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="isRecurringBill" (ngModelChange)="getRecurringBillSuggestions()" [ngModelOptions]="{standalone: true}">
+            <span class="d-ib mt--10">Suggest Recurring Bill</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-4 f-b" *ngIf="bill.billType=='Capex' && bill.project">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="isRecurringBill" (ngModelChange)="getRecurringBillSuggestions()" [ngModelOptions]="{standalone: true}">
+            <span class="d-ib mt--10">Show Pending PO Invoices</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div class="mt-2" *ngIf="isRecurringBill && bill.billType!='Capex'">
+        <p class="text-center mt-4" *ngIf="!recurringBillSuggestions.length">No recurring bill suggestions found.</p>
+        <table class="table table-sm table-hover table-striped">
+          <thead>
+            <tr>
+              <th>Vendor</th>
+              <th>Service</th>
+              <th>Bill Date</th>
+              <th>Bill Period</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let suggestion of recurringBillSuggestions;">
+              <td>{{suggestion.vendor}}</td>
+              <td>{{suggestion.opexCategory}}, {{suggestion.opexType}}, {{suggestion.opexItem}}</td>
+              <td>{{suggestion.billDate | date: 'MMM dd, yyyy'}}</td>
+              <td>{{suggestion.dateFrom | date: 'MMM dd, yy'}} - {{suggestion.dateTo | date:'MMM dd, yy'}} </td>
+              <td>{{suggestion.amount | inr}}</td>
+              <td><button class="btn btn-sm btn-icon btn-primary" (click)="mapImageToBill(suggestion)"><i class="fa fa-check"></i> </button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-2" *ngIf="isRecurringBill&& bill.billType=='Capex'">
+        <p class="text-center mt-4" *ngIf="!recurringBillSuggestions.length">No PO invoice bill suggestions found.</p>
+        <table class="table table-sm table-hover table-striped">
+          <thead>
+            <tr>
+              <th>Vendor</th>
+              <th>Bill Date</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let suggestion of recurringBillSuggestions;">
+              <td>{{suggestion.vendor}}</td>
+              <td>{{suggestion.billDate | date: 'MMM dd, yyyy'}}</td>
+              <td>{{suggestion.amount | inr}}</td>
+              <td><button class="btn btn-sm btn-icon btn-primary" (click)="mapImageToBill(suggestion)"><i class="fa fa-check"></i> </button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-2" *ngIf="bill.billType && bill.billType!='Capex' && !isRecurringBill">
+        <div class="row">
+          <div class="form-group col-md-4" *ngIf="!selectedVendor">
+            <label for="firstName">Select Vendor</label>
+            <tag-input [formControl]="vendorControl" theme='primary' [(ngModel)]="selectedVendors" secondaryPlaceholder="Type Vendor name to search" (onTextChange)="onVendorSearch($event)" (onAdd)="vendorSelected($event)" maxItems="1" [onlyFromAutocomplete]="true">
+              <tag-input-dropdown [autocompleteItems]="autocompleteVendors" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+                <ng-template let-item="item" let-index="index">
+                  {{item.name}}, {{item.address}} - {{item.description}}
+                </ng-template>
+              </tag-input-dropdown>
+            </tag-input>
+          </div>
+          <div class="form-group col-md-4" *ngIf="selectedVendor">
+            <label class="d-b">Selected Vendor</label>
+            <strong>{{selectedVendor?.name}} - {{selectedVendor.description}}</strong>
+            <button class="btn btn-sm btn-icon btn-danger float-right" (click)="selectedVendors=[];selectedItems=[];selectedSkus=[];selectedVendor=null;selectedPaymentTerm=null;"><i class="fa fa-times"></i></button>
+          </div>
+          <div class="col-md-2 form-group mb-1 mt-4 pt-1" *ngIf="!selectedServiceProvider">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="bill.noVendor" [ngModelOptions]="{standalone: true}">
+              <span class="d-ib mt--10">Not Applicable</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <!--    <div class="form-group col-md-4" *ngIf="selectedServiceProvider">
+            <label class="d-b">Selected Service Provider</label>
+            <span class="f-b">{{selectedServiceProvider.name}}</span> &nbsp;
+            <i class="fa fa-times" (click)="selectedServiceProvider=null;selectedServiceProviders=[]"></i>
+          </div> -->
+          <div class="col-md-3 form-group mb-1" *ngIf="!isHq">
+            <label for="roles">Building</label>
+            <ng-select [items]="buildings" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Building" [(ngModel)]="bill.building" formControlName="buildingId" (ngModelChange)="bill.office=null;onBuildingSelected()">
+            </ng-select>
+          </div>
+          <div class="col-md-3 form-group mb-1" *ngIf="!isHq && bill.building">
+            <label for="roles">Floor</label>
+            <ng-select [items]="offices" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Office" [(ngModel)]="bill.office" formControlName="officeId">
+            </ng-select>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2" *ngIf="bill.billType=='Capex' && !isRecurringBill">
+        <div class="row">
+          <div class="col-md-8 form-group mb-1">
+            <label for="roles">Select Project</label>
+            <ng-select [items]="projects" [closeOnSelect]="true" [hideSelected]="true" bindLabel="title" placeholder="Select Project" [(ngModel)]="bill.project" [ngModelOptions]="{standalone: true}">
+            </ng-select>
+          </div>
+        </div>
+        <div class="row mt-2" *ngIf="bill.project">
+          <div class="form-group col-md-4" *ngIf="!selectedVendor">
+            <label for="firstName">Select Vendor</label>
+            <tag-input [formControl]="vendorControl" theme='primary' [(ngModel)]="selectedVendors" secondaryPlaceholder="Type Vendor name to search" (onTextChange)="onVendorSearch($event)" (onAdd)="vendorSelected($event)" maxItems="1" [onlyFromAutocomplete]="true">
+              <tag-input-dropdown [autocompleteItems]="autocompleteVendors" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+                <ng-template let-item="item" let-index="index">
+                  {{item.name}}, {{item.address}}
+                </ng-template>
+              </tag-input-dropdown>
+            </tag-input>
+          </div>
+          <div class="form-group col-md-4" *ngIf="selectedVendor">
+            <label class="d-b">Selected Vendor</label>
+            <strong>{{selectedVendor?.name}}</strong>
+            <button class="btn btn-sm btn-icon btn-danger float-right" (click)="selectedVendors=[];selectedItems=[];selectedSkus=[];selectedVendor=null;selectedPaymentTerm=null;"><i class="fa fa-times"></i></button>
+          </div>
+          <div class="col-md-2 form-group mb-1 mt-4 pt-1" *ngIf="!selectedVendor">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="bill.noVendor" [ngModelOptions]="{standalone: true}">
+              <span class="d-ib mt--10">Not Applicable</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="col-md-12" *ngIf="bill.image?.file">
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-15 text-center">GST Slab</th>
+                <th class="w-15 text-center">IGST</th>
+                <th class="w-15 text-center">CGST</th>
+                <th class="w-15 text-center">SGST</th>
+                <th class="w-15 text-center">Total</th>
+                <!-- <th class="w-20 text-center">TDS</th> -->
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll">
+              <tr *ngFor="let slab of bill.gstSlabs;">
+                <td class="w-15 text-center">{{slab.slab}}%</td>
+                <td class="w-15 text-center">{{slab.igst | inr}}</td>
+                <td class="w-15 text-center">{{slab.cgst | inr}}</td>
+                <td class="w-15 text-center">{{slab.sgst | inr}}</td>
+                <td class="w-15 text-center">{{slab.gst | inr}}</td>
+                <td class="w-20 text-center">
+                  <!-- {{slab.tds | inr}} -->
+                  <button class="btn btn-danger btn-sm btn-icon float-right" ngbTooltip="Delete" (click)="removeGstSlab(slab);"><i class="fa fa-times"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="text-center p-2" *ngIf="!bill.gstSlabs?.length">No GST slabs are added yet.</p>
+        </div>
+        <div class="col-md-12 row mt-2" *ngIf="bill?.image?.file">
+          <div class="col-md-2 text-center">
+            <ng-select [items]="['0','5','12','18','28']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Slab" [(ngModel)]="slab.slab" [ngModelOptions]="{standalone:true}">
+            </ng-select>
+          </div>
+          <div class="col-md-2 text-center"><input type="number" placeholder="IGST" class="form-control" [(ngModel)]="slab.igst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+          <div class="col-md-2 text-center"><input type="number" placeholder="CGST" class="form-control" [(ngModel)]="slab.cgst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+          <div class="col-md-2 text-center"><input type="number" placeholder="SGST" class="form-control" [(ngModel)]="slab.sgst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+          <div class="col-md-2 text-center">{{slab.gst | inr}}</div>
+          <div class="col-md-2 text-center pr-0">
+            <!-- <input type="number" placeholder="TDS" class="form-control float-left w-70" [(ngModel)]="slab.tds" [ngModelOptions]="{standalone:true}" /> -->
+            <button class="btn btn-primary btn-sm btn-icon float-right" ngbTooltip="Add" (click)="addGstSlab(slab);" [disabled]="!slab.gst && slab.slab!='0'"><i class="fa fa-plus"></i></button>
+          </div>
+        </div>
+        <div class="col-md-6 mt-2">
+        </div>
+        <div class="col-md-6 mt-2" *ngIf="bill.gstSlabs?.length">
+          <label class="mb-0">GST File</label>
+          <span>
+            <a class=" ml-2 f-b badge badge-secondary fs-10" *ngIf="bill?.gstFile?.file" [href]="bill?.gstFile?.file" target="_blank" ngbTooltip="Click to View">View Uploaded GST File </a>&nbsp;&nbsp; <i class="fa fa-times" *ngIf="bill?.gstFile" (click)="bill.gstFile=null;bill.gstFileId=null;" ngbTooltip="Remove GST File"></i>
+          </span>
+          <span class="input-group" *ngIf="!bill?.gstFile?.file">
+            <div class="custom-file" *ngIf="!gstFile">
+              <input class="custom-file-input" id="gstId" (change)="gstFileChange($event)" type="file">
+              <label class="custom-file-label" for="gstId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="gstFile">
+              <span class="float-left">{{gstFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="gstFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="gstFileError">
+                  {{ gstFileError.message }}
+                </div>
+                <div *ngIf="gstUploadResponse.status === 'error'">
+                  {{ gstUploadResponse.message }}
+                </div>
+                <div *ngIf="gstUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="gstUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{gstUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadGSTFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="btn btn-outline-light float-right" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico float-right mr-1" [ladda]="loading" [disabled]="loading||form.invalid||!bill.image" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+    <!-- <button *ngIf="bill.id && bill.status!='Mapped'" class="btn btn-outline-info  ladda-button btn-ico float-left" [ladda]="loading" [disabled]="loading||bill.status!='Raised'" (click)="mapBill()"><i class="fa fa-check" *ngIf="!loading"></i> Map Bill</button> -->
+  </div>
+</ng-template>

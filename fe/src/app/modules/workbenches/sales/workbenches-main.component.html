@@ -1,0 +1,80 @@
+<div class="dashboards">
+  <div class="breadcrumb">
+    <h1>Sales WorkBenches</h1>
+  </div>
+  <div class="separator-breadcrumb border-top mb-2"></div>
+  <loading [loading]="loading"></loading>
+  <div class="row">
+    <div class="col-lg-12 col-md-12 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Bookings</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Manager Approval ({{workbenches.deskBookings?.pendingSalesApproval?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.deskBookings?.pendingSalesApproval">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.pendingSalesApproval?.length">No Bookings waiting for Sales Approval</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Accounts Approval ({{workbenches.deskBookings?.pendingAccountsApproval?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.deskBookings?.pendingAccountsApproval">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.pendingAccountsApproval?.length">No Bookings waiting for Accounts Approval</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Pending Token ({{workbenches.deskBookings?.pendingTokenPayments?.length || 0}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.deskBookings?.pendingTokenPayments">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-light':booking.contract.status=='Draft','badge-info':booking.contract.status=='Approved','badge-success':booking.contract.status=='Confirmed'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.pendingTokenPayments?.length">No Bookings pending with token payments </div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+</div>

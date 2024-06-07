@@ -1,0 +1,32 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left mr-5 f-b">Revenue Invoices List</h5>
+      <input type="text" placeholder="Search by Booking RefNo, Client, Invoice RefNo" [formControl]="search" class="form-control form-control-rounde pull-left w-25 ml-20">
+      <input class="form-control pull-left w-15 ml-10" autocomplete="off" placeholder="Invoices : Start - End Date" name="dp" id="daterangepicker">
+      <div class="ml-10 d-ib mt-1">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="invoicesFilters.cancelled" [ngModelOptions]="{standalone: true}">
+          <span class="d-ib mt--10">Show Cancelled</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div class="float-right text-right pt-1">
+        <button class="btn btn-ico btn-sm btn-outline-primary" (click)="downloadInvoices()"><i class="fa fa-download"></i> Download Invoices</button>
+      </div>
+      <div class="float-right text-right pt-1 mr-4" *ngIf="invoicesCount">Invoices Count : <strong>{{invoicesCount}}</strong></div>
+      <div class="clear"></div>
+      <help-notes [context]="'Reports:InvoicesList'"></help-notes>
+    </div>
+    <div class="clear"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <loading [loading]="loading"></loading>
+          <data-list *ngIf="!invoicesFilters.cancelled" #payinsList [dataUrl]="'internal/reports/getRevenue'" [filter]="invoicesFilters" [config]="invoicesConfig" [limit]="500" (onLoadMore)="invoicesCount = $event.count"></data-list>
+          <data-list *ngIf="invoicesFilters.cancelled" #cancelledList [dataUrl]="'internal/reports/getRevenue'" [filter]="invoicesFilters" [config]="cancelledConfig" [limit]="500" (onLoadMore)="invoicesCount = $event.count"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,154 @@
+<div class="">
+  <div class="breadcrumb">
+    <h3 class="pull-left">Vendors
+      <i class="fa fa-question-circle-o cursor pl-1" (click)="openHelpNotes()" ngbTooltip="Help"></i>
+    </h3>
+    <input type="text" placeholder="Search vendor by name, phone, email" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2">
+    <ng-select class="w-30 float-left ml-10" [items]="['New','Empanelled']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="filter.statuses" [ngModelOptions]="{standalone: true}"></ng-select>
+    <span *checkAccess="'purchases:addVendors'">
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openVendorModal(vendorModal)">
+        <i class="fa fa-plus"></i> Vendor
+      </button>
+    </span>
+  </div>
+  <div class="clear"></div>
+  <div class="row">
+    <div class="col-md-4 pt-1">
+      <span class="float-left mr-10 d-ib" *ngFor="let status of vendorStats?.statuses">{{status.status || 'None'}} : (<strong>{{status.count}}</strong>)</span>
+    </div>
+    <div class="col-md-7 pt-1">
+      <span class="float-left mr-10 d-ib" *ngFor="let type of vendorStats?.orgTypes">{{type.type || 'None'}} : (<strong>{{type.count}}</strong>)</span>
+    </div>
+    <div class="col-md-1">
+      <label class="checkbox checkbox-success mt-2">
+        <input type="checkbox" [(ngModel)]="filter.active" [ngModelOptions]="{standalone: true}">
+        <span *ngIf="filter.active"><small>Active</small></span>
+        <span *ngIf="!filter.active" class="d-ib mt--10"><small>Inactive</small></span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/purchases/listVendors'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #vendorModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendor.id ? 'Edit Vendor' : 'New Vendor'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{vendor|json}} -->
+    <form [formGroup]="form">
+      <div class="row pl-2 pr-2">
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="roles">Title</label>
+          <ng-select [items]="['Mr','Mrs','Miss']" [closeOnSelect]="false" [hideSelected]="true" placeholder="Title" [(ngModel)]="vendor.contact.title" formControlName="contactTitle">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="firstName">Contact Name</label>
+          <input type="text" class="form-control" id="name" formControlName="contactName" placeholder="Enter vendor contactName" [(ngModel)]="vendor.contact.name">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="firstName">Contact Phone</label>
+          <input type="text" class="form-control" id="contactPhone" formControlName="contactPhone" placeholder="Enter contactPhone" [(ngModel)]="vendor.contact.phone">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="firstName">Contact Email</label>
+          <input type="text" class="form-control" id="contactEmail" formControlName="contactEmail" placeholder="Enter vendor contactEmail" [(ngModel)]="vendor.contact.email">
+        </div>
+        <div class="col-md-6 form-group mb-1 p-1">
+          <label for="firstName">Vendor Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter vendor name" [(ngModel)]="vendor.name">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 p-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendor.active" formControlName="active">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-1-5 form-group mb-1 p-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendor.hasGst" formControlName="hasGst">
+            <span>Has GST</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="roles">Organisation Type</label>
+          <ng-select [items]="['Proprietorship','PartnerShip', 'LLP', 'PrivateLtd', 'GovernmentFirm']" [hideSelected]="true" placeholder="Select Organisation Type" [(ngModel)]="vendor.vendorType" formControlName="vendorType">
+          </ng-select>
+        </div>
+        <div class="col-md-9 form-group mb-1 p-1">
+          <label for="address">Address</label>
+          <textarea class="form-control" id="address" placeholder="Enter vendor address" formControlName="address" [(ngModel)]="vendor.address"></textarea>
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="roles">Payment Mode</label>
+          <ng-select [items]="['BankTransfer','CardPayment','Cheque','Cash']" [hideSelected]="true" placeholder="Select Payment Mode" [(ngModel)]="vendor.paymentMode" formControlName="paymentMode">
+          </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="firstName">Pan Number</label>
+          <input type="text" class="form-control" id="pan" formControlName="pan" placeholder="Enter Vendor PAN" [(ngModel)]="vendor.pan">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1" *ngIf="vendor.hasGst">
+          <label for="firstName">GST</label>
+          <input type="text" class="form-control" id="gst" formControlName="gst" placeholder="Enter Vendor GST" [(ngModel)]="vendor.gst">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1" *ngIf="vendor.vendorType=='Company'">
+          <label for="firstName">CIN</label>
+          <input type="text" class="form-control" id="cin" formControlName="cin" placeholder="Enter Vendor CIN" [(ngModel)]="vendor.cin">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="firstName">MSME Number</label>
+          <input type="text" class="form-control" id="msme" formControlName="msme" placeholder="Enter MSME Number" [(ngModel)]="vendor.msme">
+        </div>
+        <div class="col-md-9 form-group mb-1 p-1">
+          <label for="address">Additional Service Descriptions</label>
+          <textarea class="form-control" id="description" placeholder="Enter vendor service description" formControlName="description" [(ngModel)]="vendor.description"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #helpNotesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Help Notes</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body p-0">
+    <ngb-tabset class="nav-center">
+      <ngb-tab title="Vendor Status Definition">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:VendorStatusDefinition'" [type]="'notes'" class="text-center"></help-notes>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Vendor Status Flow">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:VendorStatusFlow'" [type]="'notes'" class="text-center"></help-notes>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

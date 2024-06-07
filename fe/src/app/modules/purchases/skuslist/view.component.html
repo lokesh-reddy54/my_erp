@@ -1,0 +1,43 @@
+<div class="row">
+  <div class="col-md-12 p-1">
+    <div class="breadcrumb">
+      <h4 class="pull-left ml-20 f-b">SKUs List</h4>
+      <input type="text" placeholder="Search by Category, Type or SKU name" [formControl]="skuSearch" class="form-control form-control-rounde pull-left w-30 ml-2">
+      <div class="ml-20 mr-10 float-left">
+        <label class="radio radio-success float-left mr-4">
+          <input type="radio" name="radio" [value]="0" [(ngModel)]="skusFilters.isService" [ngModelOptions]="{standalone: true}">
+          <span>Material</span>
+          <span class="checkmark"></span>
+        </label>
+        <label class="radio radio-success float-left mr-4">
+          <input type="radio" name="radio" [value]="1" [(ngModel)]="skusFilters.isService" [ngModelOptions]="{standalone: true}">
+          <span>Service</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div class="float-left mr-10">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="skusFilters.active" [ngModelOptions]="{standalone: true}">
+          <span>Active</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div class="float-left mr-10" *ngIf="skusFilters.isService==0">
+        <label class="checkbox checkbox-success d-b">
+          <input type="checkbox" [(ngModel)]="skusFilters.isAsset" [ngModelOptions]="{standalone: true}">
+          <span>Is Asset</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #skusList [filter]="skusFilters" [dataUrl]="'internal/purchases/listSkus'" [config]="skusConfig"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

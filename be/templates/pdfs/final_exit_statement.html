@@ -1,0 +1,211 @@
+<html>
+
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+  <style>
+  @page {
+    size: A4;
+    margin-left: 2cm;
+    margin-right: 1cm;
+  }
+
+  body {
+    font-family: Nunito, sans-serif;
+    letter-spacing: .3px;
+    line-height: 1.6;
+    font-size: .813rem;
+    font-weight: 400;
+    color: #47404f;
+  }
+
+  .header {
+    margin: 0 40px;
+  }
+
+  .table-header {
+    border-bottom: 2px solid #76396e;
+    width: 100%;
+  }
+
+  .table-footer {
+    border-top: 1px dotted black;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .label {
+    text-transform: uppercase;
+    font-size: 13px;
+    line-height: 18px;
+    margin: 8px 0;
+  }
+
+  .text-right {
+    text-align: right;
+    padding-right: 5%;
+  }
+
+  h1 {
+    font-size: 24px;
+    color: #b54e96;
+    font-weight: normal;
+  }
+
+  th {
+    background-color: #eacce1;
+    color: #b54e96;
+    text-transform: uppercase;
+    font-weight: normal;
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  td {
+    padding: 6px;
+    font-size: 13px;
+  }
+
+  .table-footer td {
+    text-transform: uppercase;
+  }
+
+  .table-footer td.amount {
+    text-transform: none;
+    font-size: 24px;
+  }
+
+  .large-text {
+    font-size: 18px;
+    line-height: 32px;
+  }
+
+  .small-text {
+    font-size: 14px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <table width="100%">
+      <tr>
+        <td valign="top" width="85%">
+          <h2>${companyName}</h2>
+          ${companyAddress}
+          <br />
+        </td>
+        <td valign="top" align="right">
+          <img src="${companyLogo}" style="width: 150px;" />
+        </td>
+      </tr>
+    </table>
+    <h1>Exit Final Statement</h1>
+    <table width="100%" class="table-header">
+      <tr>
+        <td class="recipient" width="60%" valign="top">
+          <div class="label">TO</div>
+          <div>${clientName}</div>
+        </td>
+        <td class="invoice-info" valign="top">
+          <div class="label">BOOKING REF NUMBER: ${refNo}</div>
+          <div class="label">OFFICE: ${office}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br />
+  <div class="header">
+    <div class="label">As you have intimated, here is full and final settlement statement from ${companyName}.</div>
+    <br />
+    <br />
+    <table border="0" style="width:100%;margin:auto;border-collapse: collapse;">
+      <tr>
+        <td style="padding: 5px 10px"><b>Charge Item</b></td>
+        <td style="padding: 5px 10px;text-align: right;"><b>Amount</b></td>
+      </tr>
+      <tr>
+        <td style="padding: 5px 10px">Monthly Payments till MoveOut date (including penalties)</td>
+        <td style="padding: 5px 10px;text-align: right;">INR ${monthlyInvoices}</td>
+      </tr>
+      <#if earlyExitCharge gt 0>
+        <tr>
+          <td style="padding: 5px 10px">Early Move Out Charges</td>
+          <td style="padding: 5px 10px;text-align: right;">INR ${earlyExitCharge}</td>
+        </tr>
+      </#if>
+      <#if noticePeriodPenalty gt 0>
+        <tr>
+          <td style="padding: 5px 10px">Notice period penalty</td>
+          <td style="padding: 5px 10px;text-align: right;">INR ${noticePeriodPenalty}</td>
+        </tr>
+      </#if>
+      <tr>
+        <td style="padding: 5px 10px">Asset Damage Charges</td>
+        <td style="padding: 5px 10px;text-align: right;">INR ${assetDamages}</td>
+      </tr>
+      <tr>
+        <td style="padding: 5px 10px">Other Deductions</td>
+        <td style="padding: 5px 10px;text-align: right;">INR ${otherDeductions}</td>
+      </tr>
+      <#if tdsLiability gt 0>
+        <tr>
+          <td style="padding: 5px 10px">TDS Liability</td>
+          <td style="padding: 5px 10px;text-align: right;">INR ${tdsLiability}</td>
+        </tr>
+      </#if>
+      <#if tdsPenality gt 0>
+        <tr>
+          <td style="padding: 5px 10px">TDS Penalty</td>
+          <td style="padding: 5px 10px;text-align: right;">INR ${tdsPenality}</td>
+        </tr>
+      </#if>
+      <#if deregistrationLiability gt 0>
+        <tr>
+          <td style="padding: 5px 10px">Address Deregistration Charge</td>
+          <td style="padding: 5px 10px;text-align: right;">INR ${deregistrationLiability}</td>
+        </tr>
+      </#if>
+    </table>
+    <table border="0" style="width:100%;margin:auto;border-collapse: collapse;">
+      <tr>
+        <td class="text-right" width="80%" valign="top">
+          <b>Total Expected Amount</b>
+        </td>
+        <td class="invoice-info text-right" valign="top">
+          <b>INR ${expectedAmount}</b>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-right" width="80%" valign="top">
+          <b>Total Paid (including Security Deposit)</b>
+        </td>
+        <td class="invoice-info text-right" valign="top">
+          <b>INR ${totalPaid}</b>
+        </td>
+      </tr>
+      <#if refund gt 0>
+        <tr>
+          <td class="text-right" width="80%" valign="top">
+            <b>To Refund</b>
+          </td>
+          <td class="invoice-info text-right" valign="top" style="font-size: 18px;">
+            <b>INR ${refund}</b>
+          </td>
+        </tr>
+      </#if>
+      <#if due gt 0>
+        <tr>
+          <td class="text-right" width="80%" valign="top">
+            <b>Total Due</b>
+          </td>
+          <td class="invoice-info text-right" valign="top" style="font-size: 18px;">
+            <b>INR ${due}</b>
+          </td>
+        </tr>
+      </#if>
+    </table>
+  </div>
+  <center style="margin-top:220px;" class="small-text">This is a system generated statement and does not need a signature</center>
+</body>
+
+</html>

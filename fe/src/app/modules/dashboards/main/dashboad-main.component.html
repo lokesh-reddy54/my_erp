@@ -1,0 +1,393 @@
+<div class="dashboards">
+  <div class="breadcrumb">
+    <h1>OverAll Dashboard</h1>
+  </div>
+  <div class="separator-breadcrumb border-top mb-0"></div>
+  <div class="row">
+    <div class="col-md-7 row mt-4 pt-4">
+      <div class="col-md-4">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Add-User"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">New Leads</p>
+              <p class="text-primary text-24 line-height-1 mb-2">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Geo2-"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Visits</p>
+              <p class="text-primary text-24 line-height-1 mb-2">0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Library"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Active Bookings</p>
+              <p class="text-primary text-24 line-height-1 mb-2">{{activeBookings}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4 pl-0 pr-0">
+          <div class="card-body text-center">
+            <i class="i-Money-2"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Month Invoices</p>
+              <p class="text-primary text-24 line-height-1 mb-2">{{totalInvoiced|inr}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 pl-2 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Money"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Dues</p>
+              <p class="text-primary text-24 line-height-1 mb-2">{{totalDue|inr}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ICON BG -->
+    <!-- <div class="col-md-7 pr-1">
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Pending Contracts ({{contractPendingBookings.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of contractPendingBookings">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!contractPendingBookings.length">No Pending Contracts for approvals</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Upcomings Contracts ({{futureContracts.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of futureContracts">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.futureContract.status=='Draft','badge-primary':booking.futureContract.status=='Approved','badge-success':booking.futureContract.status=='Confirmed'}">{{booking.futureContract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1"><strong class="fs-14 text-dark">{{booking.futureContract.kind}}</strong> on <strong>{{booking.futureContract.effectiveDate | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.futureContract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.futureContract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!futureContracts.length">No Upcoming Contracts</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Pending Exit Process ({{exits.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of exits">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-warning':booking.status=='Exiting','badge-danger':booking.status=='Exited'}">{{booking.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1" *ngIf="booking.status=='Exiting'">Exiting on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong> </p>
+                    <p class="m-0 text-small text-dark mb-1" *ngIf="booking.status=='Exited'">Exited on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong>,
+                      <span *ngIf="booking.exitRequest"> FCPStatus : <strong>{{booking.exitRequest?.fcpStatus}}</strong> </span></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!exits.length">No Pending Exits for ExitProcess</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div> -->
+    <div class="col-md-5 pl-0">
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Receivables">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body p-1">
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-40">Building</th>
+                      <th class="w-30 text-right">Exiting Clients</th>
+                      <th class="w-30 text-right">New Clients</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="190">
+                    <tr *ngFor="let item of overAllAr;">
+                      <td class="w-40 ">{{item.building}} </td>
+                      <td class="w-30 text-right">{{item.activeDue | inr}}</td>
+                      <td class="w-30 text-right">{{item.inActiveDue | inr}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="float-left mb-1 ml-1"><a href="/#/accounts/reports/ar">View Detailed Report</a></div>
+                <div class="float-right mb-1 mr-1">Total Due : <strong>{{totalDue | inr}}</strong></div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Month Invoices">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body p-1">
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-25">Building</th>
+                      <th class="w-25 text-right">SD</th>
+                      <th class="w-25 text-right">Rents</th>
+                      <th class="w-25 text-right">Others</th>
+                      <!-- <th class="w-15 text-right">Total</th> -->
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="190">
+                    <tr *ngFor="let item of monthlyInvoices;">
+                      <td class="w-25 ">{{item.building}} </td>
+                      <td class="w-25 text-right">{{item.sd | inr}}</td>
+                      <td class="w-25 text-right">{{item.rents | inr}}</td>
+                      <td class="w-25 text-right">{{item.others | inr}}</td>
+                      <!-- <td class="w-15 text-right">{{item.total | inr}}</td> -->
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="float-right mb-1 mr-1">Total Invoiced : <strong>{{totalInvoiced | inr}}</strong></div>
+                <div class="float-left mb-1 ml-1"><a href="/#/accounts/reports/revenue">View Detailed Report</a></div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Support Tickets">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body p-1">
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-30">Building</th>
+                      <th class="w-10 text-center">New</th>
+                      <th class="w-15 text-center">Attended</th>
+                      <th class="w-15 text-center">Client Reply</th>
+                      <th class="w-15 text-center">Internal Reply</th>
+                      <th class="w-15 text-center">Resolved</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="190">
+                    <tr *ngFor="let item of buildingTickets;">
+                      <td class="w-30 ">{{item.name}} </td>
+                      <td class="w-10 text-center">{{item.new}}</td>
+                      <td class="w-15 text-center">{{item.attended}}</td>
+                      <td class="w-15 text-center">{{item.clientReply}}</td>
+                      <td class="w-15 text-center">{{item.internalReply}}</td>
+                      <td class="w-15 text-center">{{item.resolved}}</td>
+                    </tr>
+                    <tr>
+                      <td class="w-30 ">Totals</td>
+                      <td class="w-10 text-center">{{ticketTotals.new}}</td>
+                      <td class="w-15 text-center">{{ticketTotals.attended}}</td>
+                      <td class="w-15 text-center">{{ticketTotals.clientReply}}</td>
+                      <td class="w-15 text-center">{{ticketTotals.internalReply}}</td>
+                      <td class="w-15 text-center">{{ticketTotals.resolved}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="float-right mb-1 ml-1"><a href="/#/support/reports">View Detailed Report</a></div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+  <!--  <div class="row">
+    <div class="col-md-4 mb-4">
+      <div class="p-4 border border-light rounded ">
+        <h4 class="text-18 mb-1 d-b text-center border-bottom">Space used</h4>
+        <span class="w-50 d-ib">Total: 160GB</span>
+        <span class="w-50 d-ib">Total: 160GB</span>
+      </div>
+    </div>
+  </div> -->
+  <div class="row">
+    <!--  <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="deskBookingsChartPie">
+          <div class="card-title border-bottom">Desk Bookings by Status</div>
+          <div echarts [options]="deskBookingsChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="resourceBookingsChartPie">
+          <div class="card-title border-bottom mb-1">Resource Bookings by Status</div>
+          <span class="w-50 d-ib">Paid: <strong>{{workbenches.resourceBookings.paid.length}}</strong></span>
+          <span class="w-50 d-ib">Pending: <strong>{{workbenches.resourceBookings.pending.length}}</strong></span>
+          <div echarts [options]="resourceBookingsChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="moveInsChartPie">
+          <div class="card-title border-bottom mb-1">MoveIns by Status</div>
+          <span class="w-50 d-ib">Upcoming: <strong>{{workbenches.moveIns.futureMoveIns.length}}</strong></span>
+          <span class="w-50 d-ib">Missed: <strong>{{workbenches.moveIns.missedMoveIns.length}}</strong></span>
+          <div echarts [options]="moveInsChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="moveInsChartPie">
+          <div class="card-title border-bottom mb-1">Exits by Status</div>
+          <span class="w-50 d-ib">Upcoming: <strong>{{workbenches.exits.upcomingExits.length}}</strong></span>
+          <span class="w-50 d-ib">Missed: <strong>{{workbenches.exits.missedExits.length}}</strong></span>
+          <div echarts [options]="exitsChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="exitsChartPie">
+          <div class="card-title border-bottom">Pending Refunds by Status</div>
+          <div echarts [options]="refundsChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div> -->
+    <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="card-title">Payments</div>
+          <table class="table table-sm">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col">Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Total Clients</td>
+                <td class="font-weight-bold">{{workbenches?.payins?.count}}</td>
+              </tr>
+              <tr>
+                <td>Invoice Amount</td>
+                <td class="text-info font-weight-bold">{{workbenches?.payins?.amount | inr}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-8 col-sm-12 row">
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="card-title border-bottom mb-1">Contract Renewals</div>
+            <span class="w-50 d-ib">Total: <strong>{{workbenches?.renewals?.list?.length}}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pl-0 pr-0">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="card-title border-bottom mb-1">Payouts - CapEx</div>
+            <span class="w-30 d-ib">Vendors: <strong>{{workbenches?.payouts?.capexPayoutsVendorsCount}}</strong></span>
+            <span class="w-70 d-ib text-right">Amount: <strong>{{workbenches?.payouts?.capexPayoutsTotalAmount | inr}}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="card-title border-bottom mb-1">Payouts - OpEx</div>
+            <span class="w-40 d-ib">Providers: <strong>{{workbenches?.payouts?.opexPayoutsVendorsCount}}</strong></span>
+            <span class="w-60 d-ib text-right">Amount: <strong>{{workbenches?.payouts?.opexPayoutsTotalAmount | inr}}</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pl-0">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="card-title border-bottom mb-1">Payouts - Refunds</div>
+            <span class="w-30 d-ib">Tenants: <strong>{{workbenches?.payouts?.refundsTenantsCount}}</strong></span>
+            <span class="w-70 d-ib text-right">Amount: <strong>{{workbenches?.payouts?.refundsTotalAmount | inr}}</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--   <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="workOrdersChartPie">
+          <div class="card-title border-bottom mb-1">WorkOrders by Status (<small>Pending</small>)</div>
+          <span class="w-33 d-ib">Drafts: <strong>{{workbenches.workOrders.draft.length}}</strong></span>
+          <span class="w-33 d-ib">Approvals: <strong>{{workbenches.workOrders.pendingApproval.length}}</strong></span>
+          <span class="w-33 d-ib">Confirmations: <strong>{{workbenches.workOrders.pendingVendorConfirmation.length}}</strong></span>
+          <div echarts [options]="workOrdersChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="purchaseOrdersChartPie">
+          <div class="card-title border-bottom mb-1">Purchase Orders by Status (<small>Pending</small>)</div>
+          <span class="w-50 d-ib">To Start: <strong>{{workbenches.purchaseOrders.pendingStarted.length}}</strong></span>
+          <span class="w-50 d-ib">Proforma Invoice: <strong>{{workbenches.purchaseOrders.pendingProformaInvoice.length}}</strong></span>
+          <span class="w-50 d-ib">MileStone Release: <strong>{{workbenches.purchaseOrders.pendingMilestonesRelease.length}}</strong></span>
+          <span class="w-50 d-ib">MileStone Approvals: <strong>{{workbenches.purchaseOrders.pendingMilestonesApprovals.length}}</strong></span>
+          <div echarts [options]="purchaseOrdersChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12">
+      <div class="card mb-4">
+        <div class="card-body" *ngIf="supportChartPie">
+          <div class="card-title border-bottom mb-1">Support Tickets by Status</div>
+          <span class="w-50 d-ib">New: <strong>{{workbenches.support.new.length}}</strong></span>
+          <span class="w-50 d-ib">UnAttended: <strong>{{workbenches.support.unattended.length}}</strong></span>
+          <span class="w-50 d-ib">YetTo Resolve: <strong>{{workbenches.support.yetToResolve.length}}</strong></span>
+          <span class="w-50 d-ib">YetTo Close: <strong>{{workbenches.support.yetToClosed.length}}</strong></span>
+          <div echarts [options]="supportChartPie" [autoResize]="true" style="height: 210px;"></div>
+        </div>
+      </div>
+    </div> -->
+</div>

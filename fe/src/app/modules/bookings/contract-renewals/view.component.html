@@ -1,0 +1,60 @@
+<div class="">
+  <div class="breadcrumb">
+    <h3 class="pull-left">Booking Contract Renewals</h3>
+    <!-- <input type="text" placeholder="Search client by company name, phone, email" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-1" />
+    <input class="form-control pull-left w-20 ml-10" placeholder="Date Range : Start Date - End Date" name="dp" id="daterangepicker"> -->
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/bookings/getContractRenewalBookings'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #contractModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Contract Renewal </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{user|json}} -->
+    <form [formGroup]="form">
+      <div class="row">
+        <!-- <a class="btn btn-icon btn-info" ngbTooltip="View Detailed Booking" target="_blank" href="#/bookings/view/{{contract.bookingid}}">
+          Loki
+        </a> -->
+        <div class="col-md-12 form-group mb-1">
+          <label class="d-b mb-0 f-b">Client Company</label>
+          <a ngbTooltip="View Detailed Booking" target="_blank" href="#/bookings/view/{{contract.bookingid}}">
+            {{contract.company}}    </a>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label class="d-b mb-0 f-b">MoveIn Date</label>
+          {{contract.started | date : 'MMM dd, yyyy'}}
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label class="d-b mb-0 f-b">Current Rent</label>
+          {{contract.rent | inr}}
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label class="d-b mb-0 f-b">New Rent</label>
+          <input type="number" class="form-control" id="rent" formControlName="rent" placeholder="Enter new Rent" [(ngModel)]="contract.newRent">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label class="d-b mb-0 f-b">New Effective Date</label>
+          <input placeholder="Select New Effective Date " class="form-control" name="date" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="contract.newEffectiveDate" formControlName="effectiveFrom" (focus)="dp.toggle()" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

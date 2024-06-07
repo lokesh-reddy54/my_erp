@@ -1,0 +1,1868 @@
+<div class="card user-profile o-hidden mb-1 d-b">
+  <div class="card-body pt-1">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="float-left pt-2">
+          <h3><small>Company - </small> {{ company.name }}</h3>
+        </div>
+        <ngb-tabset class="nav-right">
+          <ngb-tab title="Company Details">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important" />
+              <loading [loading]="loading"></loading>
+              <form [formGroup]="companyForm">
+                <h5 class="float-left">Basic Information</h5>
+                <button
+                  class="btn btn-outline-primary btn-ico float-right"
+                  [disabled]="loading || companyForm.invalid"
+                  (click)="saveCompany()"
+                >
+                  <i class="fa fa-check"></i> Update Company Details
+                </button>
+                <div class="clear"></div>
+                <div class="row mt-1">
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="name"
+                      formControlName="name"
+                      placeholder="Enter Company Name"
+                      [(ngModel)]="company.name"
+                    />
+                  </div>
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Trade Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="tradeName"
+                      formControlName="tradeName"
+                      placeholder="Enter Trade Name"
+                      [(ngModel)]="company.tradeName"
+                    />
+                  </div>
+                  <div class="col-md-1 form-group pl-1 pr-1 mb-1">
+                    <label>ShortName</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="shortName"
+                      formControlName="shortName"
+                      placeholder="Enter Short Name"
+                      [(ngModel)]="company.shortName"
+                    />
+                  </div>
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>City</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="city"
+                      formControlName="city"
+                      placeholder="Enter City"
+                      [(ngModel)]="company.city"
+                    />
+                  </div>
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>State</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="state"
+                      formControlName="state"
+                      placeholder="Enter State"
+                      [(ngModel)]="company.state"
+                    />
+                  </div>
+                  <div class="col-md-1-5 form-group pl-1 pr-1 mb-1">
+                    <label>Phone</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="phone"
+                      formControlName="phone"
+                      placeholder="Enter Phone"
+                      [(ngModel)]="company.phone"
+                    />
+                  </div>
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Email</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="email"
+                      formControlName="email"
+                      placeholder="Enter Email"
+                      [(ngModel)]="company.email"
+                    />
+                  </div>
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Website</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="website"
+                      formControlName="website"
+                      placeholder="Enter Website"
+                      [(ngModel)]="company.website"
+                    />
+                  </div>
+                  <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+                    <label>Address</label>
+                    <textarea
+                      class="form-control"
+                      id="address"
+                      formControlName="address"
+                      placeholder="Enter Address"
+                      [(ngModel)]="company.address"
+                    ></textarea>
+                  </div>
+                </div>
+                <hr class="mb-1 mt-1" />
+                <h5>Accounting Information</h5>
+                <div class="row">
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>GST No</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="gstNo"
+                      formControlName="gstNo"
+                      placeholder="Enter GST No"
+                      [(ngModel)]="company.gstNo"
+                    />
+                  </div>
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>PAN No</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="panNo"
+                      formControlName="panNo"
+                      placeholder="Enter PAN No"
+                      [(ngModel)]="company.panNo"
+                    />
+                  </div>
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>CIN No</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="cin"
+                      formControlName="cin"
+                      placeholder="Enter CIN No"
+                      [(ngModel)]="company.cin"
+                    />
+                  </div>
+                  <div class="col-md-1 form-group pl-1 pr-1 mb-1">
+                    <label>StateCode</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="stateCode"
+                      formControlName="stateCode"
+                      placeholder="Enter State Code"
+                      [(ngModel)]="company.stateCode"
+                    />
+                  </div>
+                  <div class="col-md-5 form-group pl-1 pr-1 mb-1"></div>
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Bank Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="bankName"
+                      formControlName="bankName"
+                      placeholder="Enter Bank Name"
+                      [(ngModel)]="company.bankName"
+                    />
+                  </div>
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>Branch Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="branchName"
+                      formControlName="branchName"
+                      placeholder="Enter Branch Name"
+                      [(ngModel)]="company.branchName"
+                    />
+                  </div>
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Account Holder Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="accountName"
+                      formControlName="accountName"
+                      placeholder="Enter Branch Name"
+                      [(ngModel)]="company.accountName"
+                    />
+                  </div>
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>Account Number</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="accountNumber"
+                      formControlName="accountNumber"
+                      placeholder="Enter Branch Name"
+                      [(ngModel)]="company.accountNumber"
+                    />
+                  </div>
+                  <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+                    <label>IFSC Code</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="ifscCode"
+                      formControlName="ifscCode"
+                      placeholder="Enter Branch Name"
+                      [(ngModel)]="company.ifscCode"
+                    />
+                  </div>
+                </div>
+                <hr class="mb-1 mt-1" />
+                <h5>ERP Information</h5>
+                <div class="row">
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Support Number</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="supportPhone"
+                      formControlName="supportPhone"
+                      placeholder="Enter Support Phone"
+                      [(ngModel)]="company.supportPhone"
+                    />
+                  </div>
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>Support Email</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="supportEmail"
+                      formControlName="supportEmail"
+                      placeholder="Enter Support Email"
+                      [(ngModel)]="company.supportEmail"
+                    />
+                  </div>
+                  <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+                    <label>ERP Domain</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="erpDomain"
+                      formControlName="erpDomain"
+                      placeholder="Enter ERP URL"
+                      [(ngModel)]="company.erpDomain"
+                    />
+                  </div>
+                  <div class="col-md-1-5 form-group pl-1 pr-1 mb-1">
+                    <label>Primary Color</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="primaryColor"
+                      formControlName="primaryColor"
+                      placeholder="Enter Primary Color"
+                      [(ngModel)]="company.primaryColor"
+                    />
+                  </div>
+                  <div class="col-md-1-5 form-group pl-1 pr-1 mb-1">
+                    <label>Accent Color</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="accentColor"
+                      formControlName="accentColor"
+                      placeholder="Enter Accent Color"
+                      [(ngModel)]="company.accentColor"
+                    />
+                  </div>
+                  <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+                    <label>Header Logo</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="logo"
+                      formControlName="logo"
+                      placeholder="Enter Logo URL"
+                      [(ngModel)]="company.logo"
+                    /><br />
+                    <img [src]="company.logo" />
+                  </div>
+                  <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+                    <label>Square Logo</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="squareLogo"
+                      formControlName="squareLogo"
+                      placeholder="Enter SquareLogo URL"
+                      [(ngModel)]="company.squareLogo"
+                    />
+                    <img [src]="company.squareLogo" />
+                  </div>
+                </div>
+              </form>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Role Definitions">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <div class="row">
+                <div class="col-md-4">
+                  <h5 class="float-left">System Roles</h5>
+                  <button *ngIf="!role.form" class="float-right btn btn-sm btn-outline-primary btn-ico" (click)="newRole()"><i class="fa fa-plus"></i> Role </button>
+                  <div class="clear mb-1"></div>
+                  <div class="row mb-1" *ngIf="role.form">
+                    <div class="col-9">
+                      <input type="text" class="form-control" placeholder="Role Name" [(ngModel)]="role.name" [ngModelOptions]="{standalone: true}">
+                    </div>
+                    <div class="pl-1">
+                      <button class="btn btn-sm btn-outline-primary btn-ico" (click)="saveRole(true)" [disabled]="!role.name">
+                        <i class="fa fa-check"></i> Save</button>
+                      <i class="fa fa-times fa-3x pl-1 cursor text-danger" ngbTooltip="Cancel" (click)="role.form=false"></i>
+                    </div>
+                    <div class="col-md-6 form-group mt-1 mb-1">
+                      <label class="checkbox checkbox-success">
+                        <input type="checkbox" [(ngModel)]="role.isGeoSpecific" [ngModelOptions]="{standalone: true}">
+                        <span>Is Geo Specific</span>
+                        <span class="checkmark"></span>
+                      </label>
+                    </div>
+                    <div class="col-md-6 form-group mt-1 mb-1">
+                      <label class="checkbox checkbox-success">
+                        <input type="checkbox" [(ngModel)]="role.isSupport" [ngModelOptions]="{standalone: true}">
+                        <span>Support Member</span>
+                        <span class="checkmark"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <data-list #rolesList [dataUrl]="'internal/admin/listRoles'" [config]="rolesConfig" (onAction)="action($event)"></data-list>
+                </div>
+                <div class="col-md-8 pt-4" *ngIf="!role.form">
+                  <strong class="text-center d-b mt-4">Select role or create new role to assign modules to it.</strong>
+                </div>
+                <div class="col-md-8" *ngIf="role.form">
+                  <h5 class="mb-2">Selected Role Definition</h5>
+                  <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0" [closeOthers]="true">
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Dashboards</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.dashboards.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <!-- <div class="row mtb--10" *ngIf="role.json.admin.enable">
+                          <div class="col-md-2 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.company" [ngModelOptions]="{standalone: true}">
+                              <span>Company</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div> -->
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json.dashboards.enable">Please enable Dashboards Module to see all modules in ERP</strong>
+                        <strong class="text-center d-b mtb--10" *ngIf="role.json.dashboards.enable">All Dashboards in ERP are available </strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">WorkBenches</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.workbenches.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="row mtb--10" *ngIf="role.json.workbenches.enable">
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.sales" [ngModelOptions]="{standalone: true}">
+                              <span>Sales</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.accounts" [ngModelOptions]="{standalone: true}">
+                              <span>Accounts</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.businessops" [ngModelOptions]="{standalone: true}">
+                              <span>Business Ops</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.buildingops" [ngModelOptions]="{standalone: true}">
+                              <span>Building Ops</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.support" [ngModelOptions]="{standalone: true}">
+                              <span>Support</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.purchases" [ngModelOptions]="{standalone: true}">
+                              <span>Purchases</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.projects" [ngModelOptions]="{standalone: true}">
+                              <span>Projects</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.workbenches.hmt" [ngModelOptions]="{standalone: true}">
+                              <span>HMT</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json.workbenches.enable">Please enable WorkBenches Module to see all modules in ERP</strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Admin</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.admin.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="row mtb--10" *ngIf="role.json.admin.enable">
+                          <div class="col-md-2 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.company" [ngModelOptions]="{standalone: true}">
+                              <span>Company</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-1-5 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.users" [ngModelOptions]="{standalone: true}">
+                              <span>Users</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-2 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.locations" [ngModelOptions]="{standalone: true}">
+                              <span>Locations</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-2 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.facilities" [ngModelOptions]="{standalone: true}">
+                              <span>Facilities</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-1-5 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.offices" [ngModelOptions]="{standalone: true}">
+                              <span>Offices</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-1-5 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.properties" [ngModelOptions]="{standalone: true}">
+                              <span>Property Contracting</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.externalSystems" [ngModelOptions]="{standalone: true}">
+                              <span>ExternalSystems</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-2 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.mails" [ngModelOptions]="{standalone: true}">
+                              <span>Mails</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-1-5 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.sms" [ngModelOptions]="{standalone: true}">
+                              <span>SMSes</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-1-5 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.scheduler" [ngModelOptions]="{standalone: true}">
+                              <span>Scheduler</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-1-5 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.admin.helpNotes" [ngModelOptions]="{standalone: true}">
+                              <span>Help Notes</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json.admin.enable">Please enable Admin Module to see this module functionalities</strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Bookings</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.bookings.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="mtb--10" *ngIf="role.json.bookings.enable">
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Bookings</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.list" [ngModelOptions]="{standalone: true}">
+                                <span>Bookings List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.newBooking" [ngModelOptions]="{standalone: true}">
+                                <span>New Booking</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.cancelBooking" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Booking</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.editClient" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Client</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.editContract" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Contract</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.cancelContract" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Contract</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.approveContract" [ngModelOptions]="{standalone: true}">
+                                <span>Approve Contract</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.confirmContract" [ngModelOptions]="{standalone: true}">
+                                <span>Confirm Contract</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.cancelFutureContract" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Future Contract</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.cancelApprovedFutureContract" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Approved Future Contract</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.cancelConfirmedFutureContract" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Confirmed Future Contract</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.addPayment" [ngModelOptions]="{standalone: true}">
+                                <span>Add Payment</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.raiseInvoice" [ngModelOptions]="{standalone: true}">
+                                <span>Raise Invoice</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.relocation" [ngModelOptions]="{standalone: true}">
+                                <span>Relocation</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.expansion" [ngModelOptions]="{standalone: true}">
+                                <span>Expansion</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.contraction" [ngModelOptions]="{standalone: true}">
+                                <span>Contraction</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.viewContractHistory" [ngModelOptions]="{standalone: true}">
+                                <span>View Contract History</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.contractTerms" [ngModelOptions]="{standalone: true}">
+                                <span>Contract Terms</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.uploadAgreement" [ngModelOptions]="{standalone: true}">
+                                <span>Upload Agreement</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.cancelInvoice" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Invoices</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.sendInvoiceNotification" [ngModelOptions]="{standalone: true}">
+                                <span>Send Invoice notification</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.editInvoices" [ngModelOptions]="{standalone: true}">
+                                <span>Add/Edit Invoice</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.raiseInvoices" [ngModelOptions]="{standalone: true}">
+                                <span>Raise Invoices</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.refundLiability" [ngModelOptions]="{standalone: true}">
+                                <span>Refund Liability</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.onboardingExits" [ngModelOptions]="{standalone: true}">
+                                <span>Onboarding & Exits</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.editEmployees" [ngModelOptions]="{standalone: true}">
+                                <span>Add/Edit Employee</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Exit Process</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.requestExit" [ngModelOptions]="{standalone: true}">
+                                <span>Request Exit</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.exitProcess" [ngModelOptions]="{standalone: true}">
+                                <span>Exit Process</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.approveExitStatement" [ngModelOptions]="{standalone: true}">
+                                <span>Approve Exit Statement</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.forceAcceptExitStatement" [ngModelOptions]="{standalone: true}">
+                                <span>Force Accept Exit Statement</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.otherDeductions" [ngModelOptions]="{standalone: true}">
+                                <span>Add Other Deduction</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.assetDamageCharges" [ngModelOptions]="{standalone: true}">
+                                <span>Add Asset Damage Charges</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.addExitComments" [ngModelOptions]="{standalone: true}">
+                                <span>Add Exit Comments</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.uploadExitForm" [ngModelOptions]="{standalone: true}">
+                                <span>Upload Exit Form</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Resource Bookings</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.resourceBookings" [ngModelOptions]="{standalone: true}">
+                                <span>View Resource Bookings</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.newResourceBooking" [ngModelOptions]="{standalone: true}">
+                                <span>New Resource Booking</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.addCredits" [ngModelOptions]="{standalone: true}">
+                                <span>Add Credits</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.cancelResourceBooking" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Resource Booking</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.markResouceBooked" [ngModelOptions]="{standalone: true}">
+                                <span>Mark Resource as Booked</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Others</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.contractRenewals" [ngModelOptions]="{standalone: true}">
+                                <span>ContractRenewals</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.reports" [ngModelOptions]="{standalone: true}">
+                                <span>Reports</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.bookings.notifications" [ngModelOptions]="{standalone: true}">
+                                <span>Notifications</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json.bookings.enable">Please enable Bookings Module to see this module functionalities</strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Accounts</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.accounts.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="mtb--10" *ngIf="role.json?.accounts?.enable">
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Credit Entries</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.listCreditEntries" [ngModelOptions]="{standalone: true}">
+                                <span>CreditEntries List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.importCreditEntries" [ngModelOptions]="{standalone: true}">
+                                <span>Import Credit Entries</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.addCreditEntry" [ngModelOptions]="{standalone: true}">
+                                <span>Add CreditEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.editCreditEntry" [ngModelOptions]="{standalone: true}">
+                                <span>Edit CreditEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.attributeCreditEntry" [ngModelOptions]="{standalone: true}">
+                                <span>Attribute CreditEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.deattributeCreditEntry" [ngModelOptions]="{standalone: true}">
+                                <span>DeAttribute CreditEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Debit Entries</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.listDebitEntries" [ngModelOptions]="{standalone: true}">
+                                <span>DebitEntries List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.importDebitEntries" [ngModelOptions]="{standalone: true}">
+                                <span>Import Debit Entries</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.addDebitEntry" [ngModelOptions]="{standalone: true}">
+                                <span>Add DebitEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.editDebitEntry" [ngModelOptions]="{standalone: true}">
+                                <span>Edit DebitEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.attributeDebitEntry" [ngModelOptions]="{standalone: true}">
+                                <span>Attribute DebitEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.deattributeDebitEntry" [ngModelOptions]="{standalone: true}">
+                                <span>DeAttribute DebitEntry</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Bills Queue</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.listBillsQueue" [ngModelOptions]="{standalone: true}">
+                                <span>BillsQueue List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.addBillQueue" [ngModelOptions]="{standalone: true}">
+                                <span>Add Bill Queue</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.editBillQueue" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Bill Queue</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.archieveBillQueue" [ngModelOptions]="{standalone: true}">
+                                <span>Archieve Bill Queue</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.mapBillQueue" [ngModelOptions]="{standalone: true}">
+                                <span>Map Bill Queue</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Payouts</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.listPayouts" [ngModelOptions]="{standalone: true}">
+                                <span>Payouts List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.processPayout" [ngModelOptions]="{standalone: true}">
+                                <span>Process Payout</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.markAsFuturePayout" [ngModelOptions]="{standalone: true}">
+                                <span>Mark as Future Payout</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.approvePayout" [ngModelOptions]="{standalone: true}">
+                                <span>Approve Payout</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.rejectPayout" [ngModelOptions]="{standalone: true}">
+                                <span>Reject Payout</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.updatePayoutStatus" [ngModelOptions]="{standalone: true}">
+                                <span>Update Payout Status</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.submitPayoutDetails" [ngModelOptions]="{standalone: true}">
+                                <span>Submit Payout Details</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Revenue</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.listRevenueCodes" [ngModelOptions]="{standalone: true}">
+                                <span>Revenue Codes List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.addRevenueCode" [ngModelOptions]="{standalone: true}">
+                                <span>Add Revenue Code</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.editRevenueCode" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Revenue Code</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.archieveRevenueCode" [ngModelOptions]="{standalone: true}">
+                                <span>Archieve Revenue Code</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.paymentsList" [ngModelOptions]="{standalone: true}">
+                                <span>Payments List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.addTenantPayment" [ngModelOptions]="{standalone: true}">
+                                <span>Add Tenant Payment</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.archieveTenantPayment" [ngModelOptions]="{standalone: true}">
+                                <span>Archieve Tenant Payment</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.addARComments" [ngModelOptions]="{standalone: true}">
+                                <span>Add AR Comments</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.sendTDSNotifications" [ngModelOptions]="{standalone: true}">
+                                <span>Send TDS Notifications</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.submitTDSForm" [ngModelOptions]="{standalone: true}">
+                                <span>Submit TDS Form</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Building/HO Expenses</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.manageExpenseCodes" [ngModelOptions]="{standalone: true}">
+                                <span>Manage Expense Codes</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.manageRecurringBills" [ngModelOptions]="{standalone: true}">
+                                <span>Manage Recurring Bills</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.listPOs" [ngModelOptions]="{standalone: true}">
+                                <span>List POs</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.repeatopexPO" [ngModelOptions]="{standalone: true}">
+                                <span>Repeat POs</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.listBills" [ngModelOptions]="{standalone: true}">
+                                <span>List Bills</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.monthWiseBills" [ngModelOptions]="{standalone: true}">
+                                <span>MonthWise Bills</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.editBill" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Bills</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.approveBill" [ngModelOptions]="{standalone: true}">
+                                <span>Approve Bills</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.raiseRecurreningBills" [ngModelOptions]="{standalone: true}">
+                                <span>Raise Recurring Bills</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.cancelBill" [ngModelOptions]="{standalone: true}">
+                                <span>Cancel Bills</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Reports</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.accountingReports" [ngModelOptions]="{standalone: true}">
+                                <span>Accounting Reports</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.revenueReports" [ngModelOptions]="{standalone: true}">
+                                <span>Revenue Reports</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.accounts.expenseReports" [ngModelOptions]="{standalone: true}">
+                                <span>Expense Reports</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json.accounts.enable">Please enable Accounts Module to see this module functionalities</strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Purchases</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.purchases.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="mtb--10" *ngIf="role.json.purchases.enable">
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">SKUs</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.addSkus" [ngModelOptions]="{standalone: true}">
+                                <span>Add SKUs</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editSkus" [ngModelOptions]="{standalone: true}">
+                                <span>Edit SKUs</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.skus" [ngModelOptions]="{standalone: true}">
+                                <span>View SKUs</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Vendors</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.addVendors" [ngModelOptions]="{standalone: true}">
+                                <span>Add Vendors</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editVendors" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Vendors</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.vendors" [ngModelOptions]="{standalone: true}">
+                                <span>View Vendors</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.requestVendorBankDetails" [ngModelOptions]="{standalone: true}">
+                                <span>Request Vendor Bank Details</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editVendorBankDetails" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Vendor Bank Details</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editVendorContactDetails" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Vendor Contact Details</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.modifyVendorSku" [ngModelOptions]="{standalone: true}">
+                                <span>Add/Edit Vendor SKUs</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.modifyVendorTerms" [ngModelOptions]="{standalone: true}">
+                                <span>Add/Edit Vendor PaymentTerms</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Work Orders</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.viewWorkOrders" [ngModelOptions]="{standalone: true}">
+                                <span>List WorkOrders</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.modifyWorkOrders" [ngModelOptions]="{standalone: true}">
+                                <span>Add/Edit WorkOrder</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.approveWorkItems" [ngModelOptions]="{standalone: true}">
+                                <span>Approve WorkItems</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.requestVendorAcceptance" [ngModelOptions]="{standalone: true}">
+                                <span>Request for Vendor Acceptance</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.forceAcceptWorkOrder" [ngModelOptions]="{standalone: true}">
+                                <span>Force Acceptance of WorkOrder</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.deleteWorkOrder" [ngModelOptions]="{standalone: true}">
+                                <span>Delete WorkOrder</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12  border-bottom mb-1">Projects</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.viewProjects" [ngModelOptions]="{standalone: true}">
+                                <span>View Projects</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.modifyProjects" [ngModelOptions]="{standalone: true}">
+                                <span>Add/Edit Projects</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.projectBillsList" [ngModelOptions]="{standalone: true}">
+                                <span>Bills List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.addProjectBill" [ngModelOptions]="{standalone: true}">
+                                <span>Add Bill</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editProjectBill" [ngModelOptions]="{standalone: true}">
+                                <span>Edit Bill</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.addBillItems" [ngModelOptions]="{standalone: true}">
+                                <span>Add Bill Items</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.requestMilestoneRelease" [ngModelOptions]="{standalone: true}">
+                                <span>Mark MileStone Completion</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.confirmPaymentMileStone" [ngModelOptions]="{standalone: true}">
+                                <span>Confirm MileStone Completion</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.approvePaymentMileStone" [ngModelOptions]="{standalone: true}">
+                                <span>Approve Payment MileStone</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editMilestones" [ngModelOptions]="{standalone: true}">
+                                <span>Edit MileStones</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.setBillDueDates" [ngModelOptions]="{standalone: true}">
+                                <span>Set Due Dates</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.projectBillGstPostings" [ngModelOptions]="{standalone: true}">
+                                <span>GST Posting</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.projectBillGstVerification" [ngModelOptions]="{standalone: true}">
+                                <span>GST Verification</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.buildingPayablesReport" [ngModelOptions]="{standalone: true}">
+                                <span>ProjectWise Payables Report</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <strong class="col-12 border-bottom mb-1">Purchase Orders</strong>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.posList" [ngModelOptions]="{standalone: true}">
+                                <span>View PO List</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editPurchaseOrder" [ngModelOptions]="{standalone: true}">
+                                <span>Edit PurchaseOrder</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.deletePurchaseOrder" [ngModelOptions]="{standalone: true}">
+                                <span>Delete PurchaseOrder</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.requestPOMilestoneRelease" [ngModelOptions]="{standalone: true}">
+                                <span>Request PO MileStone Release</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.releasePOMileStone" [ngModelOptions]="{standalone: true}">
+                                <span>Release PO MileStone</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.approvePOMileStone" [ngModelOptions]="{standalone: true}">
+                                <span>Approve PO MileStone</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.editMilestones" [ngModelOptions]="{standalone: true}">
+                                <span>Edit MileStones</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.setBillDueDates" [ngModelOptions]="{standalone: true}">
+                                <span>Set Due Dates</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.uploadProformaInvoice" [ngModelOptions]="{standalone: true}">
+                                <span>Upload Proforma Invoice</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.uploadTaxInvoice" [ngModelOptions]="{standalone: true}">
+                                <span>Upload TaxInvoice</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.poGstVerification" [ngModelOptions]="{standalone: true}">
+                                <span>GST Verification</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                            <div class="col-md-3 form-group mb-1">
+                              <label class="checkbox checkbox-success">
+                                <input type="checkbox" [(ngModel)]="role.json.purchases.tdsCompliance" [ngModelOptions]="{standalone: true}">
+                                <span> TDS Compliance</span>
+                                <span class="checkmark"></span>
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json.purchases.enable">Please enable Purchases Module to see this module functionalities</strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Support</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.support.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="row mtb--10" *ngIf="role.json.support.enable">
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.support.list" [ngModelOptions]="{standalone: true}">
+                              <span>Tickets List</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.support.attend" [ngModelOptions]="{standalone: true}">
+                              <span>Attend Ticket</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.support.resolve" [ngModelOptions]="{standalone: true}">
+                              <span>Resolve Ticket</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.support.close" [ngModelOptions]="{standalone: true}">
+                              <span>Close Ticket</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.support.reply" [ngModelOptions]="{standalone: true}">
+                              <span>Reply to Ticket</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.support.reassign" [ngModelOptions]="{standalone: true}">
+                              <span>ReAssign Ticket</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json.support.enable">Please enable Support Module to see this module functionalities</strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Leads</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.leads.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="row mtb--10" *ngIf="role.json?.leads?.enable">
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.leads.list" [ngModelOptions]="{standalone: true}">
+                              <span>List</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.leads.visits" [ngModelOptions]="{standalone: true}">
+                              <span>Visits</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.leads.reports" [ngModelOptions]="{standalone: true}">
+                              <span>Reports</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json?.leads?.enable">Please enable Leads Module to see this module functionalities</strong>
+                      </ng-template>
+                    </ngb-panel>
+                    <ngb-panel>
+                      <ng-template ngbPanelTitle>
+                        <span class="pull-left d-ib fs-16 f-b">Assets</span>
+                        <span class="pull-right d-ib">
+                          <label class="checkbox checkbox-success mb-0">
+                            <input type="checkbox" [(ngModel)]="role.json.assets.enable" [ngModelOptions]="{standalone: true}">
+                            <span>Enable</span>
+                            <span class="checkmark"></span>
+                          </label>
+                        </span>
+                      </ng-template>
+                      <ng-template ngbPanelContent>
+                        <div class="row mtb--10" *ngIf="role.json?.assets?.enable">
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.assets.list" [ngModelOptions]="{standalone: true}">
+                              <span>Assets List</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.assets.creation" [ngModelOptions]="{standalone: true}">
+                              <span>Assets Creation</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.assets.assignment" [ngModelOptions]="{standalone: true}">
+                              <span>Assign Assets</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.assets.movement" [ngModelOptions]="{standalone: true}">
+                              <span>Assets Movement</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.assets.reports" [ngModelOptions]="{standalone: true}">
+                              <span>Reports</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                          <div class="col-md-3 form-group mb-1">
+                            <label class="checkbox checkbox-success">
+                              <input type="checkbox" [(ngModel)]="role.json.assets.addStore" [ngModelOptions]="{standalone: true}">
+                              <span>Add Store</span>
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div>
+                        <strong class="text-center d-b mtb--10" *ngIf="!role.json?.assets?.enable">Please enable Assets Module to see this module functionalities</strong>
+                      </ng-template>
+                    </ngb-panel>
+                  </ngb-accordion>
+                </div>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          
+        <!-- *checkAccess="'admin:approveBilldf'" -->
+
+          <!-- <ngb-tab title="System Settings">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+            </ng-template>
+          </ngb-tab> -->
+        </ngb-tabset>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #outboundMailModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ selectedItem.id ? "Edit OutBound Mail" : "New OutBound Mail" }}
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="outboundMailForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            formControlName="name"
+            placeholder="Enter name"
+            [(ngModel)]="selectedItem.name"
+          />
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="selectedItem.active"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Host</label>
+          <input
+            type="text"
+            class="form-control"
+            id="host"
+            formControlName="host"
+            placeholder="Host SMTP"
+            [(ngModel)]="selectedItem.config.host"
+          />
+        </div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">Port</label>
+          <input
+            type="text"
+            class="form-control"
+            id="port"
+            formControlName="port"
+            placeholder="Port"
+            [(ngModel)]="selectedItem.config.port"
+          />
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="selectedItem.config.secure"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span>Secure</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-7 form-group mb-1">
+          <label for="firstName">Sender Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="senderName"
+            formControlName="senderName"
+            placeholder="Enter SenderName"
+            [(ngModel)]="selectedItem.config.senderName"
+          />
+        </div>
+        <div class="col-md-7 form-group mb-1">
+          <label for="firstName">Sender Email</label>
+          <input
+            type="text"
+            class="form-control"
+            id="senderEmail"
+            formControlName="senderEmail"
+            placeholder="Enter Sender Email"
+            [(ngModel)]="selectedItem.config.senderEmail"
+          />
+        </div>
+        <div class="col-md-5 form-group mb-1">
+          <label for="firstName">Auth Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            formControlName="password"
+            placeholder="Enter Password"
+            [(ngModel)]="selectedItem.config.password"
+          />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-light"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      class="btn btn-info ladda-button btn-ico"
+      [ladda]="loading"
+      [disabled]="loading || outboundMailForm.invalid"
+      (click)="saveExternalSystem()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Save
+    </button>
+  </div>
+</ng-template>

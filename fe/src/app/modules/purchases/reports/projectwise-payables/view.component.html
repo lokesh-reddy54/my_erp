@@ -1,0 +1,606 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left fs-14 f-b w-20">ProjectsWise Account Payables</h4>
+    <!-- <input type="text" placeholder="Search by vendor or location" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2 mt--10"> -->
+    <div class="row p-1 ml-0 mr-0 w-80 pull-right mt--10 pl-0 pr-0">
+      <div class="form-group pl-1 col-md-6 mb-1">
+        <ng-select [items]="['Raised', 'Started','Closed', 'Approved', 'Paid']" multiple="true" [hideSelected]="true" placeholder="Select Status" [(ngModel)]="selectedStatuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="getReportsData()" class="mini">
+        </ng-select>
+      </div>
+      <div class="form-group pl-1 col-md-1-5 mb-1 pl-1">
+        <!-- <label for="roles">Select Country</label> -->
+        <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()" class="mini">
+        </ng-select>
+      </div>
+      <div class="form-group pl-1 col-md-1-5 mb-1" *ngIf="selectedCountry?.id">
+        <!-- <label for="roles">Select City</label> -->
+        <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()" class="mini">
+        </ng-select>
+      </div>
+      <div class="form-group pl-1 col-md-3 mb-1" *ngIf="selectedCity?.id">
+        <!-- <label for="roles">Select Location</label> -->
+        <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLocationSelected()" class="mini">
+        </ng-select>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:ProjectCapex'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <loading [loading]="loading"></loading>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row">
+          <div class="table-responsive pl-4 pr-3 pr-1" *ngIf="projects.length || vendors.length || events.length" [ngClass]="{'col-3':vendorFilters.project, 'col-4':vendorFilters.vendor, 'col-12':!vendorFilters.project && !vendorFilters.vendor}">
+            <loading [loading]="loading"></loading>
+            <h5 class="pull-left mb-1 mt-1 f-b fs-16">{{reportType}}</h5>
+            <div class="btn-group btn-group-toggle pull-right mr-10" data-toggle="buttons">
+              <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="reportType" (ngModelChange)="getReportsData()">
+                <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                  <input ngbButton type="radio" value="Projects"> Projects
+                </label>
+                <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                  <input ngbButton type="radio" value="Vendors"> Vendors
+                </label>
+                <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                  <input ngbButton type="radio" value="MonthlyDues"> MonthlyDues
+                </label>
+              </div>
+            </div>
+            <div class="btn-group btn-group-toggle pull-right mr-2" data-toggle="buttons" *ngIf="!vendorFilters.project&& !vendorFilters.vendor">
+              <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="isBill" (ngModelChange)="onBillTypeSelected()">
+                <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                  <input ngbButton type="radio" value=""> All
+                </label>
+                <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                  <input ngbButton type="radio" value="0"> POs
+                </label>
+                <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                  <input ngbButton type="radio" value="1"> Bills
+                </label>
+              </div>
+            </div>
+            <div class="clear"></div>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="projects.length">
+              <thead>
+                <tr>
+                  <th class="" [ngClass]="vendorFilters.project ? 'w-50':'w-15'" (click)="sortBy(projects, 'name','projects')">
+                    Project &nbsp; <i *ngIf="sort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.name?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project" (click)="sortBy(projects, 'vendors','projects')">
+                    Vendors <i *ngIf="sort.vendors?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendors?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='1'||isBill=='')" (click)="sortBy(projects, 'bills','projects')">
+                    Bills &nbsp; <i *ngIf="sort.bills?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.bills?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='1'||isBill=='')" (click)="sortBy(projects, 'partialPaid','projects')">
+                    Raised Bills &nbsp; <i *ngIf="sort.partialPaid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.partialPaid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='1'||isBill=='')" (click)="sortBy(projects, 'partialPaid','projects')">
+                    Approved Bills &nbsp; <i *ngIf="sort.partialPaid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.partialPaid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='1'||isBill=='')" (click)="sortBy(projects, 'partialPaid','projects')">
+                    Paid Bills &nbsp; <i *ngIf="sort.partialPaid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.partialPaid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0'||isBill=='')" (click)="sortBy(projects, 'pos','projects')">
+                    POs &nbsp; <i *ngIf="sort.pos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.pos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center bg-danger text-white" *ngIf="!vendorFilters.project && isBill=='0'" (click)="sortBy(projects, 'redPos','projects')">
+                    > 30 days &nbsp; <i *ngIf="sort.redPos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.redPos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center bg-warning" *ngIf="!vendorFilters.project && isBill=='0'" (click)="sortBy(projects, 'yellowPos','projects')">
+                    > 15 days &nbsp; <i *ngIf="sort.yellowPos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yellowPos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && isBill=='0'" (click)="sortBy(projects, 'lightPos','projects')">
+                    > 0 days &nbsp; <i *ngIf="sort.lightPos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.lightPos?.desc" class="fa fa-caret-down"></i>
+                  </th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0'||isBill=='')" (click)="sortBy(projects, 'unpaid','projects')">
+                    UnPaid &nbsp; <i *ngIf="sort.unpaid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.unpaid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0'||isBill=='')" (click)="sortBy(projects, 'partialPaid','projects')">
+                    Partial Paid &nbsp; <i *ngIf="sort.partialPaid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.partialPaid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0'||isBill=='')" (click)="sortBy(projects, 'closed','projects')">
+                    Closed &nbsp; <i *ngIf="sort.closed?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.closed?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.project" (click)="sortBy(projects, 'total','projects')">
+                    Total &nbsp; <i *ngIf="sort.total?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.total?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.project" (click)="sortBy(projects, 'paid','projects')">
+                    Paid &nbsp; <i *ngIf="sort.paid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right" *ngIf="vendorFilters.project" [ngClass]="vendorFilters.project ? 'w-30':'w-10'" (click)="sortBy(projects, 'yetToPay','projects')">
+                    Yet to Pay&nbsp; <i *ngIf="sort.yetToPay?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yetToPay?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-center w-10" *ngIf="!vendorFilters.project&&(isBill=='0'||isBill=='')" (click)="sortBy(projects, 'drafted','projects')">
+                    <!-- <div class="w-100 border-bottom">Not Due</div> -->
+                    <span class="w-100 text-right d-ib">Not Due &nbsp; <i *ngIf="sort.drafted?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.drafted?.desc" class="fa fa-caret-down"></i></span>
+                  </th>
+                  <!--   <th class="text-center w-20" *ngIf="!vendorFilters.project" colspan="2">
+                    <div class="w-100 border-bottom">Due</div>
+                    <span class="w-50 text-right d-ib" (click)="sortBy(projects, 'released','projects')">Released &nbsp; <i *ngIf="sort.released?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.released?.desc" class="fa fa-caret-down"></i></span>
+                    <span class="w-50 text-right d-ib" (click)="sortBy(projects, 'approved','projects')">Approved &nbsp; <i *ngIf="sort.approved?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.approved?.desc" class="fa fa-caret-down"></i></span>
+                  </th> -->
+                  <th class="text-right w-10" *ngIf="!vendorFilters.project&&(isBill=='0'||isBill=='')" (click)="sortBy(projects, 'due','projects')">Due to Pay &nbsp; <i *ngIf="sort.due?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.due?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-center" [ngClass]="vendorFilters.project ? 'w-20':'w-5'">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let project of projects;" [ngClass]="project.name == selectedProject?.name ? 'selected' : ''">
+                  <td class="" [ngClass]="vendorFilters.project ? 'w-50':'w-15'">{{project.name}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project">{{project.vendors}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='1'||isBill=='')">{{project.bills}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project&& (isBill=='1'||isBill=='')">{{project.raisedBills}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project&& (isBill=='1'||isBill=='')">{{project.approvedBills}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project&& (isBill=='1'||isBill=='')">{{project.paidBills}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0'||isBill=='')">{{project.pos}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project&& (isBill=='')">{{project.unpaid}}</td>
+                  <td class="w-5 text-center text-info f-b cursor" *ngIf="!vendorFilters.project && (isBill=='0')" (click)="openRedPOs(project)">{{project.redPos}}</td>
+                  <td class="w-5 text-center text-info f-b cursor" *ngIf="!vendorFilters.project && (isBill=='0')" (click)="openYellowPOs(project)">{{project.yellowPos}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0')">{{project.lightPos}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0'||isBill=='')">{{project.partialPaid}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.project && (isBill=='0'||isBill=='')">{{project.closed}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.project">{{project.total | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.project">{{project.paid | inr}}</td>
+                  <td class="text-right" *ngIf="vendorFilters.project" [ngClass]="vendorFilters.project ? 'w-30':'w-10'">{{project.yetToPay | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.project&&(isBill=='0'||isBill=='')">{{project.drafted | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.project&&(isBill=='0'||isBill=='')">{{project.due | inr}}</td>
+                  <!--   <td class="w-10 text-right" *ngIf="!vendorFilters.project">{{project.released | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.project">{{project.approved | inr}}</td> -->
+                  <td class="text-center" [ngClass]="vendorFilters.project ? 'w-20':'w-5'">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Vendors" (click)="loadProjectVendors(project)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="vendors.length">
+              <thead>
+                <tr>
+                  <th class="" [ngClass]="vendorFilters.vendor ? 'w-50':'w-20'" (click)="sortBy(vendors, 'name','vendors')">
+                    Vendor &nbsp; <i *ngIf="sort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.name?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'pos','vendors')">
+                    POs &nbsp; <i *ngIf="sort.pos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.pos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center bg-danger text-white" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'redPos','vendors')">
+                    > 30 days &nbsp; <i *ngIf="sort.redPos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.redPos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center bg-warning" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'yellowPos','vendors')">
+                    > 15 days &nbsp; <i *ngIf="sort.yellowPos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yellowPos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'lightPos','vendors')">
+                    > 0 days &nbsp; <i *ngIf="sort.lightPos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.lightPos?.desc" class="fa fa-caret-down"></i>
+                  </th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'partialPaid','vendors')">
+                    Partial Paid &nbsp; <i *ngIf="sort.partialPaid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.partialPaid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-5 text-center" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'closed','vendors')">
+                    Closed &nbsp; <i *ngIf="sort.closed?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.closed?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'total','vendors')">
+                    Total &nbsp; <i *ngIf="sort.total?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.total?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'paid','vendors')">
+                    Paid &nbsp; <i *ngIf="sort.paid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right" *ngIf="vendorFilters.vendor" [ngClass]="vendorFilters.vendor ? 'w-30':'w-10'" (click)="sortBy(vendors, 'yetToPay','vendors')">
+                    Yet to Pay&nbsp; <i *ngIf="sort.yetToPay?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yetToPay?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-center w-10" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'drafted','vendors')">
+                    <!-- <div class="w-100 border-bottom">Not Due</div> -->
+                    <span class="w-100 text-right d-ib">Not Due &nbsp; <i *ngIf="sort.drafted?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.drafted?.desc" class="fa fa-caret-down"></i></span>
+                  </th>
+                  <!--   <th class="text-center w-20" *ngIf="!vendorFilters.vendor" colspan="2">
+                    <div class="w-100 border-bottom">Due</div>
+                    <span class="w-50 text-right d-ib" (click)="sortBy(vendors, 'released','vendors')">Released &nbsp; <i *ngIf="sort.released?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.released?.desc" class="fa fa-caret-down"></i></span>
+                    <span class="w-50 text-right d-ib" (click)="sortBy(vendors, 'approved','vendors')">Approved &nbsp; <i *ngIf="sort.approved?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.approved?.desc" class="fa fa-caret-down"></i></span>
+                  </th> -->
+                  <th class="text-right w-10" *ngIf="!vendorFilters.vendor" (click)="sortBy(vendors, 'due','vendors')">Due to Pay &nbsp; <i *ngIf="sort.due?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.due?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-center" [ngClass]="vendorFilters.vendor ? 'w-20':'w-5'">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let vendor of vendors;" [ngClass]="vendor.name == selectedVendor?.name ? 'selected' : ''">
+                  <td class="" [ngClass]="vendorFilters.vendor ? 'w-50':'w-20'">{{vendor.name}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.vendor">{{vendor.pos}}</td>
+                  <td class="w-5 text-center text-info f-b cursor" *ngIf="!vendorFilters.vendor" (click)="openRedPOs(vendor)">{{vendor.redPos}}</td>
+                  <td class="w-5 text-center text-info f-b cursor" *ngIf="!vendorFilters.vendor" (click)="openYellowPOs(vendor)">{{vendor.yellowPos}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.vendor">{{vendor.lightPos}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.vendor">{{vendor.partialPaid}}</td>
+                  <td class="w-5 text-center" *ngIf="!vendorFilters.vendor">{{vendor.closed}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.vendor">{{vendor.total | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.vendor">{{vendor.paid | inr}}</td>
+                  <td class="text-right" *ngIf="vendorFilters.vendor" [ngClass]="vendorFilters.vendor ? 'w-30':'w-10'">{{vendor.yetToPay | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.vendor">{{vendor.drafted | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.vendor">{{vendor.due | inr}}</td>
+                  <!--   <td class="w-10 text-right" *ngIf="!vendorFilters.vendor">{{vendor.released | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.vendor">{{vendor.approved | inr}}</td> -->
+                  <td class="text-center" [ngClass]="vendorFilters.vendor ? 'w-20':'w-5'">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Vendors" (click)="loadPOs(vendor)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="card" *ngIf="events.length">
+              <div class="">
+                <div class="p-3 d-flex justify-content-between align-items-center calendar-title">
+                  <!-- Arrow navigations -->
+                  <div class="cal-top-col text-center">
+                    <button class="btn btn-rounded btn-icon btn-outline-primary m-1" mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">
+                      <i class="i-Arrow-Left"></i>
+                    </button>
+                    <button class="btn btn-rounded btn-icon btn-primary m-1" mwlCalendarToday [(viewDate)]="viewDate">
+                      <i class="i-Calendar-2"></i>
+                    </button>
+                    <button class="btn btn-rounded btn-icon btn-outline-primary m-1" mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">
+                      <i class="i-Arrow-Right"></i>
+                    </button>
+                  </div>
+                  <!-- Date title -->
+                  <div class=" text-center">
+                    <h5 class="m-0 text-muted f-b">{{ viewDate | calendarDate:(view + 'ViewTitle'):'en' }}</h5>
+                  </div>
+                  <!-- Month, day, week view toggle buttons -->
+                  <div class="d-flex justify-content-center">
+                    <button class="btn btn-rounded btn-icon btn-primary m-1" (click)="view = 'month'" [class.active]="view === 'month'" ngbTooltip="Month view">
+                      <i class="i-Calendar"></i>
+                    </button>
+                    <!--    <button class="btn btn-rounded btn-icon btn-primary m-1" (click)="view = 'week'" [class.active]="view === 'week'" ngbTooltip="Week view">
+                      <i class="i-Split-Vertical-2"></i>
+                    </button>
+                    <button class="btn btn-rounded btn-icon btn-primary m-1" (click)="view = 'day'" [class.active]="view === 'day'" ngbTooltip="Day view">
+                      <i class="i-Align-Justify-All"></i>
+                    </button> -->
+                  </div>
+                </div>
+                <!-- Calendar -->
+                <div class="p-0">
+                  <div [ngSwitch]="view">
+                    <mwl-calendar-month-view *ngSwitchCase="'month'" [viewDate]="viewDate" [events]="events" [refresh]="refresh" [activeDayIsOpen]="activeDayIsOpen" (dayClicked)="dayClicked($event.day)" (eventClicked)="handleEvent('edit', $event.event)" (eventTimesChanged)="eventTimesChanged($event)">
+                    </mwl-calendar-month-view>
+                    <!--         <mwl-calendar-week-view *ngSwitchCase="'week'" [viewDate]="viewDate" [events]="events" [refresh]="refresh" (eventClicked)="handleEvent('edit', $event.event)" (eventTimesChanged)="eventTimesChanged($event)">
+                    </mwl-calendar-week-view>
+                    <mwl-calendar-day-view *ngSwitchCase="'day'" [viewDate]="viewDate" [events]="events" [refresh]="refresh" (eventClicked)="handleEvent('edit', $event.event)" (eventTimesChanged)="eventTimesChanged($event)">
+                    </mwl-calendar-day-view> -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="vendorFilters.project || (projectVendors.length || months.length || monthlyPODues.length)" class="table-responsive pl-1" [ngClass]="{'col-9':vendorFilters.project&&!vendorFilters.projectVendor,'col-3':vendorFilters.projectVendor}">
+            <loading [loading]="loading"></loading>
+            <div class="border-bottom mt-1" *ngIf="selectedProject">
+              <h5 class="float-left" [ngClass]="{'w-50':!pos.length&& !vendorFilters.projectVendor}">'{{selectedProject?.name}}' Payable Vendors</h5>
+              <div class="float-right w-50 text-right" *ngIf="!pos.length && !vendorFilters.projectVendor">
+                <a class="btn btn-icon btn-danger btn-sm text-white float-right mr-20" (click)="vendorFilters={};vendors=[];projectVendors=[];months=[];selectedProject=null;vendorFilters.vendor=null;selectedVendor=null;" ngbTooltip="Close Project" placement="left"><i class="fa fa-times pt-1"></i></a>
+                <div class="float-right mr-20">
+                  <label class="checkbox checkbox-success">
+                    <input type="checkbox" [(ngModel)]="isMonthWise" (ngModelChange)="duesByDates=false;loadProjectVendors(selectedProject)" [ngModelOptions]="{standalone: true}">
+                    <span>MonthWise</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+                <div class="float-right mr-20">
+                  <label class="checkbox checkbox-success">
+                    <input type="checkbox" [(ngModel)]="duesByDates" (ngModelChange)="isMonthWise=false;loadProjectVendors(selectedProject)" [ngModelOptions]="{standalone: true}">
+                    <span>Dues by Dates</span>
+                    <span class="checkmark"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="clear"></div>
+            </div>
+            <h5 class="pull-left mb-1" *ngIf="selectedVendor?.id">'{{selectedProject?.name}}' Vendors</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="months.length">
+              <thead>
+                <tr>
+                  <th class="" [ngClass]="vendorFilters.projectVendor ? 'w-50':'w-20'">Name</th>
+                  <th class="w-10 text-center" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">POs</th>
+                  <th class="w-10 text-center" *ngIf="!vendorFilters.projectVendor&&isBill=='1'">Bills</th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.projectVendor">Total</th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.projectVendor">Paid</th>
+                  <th class="text-right" [ngClass]="vendorFilters.projectVendor ? 'w-30':'w-10'">Yet to Pay</th>
+                  <th class="text-center w-10" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">
+                    <div class="w-100 border-bottom">Not Due</div>
+                    <span class="w-100 text-right d-ib">Draft</span>
+                  </th>
+                  <th class="text-center w-20" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')" colspan="2">
+                    <div class="w-100 border-bottom">Due</div>
+                    <span class="w-50 text-right d-ib">Released</span>
+                    <span class="w-50 text-right d-ib">Approved</span>
+                  </th>
+                  <th class="text-center" [ngClass]="vendorFilters.projectVendor ? 'w-20':'w-10'">Action</th>
+                </tr>
+              </thead>
+            </table>
+            <div class="tableBodyScroll" style="height: calc(100vh - 220px); overflow: auto;" *ngIf="months.length">
+              <table class="tableBodyScroll table table-striped table-hover table-sm">
+                <tbody class="tableBodyScroll" *ngFor="let month of months;">
+                  <tr colspan="9"><strong class="fs-16 p-4">{{month.name}}</strong></tr>
+                  <tr *ngFor="let vendor of month.vendors;" [ngClass]="vendor.name == selectedVendor?.name && selectedMonth == month.name ? 'selected' : ''">
+                    <td class="" [ngClass]="vendorFilters.projectVendor ? 'w-50':'w-20'">{{vendor.name}}</td>
+                    <td class="w-10 text-center" *ngIf="!vendorFilters.projectVendor">{{vendor.pos.length}}</td>
+                    <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor">{{vendor.total | inr}}</td>
+                    <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor">{{vendor.paid | inr}}</td>
+                    <td class="text-right" [ngClass]="vendorFilters.projectVendor ? 'w-30':'w-10'">{{vendor.yetToPay | inr}}</td>
+                    <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">{{vendor.drafted | inr}}</td>
+                    <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">{{vendor.released | inr}}</td>
+                    <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">{{vendor.approved | inr}}</td>
+                    <td class="text-center" [ngClass]="vendorFilters.projectVendor ? 'w-20':'w-10'">
+                      <button class="btn btn-icon btn-primary" ngbTooltip="View POs" (click)="loadMonthPOs(month.name, vendor)"><i class="i-Blinklist"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="monthlyPODues.length">
+              <thead>
+                <tr>
+                  <th class="w-15">Due Date</th>
+                  <th class="w-10 text-right">Amount</th>
+                  <th class="w-30">Vendor</th>
+                  <th class="w-30">Project</th>
+                  <th class="w-15 text-center">RefNo</th>
+                </tr>
+              </thead>
+            </table>
+            <div class="tableBodyScroll" style="height: calc(100vh - 220px); overflow: auto;" *ngIf="monthlyPODues.length">
+              <table class="tableBodyScroll table table-striped table-hover table-sm">
+                <tbody class="tableBodyScroll" *ngFor="let month of monthlyPODues;">
+                  <tr colspan="9"><strong class="fs-16 p-4">{{month.month}}</strong></tr>
+                  <tr *ngFor="let date of month.dates;">
+                    <td class="w-15">{{date.dueDate | date:'MMM dd, yyyy'}}</td>
+                    <td class="w-10 text-right">{{date.amount | inr}}</td>
+                    <td class="w-30 text-left">{{date.vendor}}</td>
+                    <td class="w-30 text-left">{{date.project}}</td>
+                    <td class="text-center w-15">
+                      <a class="f-b" ngbTooltip="View PO" target="_blank" href="#/purchases/purchaseorder/{{date.poId}}">{{date.refNo}}</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="projectVendors.length">
+              <thead>
+                <tr>
+                  <th class="" [ngClass]="vendorFilters.projectVendor ? 'w-50':'w-20'" (click)="sortBy(projectVendors, 'name','projectVendors')">Name &nbsp;<i *ngIf="sort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.name?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10 text-center" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')" (click)="sortBy(projectVendors, 'pos','projectVendors')">POs &nbsp;<i *ngIf="sort.pos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.pos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10 text-center" *ngIf="!vendorFilters.projectVendor&&(isBill=='1')" (click)="sortBy(projectVendors, 'pos','projectVendors')">Bills &nbsp;<i *ngIf="sort.pos?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.pos?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.projectVendor" (click)="sortBy(projectVendors, 'total','projectVendors')">Total &nbsp;<i *ngIf="sort.total?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.total?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" *ngIf="!vendorFilters.projectVendor" (click)="sortBy(projectVendors, 'paid','projectVendors')">Paid &nbsp;<i *ngIf="sort.paid?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paid?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right" [ngClass]="vendorFilters.projectVendor ? 'w-30':'w-10'" (click)="sortBy(projectVendors, 'yetToPay','projectVendors')">Yet to Pay &nbsp;<i *ngIf="sort.yetToPay?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yetToPay?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-center w-10" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">
+                    <div class="w-100 border-bottom">Not Due</div>
+                    <span class="w-100 text-right d-ib" (click)="sortBy(projectVendors, 'drafted','projectVendors')">Draft &nbsp;<i *ngIf="sort.drafted?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.drafted?.desc" class="fa fa-caret-down"></i></span>
+                  </th>
+                  <th class="text-center w-20" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')" colspan="2">
+                    <div class="w-100 border-bottom">Due</div>
+                    <span class="w-50 text-right d-ib" (click)="sortBy(projectVendors, 'released','projectVendors')">Released &nbsp;<i *ngIf="sort.released?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.released?.desc" class="fa fa-caret-down"></i></span>
+                    <span class="w-50 text-right d-ib" (click)="sortBy(projectVendors, 'approved','projectVendors')">Approved &nbsp;<i *ngIf="sort.approved?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.approved?.desc" class="fa fa-caret-down"></i></span>
+                  </th>
+                  <th class="text-center" [ngClass]="vendorFilters.projectVendor ? 'w-20':'w-10'">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let vendor of projectVendors;" [ngClass]="vendor.name == selectedVendor?.name ? 'selected' : ''">
+                  <td class="" [ngClass]="vendorFilters.projectVendor ? 'w-50':'w-20'">{{vendor.name}}</td>
+                  <td class="w-10 text-center" *ngIf="!vendorFilters.projectVendor">{{vendor.pos}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor">{{vendor.total | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor">{{vendor.paid | inr}}</td>
+                  <td class="text-right" [ngClass]="vendorFilters.projectVendor ? 'w-30':'w-10'">{{vendor.yetToPay | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">{{vendor.drafted | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">{{vendor.released | inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!vendorFilters.projectVendor&&(isBill=='0'||isBill=='')">{{vendor.approved | inr}}</td>
+                  <td class="text-center" [ngClass]="vendorFilters.projectVendor ? 'w-20':'w-10'">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View POs" (click)="loadPOs(vendor)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="p-1 pr-4" *ngIf="selectedVendor?.name" [ngClass]="{'col-8':vendorFilters.vendor,'col-6':vendorFilters.projectVendor}">
+            <div class="border-bottom">
+              <h5 class="float-left">'{{selectedVendor?.name}} {{selectedMonth}}' POs</h5>
+              <div class="float-right text-right">
+                <a class="btn btn-icon btn-danger btn-sm text-white mr-20" (click)="vendorFilters.vendor=null;vendorFilters.projectVendor=null;selectedVendor=null;pos=[];" ngbTooltip="Close Vendor" placement="left">
+                  <i class="fa fa-times pt-1"></i></a>
+              </div>
+              <div class="float-right mr-20">
+                <label class="checkbox checkbox-success">
+                  <input type="checkbox" [(ngModel)]="isMonthWise" (ngModelChange)="duesByDates=false;loadPOs(selectedVendor)" [ngModelOptions]="{standalone: true}">
+                  <span>MonthWise</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="float-right mr-20">
+                <label class="checkbox checkbox-success">
+                  <input type="checkbox" [(ngModel)]="duesByDates" (ngModelChange)="isMonthWise=false;loadPOs(selectedVendor)" [ngModelOptions]="{standalone: true}">
+                  <span>Dues by Dates</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="clear"></div>
+            </div>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="vendorPos.length>0">
+              <thead>
+                <tr>
+                  <th class="w-20 text-center" (click)="sortBy(pos, 'approved','pos')">RefNo &nbsp;<i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-center w-10" (click)="sortBy(pos, 'status','pos')">Status &nbsp;<i *ngIf="sort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.status?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-15" (click)="sortBy(pos, 'date','pos')">Date &nbsp;<i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" (click)="sortBy(pos, 'amount','pos')">Total &nbsp;<i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" (click)="sortBy(pos, 'paidAmount','pos')">Paid &nbsp;<i *ngIf="sort.paidAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paidAmount?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" (click)="sortBy(pos, 'yetToPay','pos')">Yet to Pay &nbsp;<i *ngIf="sort.yetToPay?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yetToPay?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" (click)="sortBy(pos, 'draftAmount','pos')">NotDue &nbsp;<i *ngIf="sort.draftAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.draftAmount?.desc" class="fa fa-caret-down"></i></th>
+                  <!-- <th class="text-right w-10" (click)="sortBy(pos, 'releasedAmount','pos')">Released &nbsp;<i *ngIf="sort.releasedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.releasedAmount?.desc" class="fa fa-caret-down"></i></th> -->
+                  <!-- <th class="text-right w-15" (click)="sortBy(pos, 'approvedAmount','pos')">Approved &nbsp;<i *ngIf="sort.approvedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.approvedAmount?.desc" class="fa fa-caret-down"></i></th> -->
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let po of vendorPos;">
+                  <td class="text-center w-20">
+                    <a class="f-b" ngbTooltip="View PO" target="_blank" href="#/purchases/purchaseorder/{{po.id}}">{{po.refNo}}</a>
+                  </td>
+                  <td class="w-10 text-center">{{po.status}}</td>
+                  <td class="w-15 text-right">{{po.date | date : 'MMM dd, yyyy'}}</td>
+                  <td class="w-10 text-right">{{po.amount | inr}}</td>
+                  <td class="w-10 text-right">{{po.paidAmount | inr}}</td>
+                  <td class="text-right w-10">{{po.yetToPay | inr}}</td>
+                  <td class="w-10 text-right">{{po.draftAmount | inr}}</td>
+                  <!--  <td class="w-10 text-right">{{po.releasedAmount | inr}}</td> -->
+                  <!-- <td class="w-15 text-right">{{po.approvedAmount | inr}}</td> -->
+                </tr>
+              </tbody>
+            </table>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="vendorMonths.length">
+              <thead>
+                <tr>
+                  <th class="w-15" (click)="sortBy(pos, 'approved','pos')">RefNo &nbsp;<i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-center w-10" (click)="sortBy(pos, 'status','pos')">Status &nbsp;<i *ngIf="sort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.status?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-15" (click)="sortBy(pos, 'date','pos')">Date &nbsp;<i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-15" (click)="sortBy(pos, 'amount','pos')">Total &nbsp;<i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-15" (click)="sortBy(pos, 'paidAmount','pos')">Paid &nbsp;<i *ngIf="sort.paidAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paidAmount?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-15" (click)="sortBy(pos, 'yetToPay','pos')">Yet to Pay &nbsp;<i *ngIf="sort.yetToPay?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yetToPay?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="text-right w-10" (click)="sortBy(pos, 'draftAmount','pos')">NotDue &nbsp;<i *ngIf="sort.draftAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.draftAmount?.desc" class="fa fa-caret-down"></i></th>
+                  <!-- <th class="text-right w-10" (click)="sortBy(pos, 'releasedAmount','pos')">Released &nbsp;<i *ngIf="sort.releasedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.releasedAmount?.desc" class="fa fa-caret-down"></i></th> -->
+                  <!-- <th class="text-right w-15" (click)="sortBy(pos, 'approvedAmount','pos')">Approved &nbsp;<i *ngIf="sort.approvedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.approvedAmount?.desc" class="fa fa-caret-down"></i></th> -->
+                </tr>
+              </thead>
+            </table>
+            <div class="tableBodyScroll" style="height: calc(100vh - 220px); overflow: auto;" *ngIf="vendorMonths.length">
+              <table class="tableBodyScroll table table-striped table-hover table-sm">
+                <tbody class="tableBodyScroll" *ngFor="let month of vendorMonths;">
+                  <tr colspan="9"><strong class="fs-16 p-4">{{month.name}}</strong></tr>
+                  <tr *ngFor="let po of month.monthlyPos;">
+                    <td class="text-center w-15">
+                      <a class="f-b" ngbTooltip="View PO" target="_blank" href="#/purchases/purchaseorder/{{po.id}}">{{po.refNo}}</a>
+                    </td>
+                    <td class="w-10 text-center">{{po.status}}</td>
+                    <td class="w-15 text-right">{{po.date | date : 'MMM dd, yyyy'}}</td>
+                    <td class="w-15 text-right">{{po.amount | inr}}</td>
+                    <td class="w-15 text-right">{{po.paidAmount | inr}}</td>
+                    <td class="text-right w-15">{{po.yetToPay | inr}}</td>
+                    <td class="w-10 text-right">{{po.draftAmount | inr}}</td>
+                    <!--  <td class="w-10 text-right">{{po.releasedAmount | inr}}</td> -->
+                    <!-- <td class="w-15 text-right">{{po.approvedAmount | inr}}</td> -->
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="vendorMonthlyPODues.length">
+              <thead>
+                <tr>
+                  <th class="w-15">Due Date</th>
+                  <th class="w-30">PO RefNo</th>
+                  <th class="w-30">Project</th>
+                  <th class="w-15 text-right">Due Amount</th>
+                  <th class="text-center w-10">Action</th>
+                </tr>
+              </thead>
+            </table>
+            <div class="tableBodyScroll" style="height: calc(100vh - 220px); overflow: auto;" *ngIf="vendorMonthlyPODues.length">
+              <table class="tableBodyScroll table table-striped table-hover table-sm">
+                <tbody class="tableBodyScroll" *ngFor="let month of vendorMonthlyPODues;">
+                  <tr colspan="9"><strong class="fs-16 p-4">{{month.month}}</strong></tr>
+                  <tr *ngFor="let date of month.dates;" [ngClass]="{'bg-success': date.status=='Issued'}">
+                    <td class="w-15">{{date.dueDate | date:'MMM dd, yyyy'}}</td>
+                    <td class="w-30 text-left"> <a class="f-b" ngbTooltip="View PO" target="_blank" href="#/purchases/purchaseorder/{{date?.poId}}">{{date?.refNo}}</a></td>
+                    <td class="w-30 text-left">{{date.project}}</td>
+                    <td class="w-15 text-right text-white f-b" *ngIf="date.status=='Issued'" ngbTooltip="Cheque Issued">{{date.amount | inr}}<sup>*</sup></td>
+                    <td class="w-15 text-right" *ngIf="date.status!='Issued'">{{date.amount | inr}}</td>
+                    <td class="text-center w-10">
+                      <a href="#/purchases/purchaseorder/{{date.poId}}" target="_blank" ngbTooltip="View PO">
+                        <button class="btn btn-sm btn-info btn-icon"><i class="fa fa-search"></i></button></a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #unassignedPOsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">'{{currentProject.name}}' {{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <table class="tableBodyScroll table table-striped table-hover table-sm">
+      <thead>
+        <tr>
+          <th class="w-10 text-center" (click)="sortBy(unassignedPos, 'vendor','unassignedPos')">Vendor &nbsp;<i *ngIf="sort.vendor?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendor?.desc" class="fa fa-caret-down"></i></th>
+          <th class="w-10 text-center" (click)="sortBy(unassignedPos, 'refNo','unassignedPos')">RefNo &nbsp;<i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-center w-5" (click)="sortBy(unassignedPos, 'status','unassignedPos')">Status &nbsp;<i *ngIf="sort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.status?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'date','unassignedPos')">Date &nbsp;<i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'amount','unassignedPos')">Total &nbsp;<i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'paidAmount','unassignedPos')">Paid &nbsp;<i *ngIf="sort.paidAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paidAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'yetToPay','unassignedPos')">Yet to Pay &nbsp;<i *ngIf="sort.yetToPay?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yetToPay?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'draftAmount','unassignedPos')">NotDue &nbsp;<i *ngIf="sort.draftAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.draftAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'releasedAmount','unassignedPos')">Released &nbsp;<i *ngIf="sort.releasedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.releasedAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-" (click)="sortBy(unassignedPos, 'approvedAmount','unassignedPos')">Approved &nbsp;<i *ngIf="sort.approvedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.approvedAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="w-10"></th>
+        </tr>
+      </thead>
+      <tbody infiniteScroll class="tableBodyScroll" [autoHeightAdjust]="false">
+        <tr *ngFor="let po of unassignedPos;">
+          <td class="text w-10">{{po.vendor}}</td>
+          <td class="text-center w-10">
+            <a class="f-b fs-10" ngbTooltip="View PO" target="_blank" href="#/purchases/purchaseorder/{{po.id}}">{{po.refNo}}</a>
+          </td>
+          <td class="w-5 text-center cursor text-primary" ngbTooltip="Click to Assign Project" (click)="openProjectAssignModal(po)" *ngIf="!po.projectId">{{po.status}}</td>
+          <td class="w-5 text-center cursor text-info f-b" ngbTooltip="{{po.title}}" (click)="openProjectAssignModal(po)" *ngIf="po.projectId">{{po.status}}</td>
+          <td class="w-10 text-right">{{po.date | date : 'MMM dd, yyyy'}}</td>
+          <td class="w-10 text-right">{{po.amount | inr}}</td>
+          <td class="w-10 text-right">{{po.paidAmount | inr}}</td>
+          <td class="text-right w-10">{{po.yetToPay | inr}}</td>
+          <td class="w-10 text-right">{{po.draftAmount | inr}}</td>
+          <td class="w-10 text-right">{{po.releasedAmount | inr}}</td>
+          <td class="w-5 text-right">{{po.approvedAmount | inr}}</td>
+          <td class="w-10 text-center">
+            <a class="btn btn-sm btn-info btn-icon" href="#/purchases/purchaseorder/{{po.id}}" target="_blank" ngbTooltip="View PO"><i class="fa fa-search"></i></a>
+            <button class="btn btn-sm btn-info btn-icon" (click)="markAsOpex(po)" ngbTooltip="Toogle OpEx"><i class="fa fa-dollar"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="btn btn-outline-light btn-sm float-right" (click)="modal.close()">Close</button>
+  </div>
+</ng-template>
+<ng-template #statusChangePOsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">'{{currentProject.name}}' {{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <table class="tableBodyScroll table table-striped table-hover table-sm">
+      <thead>
+        <tr>
+          <th class="w-10 text-center" (click)="sortBy(unassignedPos, 'vendor','unassignedPos')">Vendor &nbsp;<i *ngIf="sort.vendor?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendor?.desc" class="fa fa-caret-down"></i></th>
+          <th class="w-10 text-center" (click)="sortBy(unassignedPos, 'refNo','unassignedPos')">RefNo &nbsp;<i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-center w-5" (click)="sortBy(unassignedPos, 'status','unassignedPos')">Status &nbsp;<i *ngIf="sort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.status?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'date','unassignedPos')">Date &nbsp;<i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'amount','unassignedPos')">Total &nbsp;<i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'paidAmount','unassignedPos')">Paid &nbsp;<i *ngIf="sort.paidAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.paidAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'yetToPay','unassignedPos')">Yet to Pay &nbsp;<i *ngIf="sort.yetToPay?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.yetToPay?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'draftAmount','unassignedPos')">NotDue &nbsp;<i *ngIf="sort.draftAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.draftAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-10" (click)="sortBy(unassignedPos, 'releasedAmount','unassignedPos')">Released &nbsp;<i *ngIf="sort.releasedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.releasedAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="text-right w-" (click)="sortBy(unassignedPos, 'approvedAmount','unassignedPos')">Approved &nbsp;<i *ngIf="sort.approvedAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.approvedAmount?.desc" class="fa fa-caret-down"></i></th>
+          <th class="w-10"></th>
+        </tr>
+      </thead>
+      <tbody infiniteScroll class="tableBodyScroll" [autoHeightAdjust]="450">
+        <tr *ngFor="let po of unassignedPos;">
+          <td class="text w-10">{{po.vendor}}</td>
+          <td class="text-center w-10">
+            <a class="f-b fs-10" ngbTooltip="View PO" target="_blank" href="#/purchases/purchaseorder/{{po.id}}">{{po.refNo}}</a>
+          </td>
+          <td class="w-5 text-center">
+            <ng-select class="mini" [items]="['Raised','Started','Closed','Declined']" [hideSelected]="true" [(ngModel)]="po.status" [ngModelOptions]="{standalone: true}" (ngModelChange)="updatePOStatus(po)" placeholder="Status"></ng-select>
+          </td>
+          <td class="w-10 text-right">{{po.date | date : 'MMM dd, yyyy'}}</td>
+          <td class="w-10 text-right">{{po.amount | inr}}</td>
+          <td class="w-10 text-right">{{po.paidAmount | inr}}</td>
+          <td class="text-right w-10">{{po.yetToPay | inr}}</td>
+          <td class="w-10 text-right">{{po.draftAmount | inr}}</td>
+          <td class="w-10 text-right">{{po.releasedAmount | inr}}</td>
+          <td class="w-5 text-right">{{po.approvedAmount | inr}}</td>
+          <td class="w-10 text-center">
+            <a class="btn btn-sm btn-info btn-icon" href="#/purchases/purchaseorder/{{po.id}}" target="_blank" ngbTooltip="View PO"><i class="fa fa-search"></i></a>
+            <button class="btn btn-sm btn-info btn-icon" (click)="markAsOpex(po)" ngbTooltip="Toogle OpEx"><i class="fa fa-dollar"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="btn btn-outline-light btn-sm float-right" (click)="modal.close()">Close</button>
+  </div>
+</ng-template>

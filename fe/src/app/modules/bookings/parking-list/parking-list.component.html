@@ -1,0 +1,147 @@
+<div class="">
+  <div class="breadcrumb row">
+    <h1 class="d-ib col-md-4 float-left">Parking Bookings
+      <help-notes [context]="'Booking:OfficeBookingStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right  ml-10"></help-notes>
+      <help-notes [context]="'Booking:OfficeBookingStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right  ml-10"></help-notes>
+    </h1>
+    <!-- <div class="d-ib col-md-4 float-left">
+      <input type="text" placeholder="Search by client name, phone, email, reference number, location, city" [formControl]="searchControl" class="form-control form-control-rounde w-90 float-left">
+      <button class="btn btn-info btn-icon float-right"><i class="i-Filter-2"></i></button>
+      <button class="btn btn-outline-primary btn-icon float-right" ngbTooltip="Quick Filters" *ngIf="!moreFilters" (click)="moreFilters=true;loadBuildingBookings()"><i class="fa fa-caret-square-o-down"></i></button>
+      <button class="btn btn-outline-primary btn-icon float-right" ngbTooltip="Hide Filters" *ngIf="moreFilters" (click)="moreFilters=false;"><i class="fa fa-caret-square-o-up"></i></button>
+    </div>
+    <div class="d-ib col-md-4 float-left">
+      <ng-select class="w-90" [items]="['New','Booked','Active','Exiting','Exited','TDSHolded','Settled','Cancelled']" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Statuses" [(ngModel)]="filter.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    </div> -->
+    <button class="mb-2 d-ib col-md-2 col-6 btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="newBooking()" *checkAccess="'bookings:newBooking'">
+      <i class="fa fa-plus"></i> Book Parking
+    </button>
+    <div class="clear"></div>
+  </div>
+  <!-- <div class="row" *ngIf="moreFilters">
+    <div class="col-md-3">
+      <label class="fs-10 mb-0">Exclude</label>
+      <ng-select [items]="['New','Booked','Active','Exiting','Exited','TDSHolded','Settled','Cancelled']" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Exclude Statuses" [(ngModel)]="filter.excludeStatuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    </div>
+    <div class="col-md-3">
+      <label class="fs-10 mb-0">Product Type</label>
+      <ng-select [items]="['FixedDesk', 'FlexiDesk', 'PrivateOffice', 'EnterpriseOffice']" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Product Type" [(ngModel)]="filter.deskType" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    </div>
+    <div class="col-md-9 pt-2">
+      <span class="badge fs-12 mr-2">Total: <span class="m-0 text-primary">{{totalBuildingWiseBookings}}</span></span>
+      <span class="badge fs-12 mr-2 cursor" *ngFor="let building of buildingBookings;" [ngClass]="{'badge-outline-primary':selectedBuilding?.id!=building?.id,'badge-primary':selectedBuilding?.id==building?.id}" (click)="selectBuilding(building)">{{building?.name}} ({{building?.count}})</span>
+    </div>
+  </div> -->
+  <div class="separator-breadcrumb border-top mb-3"></div>
+  <div class="clear"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);padding-top: 20px;margin-top: -10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <a href="#/bookings/view/{{item.bookingId}}" class="w-25 w-sm-100">
+              <div class="item-title">{{item.client?.company || item.client?.name}}</div>
+              <span class="m-0 text-secondary text-small">{{item.refNo}}</span>
+              <div class="mr-20 text-secondary text-small">Monthly Rent: <span class="m-0 text-primary">{{(item.cars*item.carPrice)+(item.bikes*item.bikePrice) | inr}}</span></div>              
+            </a>
+            <div class="m-0 text-muted text-small w-25 w-sm-100">
+              <div class="text-primary"><i class="i-Car-2"></i> Cars: {{item.cars}} | Total Price: {{item.carPrice}}</div>
+              <div class="text-primary"><i class="i-Motorcycle"></i> Bikes: {{item.bikes}} | Total Price: {{item.bikePrice}}</div>
+              <div class="mr-20 text-secondary text-small">Total Rent: <span class="m-0 text-primary">{{(item.carPrice)+(item.bikePrice) | inr}}</span></div>              
+              <!-- <div class="text-primary"><i class="i-Building badge" [ngClass]="{'badge-success':(item.invoices[0]?.startDate) >= ('2023-10-01')}"></i>{{(item.invoices[0]?.startDate) >= ('2023-10-01')?'Oct : &#9989;':'Oct : &#10060;'}}</div>
+              <div class="text-primary"><i class="i-Building"></i>{{(item.invoices[0]?.startDate)?(item.invoices[0]?.startDate):'No Invoices'}}</div>
+              <span class="text-secondary"><i class="i-Building"></i>Invoices: <span class="m-0 text-primary">{{item.invoices.length}}</span></span> -->
+            </div>
+            <!-- <div class="m-0 text-muted text-small w-20 w-sm-100">
+              <div class="text-primary"><i class="i-Building"></i>{{item.office.building.name}}, {{item.offices}}</div>
+              <div class="text-primary"><i class="i-Building"></i>{{item.contract.deskType}}</div>
+              <span class="text-secondary">Cabins - {{item.cabins}}, Desks - {{item.desks}}</span>
+            </div> -->
+            <div class="m-0 text-muted text-small w-15 w-sm-100">
+              <div class="d-b text-primary"> <span class="text-secondary">Booking :</span> {{item.reserved | date : 'MMM dd, yyyy'}}</div>
+              <span class="d-b text-info"> <span class="text-secondary">Started :</span> {{item.started | date : 'MMM dd, yyyy'}}</span>
+              <span class="d-b text-info"> <span class="text-secondary">Invoiced: | Paid: | Due:</span> </span>
+            </div>
+            <div class="m-0 text-muted text-small w-30 w-sm-100 d-b">
+              <div class="w-75 float-left">
+                <div class="text-primary">Client Contact Details:</div>
+                <div class="text-primary"><i class="i-Telephone"></i> {{item.client.phone}}</div>
+                <span class="text-secondary"><i class="i-Email"></i> {{item.client.email}}</span>
+              </div>
+              <div class="m-0 text-muted text-small w-20 item-actions  mr-1 ml-5 float-right">
+                <div class="badge" [ngClass]="{'badge-dark':item.status=='New','badge-info':item.status=='Booked','badge-success':item.status=='Active','badge-warning':item.status=='Cancelled','badge-secondary':item.status=='Exiting','badge-light':item.status=='Exited','badge-light':item.status=='Settled'}">{{item.status}}</div>
+                <a class="btn btn-icon btn-info" ngbTooltip="View Detailed Booking" target="_blank" href="#/bookings/view/{{item.bookingId}}">
+                  <i class="i-Magnifi-Glass1 text-bold"></i>
+                </a>
+                <!-- <button type="button" class="btn btn-outline-info btn-sm float-right" (click)="openContractTerm()">Contract Terms</button> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<ng-template #3efw let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Contract Terms</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+<div class="modal-body">
+  <form>
+    <div class="col-md-3 form-group mb-1 p-1">
+      <label for="security">Monthly Car Parking Rent per Unit</label>
+      <input type="number" class="form-control" id="security" placeholder="Monthly Car Parking Rent per Unit" formControlName="security" [(ngModel)]="contract.carPrice" [attr.disabled]="contract.id||contract.term=='ShortTerm'?true:null">
+    </div>
+    <div class="col-md-3 form-group mb-1 p-1">
+      <label for="security">Monthly Bike Parking Rent per Unit</label>
+      <input type="number" class="form-control" id="security" placeholder="Monthly Bike Parking Rent per Unit" formControlName="security" [(ngModel)]="contract.bikePrice" [attr.disabled]="contract.id||contract.term=='ShortTerm'?true:null">
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-outline-light" (click)="activeModal.close('close click')">Close</button>
+<!-- [disabled]="loading||form.invalid" -->
+<button class="btn btn-info ladda-button btn-ico" [ladda]="loading"  (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+</div>
+</ng-template>
+
+<ng-template #contractTermModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{payment.id ? 'Edit Employee' : 'New Employee'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" id="name"  placeholder="Employee Name" [(ngModel)]="employee.name"  [ngModelOptions]="{standalone: true}" >
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Email</label>
+          <input type="text" id="email"  placeholder="Enter Email" [(ngModel)]="employee.email"  [ngModelOptions]="{standalone: true}" >
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Phone</label>
+          <input type="number" placeholder="Enter Phone number" name="phone" [(ngModel)]="employee.phone"  [ngModelOptions]="{standalone: true}" >
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||employeeForm.invalid" (click)="saveEmployee()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

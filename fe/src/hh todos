@@ -1,0 +1,721 @@
+next work items timelines 
+----------------------------------
+financial tab of project
+
+cashflow report
+
+GST form uploads which we will get from vendors
+
+opex bills - accounts
+digitisation of agreement/contract
+workbenchs n mobile browser app
+marketing automations
+whatsapp n digital lock (interfaces)
+leads crm
+asset management
+---------------------------------------------------------------------
+
+
+mobile workbenchs
+------------------------------------------
+Marking move-in and move out..
+Adding exit process asset damage items
+Processing all payouts for accounts.
+Viewing contracts and contract terms for managers
+
+
+
+
+
+########### sureshs lsit ######################
+1. IF booking is cancelled desk status in booked Desks should be Released and ended date need to be updated as date of cancelled 
+------------------------------------1579 //
+
+3. IF expansion is done in current month invoice need to be raised even though there is an invoice for current month
+
+4. Additional monthly invoices services can be added irrespective of contract status
+5. In contraction only the number of desks getting reduced need to be released
+
+34. In Contraction office is getting changed issue at line no---- bookingcomponent.ts--1201 Fe // need to test
+
+35. Contraction Date validation issue at line no --- bookingcomponent.ts --1246-fe //
+
+6. While creating new booking with sqft n sqft price, rent is not getting calculated
+7. In first month rent, in description, it showing null in invoices list view ---- line no 3476 ,3601 be contract.desktype //
+
+8. If they request exit for any date the next month invoice is getting raised only for one day---3120
+
+9. For shortterm bookings no need to generate agreement and need to remove condtion for onboarding-----2476 //
+
+10. Cabins need not to show if the desks in that cabin are fully occupied
+11. If booking is cancelled need message for cancelling and exit request also need a message for cancellation
+13. If it is sft based booking no need to calculate rent per desk instead need to calculate rent per sft
+14. If desk is booked need not to show available for booking
+15. Need to reupload the documents if the documents uploaded is wrong
+16. For SD Invoices no need to consider month and need to generate the pdf and refno
+
+17. Add invoice not raising pdf   ------------------------ be 2979
+
+18. Invoice services need to be listed properly
+19. Payments can be cancelled if they added twice or mismatched and msg for cancellation
+20. Payment comments can be viewed 
+21. From selfcare if client is updating paymennt made through NEFT/RTGS/Bank Transfer he can be able update the payment and need an approval from HH acounts team to confirm as it is correct //	
+22. Need to list only meeting room as only that resource is available
+23. Need not to ask is it in same building for booking a resource
+24. Client can reopen a ticket if the ticket is closed and client is not satisfied or issue not resolved
+25. Resend client acceptacne mail for SD Refund or finalstatement
+26. In TDS AR need to show all previous year quartes also
+27. Actual ar and dashboard AR is mismatching because of condtions on booking statuses
+28. Asset damge form can be uploaded if they have list or form
+29. Token cancellation msg in mail and amount need to adjusted towards cancellation
+30. Client can upload TDS form in their selfcare portal
+31. Liability name need to be changed to SD Liability report
+32. Payments need to be mapped to invoices
+
+--------------------------------
+
+
+12. account manager role who can edit any invoice to do adjustments irespective of month
+14. confirm contract with invoice or without invoice or cancel
+
+draft n save workorder
+repeat po should be able to change project
+
+----------------------------------------------------
+
+paymments report n search
+provision to enter bills for opex, opex adhoc, capex adhoc, ho adhoc
+
+new opex bill -> company type is missing gstno 
+
+
+
+------------------------------------------
+capex bills , should be able to map to a project
+SR/ accounts manager can add a vendor without emails. (2 level approval can be done later)
+
+
+capex bills (not PO)
+-------------------------------
+need to have differentiate Opex, onetime n capex bills
+new categories - capex adhoc,capex, opex, opex adhoc, hq adhoc
+
+
+issues : 
+---------------------------
+1. ended date is not updating in booked_desks when booking is requested for exit
+2. on sales approval, tax for 1st month rent is getting generated
+3. while confirming, give 3 options, confirm with invoices, confirm without invoices n cancel.
+		just not to raise invoice if we dont want to collect money but do booking in system
+4. put future bookings n future exits at building level in availablity report too
+
+
+
+booking issues :  
+-------------------------------------------------------
+1. Future Booking Invoice Raising
+2. Future Availability should show in future available only but not now
+3. 
+4. Building Not live so avilability  not reflecting in system
+5. If they exit it show in future available
+6. In invoices desk count should show correct it should be based on desks inUse
+
+
+
+
+
+
+
+sureshs issues : 
+------------- 4th dec
+Bookings :
+1. while creating new booking with sqft n sqft price, rent is not getting calculated
+2. in first month rent, in description, it showing null in invoices list view
+3. once we cancel exit request, full month rent should be reraised 
+4. after exit request before 2 months, next invoices are not raising correctly, both days count in description n values are wrong 
+5. in invoice description, booked desks is showing wrong.. eg ai strings
+6. we should be able to add or delete additional monthly invoices in contracts even after confirmation
+7. for shortterm bookings, remove mandatoriness on contracts liek generation n uploading n no mail for client
+8. dont show booked desk as available until they cancel that booking just to avoid multiple bookings on smae desk
+9. dont show cabin if all desks in it are booked
+10. mark as release only the deleting desks in contraction
+
+
+
+suresh bills issues on 2nd may
+--------------------------------
+1. Form Reset in recurring payment confirminguaration //
+2. If Inactive need not to raise the bill //
+3. Need differentiation of view of active or inactive bill //
+4. if GST and TDS are zero calculations need to check //
+5. Edit payment is updating in Pos table but not payouts tables
+6. sd invoice not updating ledger //
+
+
+
+suresh issues on 20th may
+-----------------------------------
+1. When tax invoice is uploaded no need to ask to upload proforma invoice //
+2. IN bill/Pos payment status is not gettig updated //
+3. IN OPex Bills bill status is not getting updated when we map the bill and expense code is not getting saved //
+4. For card payment UTR validation is there but no field to enter //
+5. HO Bill not listing in the bills queue //
+6. Building OPex bills once we mark as paid status not getting updated ----------------------
+7. PG list in debit entries ///
+10 . In Payout-payments approvedBy is not getting updated //
+
+
+
+suresh issues on 21may
+-----------------------
+1. Update Payout status getting exception can't check logs in tpod as there won't be any transferId in tpod //
+2. + Bill creating an entry with no values //
+3. In edit PO its listing only vendor accepted skus instead it should list from main SKUS and also for edit POs for exiting ones
+4. After submitting payment details in Bills payment is not getting updated //
+5. If the bill is approved from Bills queue for which payment mode is not bank transfer no entry created in Payouts //
+6. From bills queue if bill is approved even if it is marked as prepaid asking for payment in ProcessPayout it should be submit payment details //
+7. Opex bills status not getting changed after submitting the payment details //**
+8. HO OPex bill status not getting changed once we submit the payment details //**
+9. Bills navigation is not happening from opex bills to ho bills and Ho bills to opexbills 
+10. in opex payment configuration form reset need to be done 
+11. In payouts list combination of fiters by for paymentPending is not working 
+12. payouts - Date filter is not working
+13. Service provider configuration needed for HO codes   -----------
+14. In DebitEntries in cards if the account has no money it's not listed in dropdown list of accounts //
+
+
+
+23may discussions with accountants:
+-----------------------
+show suspense status as Suspense
+credit entries - dates filters are not working
+
+no explicit linking to invoice n credits, will follow FIFO //
+
+credits:
+-----------
+list of invoices towards each product monthwise
+list of customers since when they are with us -- revenue report is there, just need to show invoices
+mark green or red to customer who enters n exits
+list of all invoices with a specific date range
+
+customer - agreement, gstno, pan, address, SD, rent
+exit report for a customer need to be finalised as per IT requirement
+
+do import of cashfree settlements from report putting all amounts, pg charges n gst
+pg invoices is by transaction date
+bank credit attribution to cashfree with a different color.
+show settlement details for each settlement credit showing all customer invoices paid in that settlement
+in pgs list, we need to show all customer transations done
+in pgs, we need to have provision to attach a pg bill to list of transactions happened in that month.
+
+happay import should show all transations and auto attribute to non expense transactions
+
+first payment is green indication, exit statment acceptance is red indication
+download all invoices at month level as a zip
+
+
+debits:
+----------
+non bill attributions liek salaries, tds, esi n other debits
+list of products
+list of customers new (booking is confirmed) in that month settled  (when clien accepted statement and also show statement)
+list of invoice services
+invoice list and downlaodable
+non bill oriented expenses handling
+vendor list new vendor added in that month
+bills by billdate
+month clouser of debits and credits
+check should be there on clouse on debit entries freezing based on bills
+
+
+
+todos - 25-5
+-----------------
+list of customer invoices with HSN no, description and other numbers
+green(first transaction) and red(on finalstatement acceptance) indication based on new n exiting clients 
+list of vendors payment milestones done along with tax/proforma invoice 
+exit report for a customer need to be finalised as per IT requirement
+download all tenant invoices as zip for that month - credits
+download all vendor invoices as zip for that month - debits
+
+
+do import of cashfree settlements from report putting all amounts, pg charges n gst
+bank credit attribution to cashfree with a different color.
+show settlement details for each settlement credit showing all customer invoices paid in that settlement
+in pgs list, we need to have provision to attach a pg bill to list of transactions happened in that month.
+
+
+27 may
+--------------
+edit/unattribute attributed items //
+put back salary, nonexpense, suspense things to happay cards debit entries //
+check why booking refno didnt come up in the monthly invoices list
+customers list //
+capex, builing opex.capex bills / ho opex/capex bills lists
+vendors / service providers list
+
+
+29may
+---------------------------
+not attributed - remove count
+seperate not attributed n linked filters
+Show totals as Attributed and NotAttributed
+
+
+4 jun
+------------------
+1. Exit / Tenant Refunds Attribution - show exit payout attribution in debit lists info column 
+2. Edit Payment which is wrong updated Edit option for Admin - edit capex bill n view bill image in projects, bills tab
+4. Need downloadable AR report as suggest by accounts tesm
+8. Remove Accordion UX and make a list. It is easier to see all expenses in one shot rather than click on accordions several times. in Recurring Payments
+13. Need to Store the TDS and GST amount and need to show reports
+17. When archive or cancel the payment ask for the Reason why the payment is getting cancelled
+19. For postpaid bills need to ask for due date in bills queue when they submit the bill
+20. should be able to mark multiple debit entries to a single payout.
+
+
+1. In building/HO master bills sort need to be applied on every columns
+2. In Accounts--> Revenue--> Reports--> Liabilty need to be renamed as SD Liability
+3. Provide Filters by Bill Amount
+4. Provide Filters by Bill Amount
+5.Where do we enter new POs? The New PO button is missing in building or Ho expenses POs
+
+
+
+14. In service Provider Registration payment mode options to be "1. BankTransfer,2. Cash,3. Card,4. Cheque" // deferend
+for prepaid bills default paid date should be bill date but it showing approved date //
+Search for vendor is not working  //
+15. Give search filters in Service Provider List for data "Has Contact", "Has GST", "Has TDS", "Type", "Payment Mode" (filters for type and payment mode) // deferred
+12. Form Reset in recurring payment configuration  ////////
+16. Add column "Type" and with values as Recurring to show Recurring bills explicitly //
+18. Liability name need to be changed to SD Liability report //
+
+5. Provide Filters by Bill Amount  ///
+6. Provide Filters by Date for Bill Date like we did for "Tenants Payments". //
+7. Where do we enter new POs? The New PO button is missing in building or Ho expenses POs ///
+3. In TDS AR need to show all previous year quarters also  /////////////
+20. Naming to change for "Vendor Payment", "Bill Payment", "Exit Refund". They should reflect "Projects","Building Expenses","HO Expenses","Tenants" // 
+21. Error should have to move out of the default list. // 
+
+
+
+-------------------------
+set breakword to column level instead of global css //
+no hyperlink for nonexpense or when no info
+cheque retunn/reversal/other - add predefined desription
+remove to Mar, 2020, Bill in bill info ..  billno - providerno- building name
+from master bills queue, we should be able to map to a recurring bill if exists
+BillsQueue - Bill Queue //
+change capex-projects, building expense, ho expense //
+bills queue - no need to select provider, instead we can show as Not Applicable
+bills queue - once bill is raised, automatically Map a Bill. //
+raised status of bills queue is last status.//
+need to change wording of prepaid / postpaid in adding new Bill to BillQueue
+renaming - ProcessPayout should be Payouts //
+do we need Payouts count by Status
+account payouts - put benificiary has vendor/provider/tenant name and link to respective view
+building master bills - remove approved from default status.. its should be like workbench where we will show nly need to act bills  //
+master bills -  status count is not matching with new status //
+remove add bill in building level bills //
+recurring bills should be kept to bills queue instead of master bills at monthly bills
+
+
+--------------------
+1. change capex-projects, building expense, ho expense in mobile app
+2. When we edit a bill and close without saving form need be reset ???
+3. bills queue - no need to select provider, instead we can show as Not Applicable //
+4. raised status of bills queue is last status. //
+5. do we need Payouts count by Status  //
+6. account payouts - put beneficiary as vendor/provider/tenant name  and link to respective view //
+7.building master bills - remove approved from default status.. its should be like workbench where we will show nly need to act bills //
+8.remove add bill in building level bills  in building master bills //
+10. master bills -  status count is not matching with new status // 
+
+9. recurring bills should be kept to bills queue instead of master bills at monthly
+bills list report -  remove due date , change label to bill date, and put link for bill image
+
+
+
+// -----------------------------
+
+
+1. When we update the status of payoutPending to paid its creating entry in debits but it shoud not creat any entry //
+2. In debit Entries Filter by amounts //
+3. need to show all cancelled payments in a booking //
+5. bills list report -  remove due date , change label to bill date, and put link for bill image // (bill image link will be changed later)
+6. need to change wording of prepaid / postpaid in adding new Bill to BillQueue (need word suggestions from rajesh)
+8. Show archived tenat payment list // 
+12. When we edit a bill and close without saving form need be resetted //
+13. FuturePayoutDate is not getting stored may be in payoutModel not added the field //
+14. When bill having all details bill status should be "New" //
+15. When we approve prepaid bill it should show paid date by default //
+16. For Prepaid bills futurepayout should not be there //
+18. Need an option to reupload image if the image is not uploaded properly in Bill Queue //
+19. In pettyCash and debit attributions info taxinvoice is not coming even there is ainvoice attributions  taxInvocie is not linked //
+21. When tenants pay through link entry is not creating in credits pg //
+22. in credit entry deattribution creating empty row in payments  //
+9. Remove Accordion UX and make a list. It is easier to see all expenses in one shot rather than click on accordions several times.
+Edit Payment which is wrong updated Edit option for Admin -- deffered 
+4. recurring bills should be kept to bills queue instead of master bills at monthly (will be done while migrating bills) - deffferd
+17. In Debit attribution confirmation the message shown should be payment specific like if it is vendor payment then it should ask are u sure you want to attribute to vendor,if it is bill it should ask are u sure you want to attribute to bill - defferd
+
+20. In single bill multiple payment attributions its accepting more than the limit
+7. from master bills queue, we should be able to map to a recurring bill if exists 
+
+10. Where do we enter new POs? The New PO button is missing -  //
+1. Need an option to archice or delete bill if the bill is duplicated and the list of duplicated bills/deleted bills
+store tds, gst of rent bills in po_item table. //
+
+--------- june 16th --------------------
+Reopened
+------------------------
+1. Need to show payment cancelled payments in tenant payment list  //
+2. When we deattribute the debit entry need to update in payouts linked as null or zero. (if null only its giving suggestion) //
+4. FuturePayoutDate is getting stored when we check futurepayout date it is not showing //
+5. In bill queue if a bill is marked as not appilcable vendor in master bill list also it should show as not applicable only //
+6. When tenants pay through link entry is not creted   ***
+7. In pettyCash and debit attributions info taxinvoice is not coming even there is ainvoice attributions  taxInvocie is not linked   ///
+8. When bill having all details bill status should be "New" (issue coming from mobile app)
+9. In Accounts debit entries filter by amount need to place place holder //
+10. Mail parser is not working //
+
+Accounts enhancements
+----------------------------------------------------
+1. Need an option to archice or delete bill if the bill is duplicated and the list of duplicated bills/deleted bills
+2. We need to list the amounts when credited to Pettycash accounts ledger  --- ask rajesh
+3. Need a column who added the bill in the bill queue  //
+4. add vendor desc as tooltip  //
+5. add delete po pdf option in PO view 
+
+Vendor
+---------------------------------------
+1. Vendors need to be removed from accounts menu //
+2. When we request to verify the details need to ask Applicable forms like GST, PAN, MSME cerificate to upload (New Enahancement)
+
+
+Sorting
+---------------------------------------
+1. Sort is not working in vendor list //
+2. Sorting need to be applied on type, mode and utr //
+3. In accounts debit entries sort need to be applied on UTR, Narration, attribution info //
+4. Accounting-->Reports-->Invoice Revenue list Sorting need to be applied on Booking Refno //
+5. Accounting-->Reports-->Customer list Sorting need to be applied on GSTNO and PAN NO  //
+
+
+june 18th
+-----------------------------------
+Reopened
+------------------------
+1. Need to show the cancelled payments in tenant payment list  scroll is not working //
+2. Need an option to retrieve the bill which is archiced and need to show the reason in the list why the bill is archived //
+4. When tenants pay through link entry created but attributed =1 not updating in db and in lits its not showing because in db payment mode is Cashfree listing wit online  //
+5. In pettyCash and debit attributions info taxinvoice is not coming even there is ainvoice attributions  taxInvocie is not linked //
+6. When bill having all details bill status should be "New" through mobile browser app //
+7. from master bills queue, we should be able to map to a recurring bill if exists its not giving suggestion bcz of timezone issues --- 
+8.In single bill multiple payment attributions its accepting more than the limit //
+
+
+Vendor
+---------------------------------------
+2. When we request to verify the details need to ask Applicable forms like GST, PAN, MSME cerificate to upload (New Enahancement)
+
+
+Sorting
+---------------------------------------
+1. Accounting-->Reports-->Invoice Revenue list Sorting need to be applied on Booking Refno //
+
+june 22
+--------------------
+GST for POs n bills
+
+Reopened
+------------------------
+1. Need to show the cancelled payments in tenant payment list  scroll is not working 
+7. from master bills queue, we should be able to map to a recurring bill if exists its not giving suggestion bcz of timezone issues //
+9. for Capex bills also not applicable option in bills queue //
+10. bills list report -  link for bill image 
+
+
+sorting
+-------------------------------
+
+1. Accounts--> accounting-->expensebills Sort need to be applied on service provider in building opex bills, ho bills
+
+
+
+------------7th july ----------
+HO POs is not opening  //
+in sku search, items are not coming when its not accepted //
+dont do gst check when there are no items  //
+HO building expense report, change label to HO from Building expense // 
+check y null is coming in HO expenses report  //
+add tax invoice is not coming when gst is 0.. remove that check.  -- //
+Capex Bills, PO, Opex POs, Bills HO Pos, Bills,  - change label in accounting - expenses reprot //
+add status filter to vendors list  //
+in raising a work order, vendor n descripition should be shown //
+shouldnt deduct tds from po budget amount //
+delete option for taxinvoice n gst pdf //
+tds-ar 2019 4th quarter issue //
+
+
+
+------------9th july -------------
+vendors
+-----------
+vendor list - add counts to header, total n count by status, counts by org type
+organisation type -  prop, partnership, llt, private ltd, govt, - add it in list,
+ show orgtype, add hasgst in list,
+ remove refno, redg date, 
+ remove verified n active n set it as filter by checkbox
+add new status as verified before registered - New, verified, empanelled
+
+add new locks - add/edit vendor n skus
+
+number cards - 
+
+dashboards - for tds ar - 
+	last notification triggered tracker
+	uploaded, not uploaded client, 
+	due by quarter
+
+client selfcare - add tds upload menu
+
+SD tds due report 
+
+dashboards - tds due by 25% of sd., 50% , total clients n total amount
+
+
+
+
+11-07-2020
+------------------
+1. Purchase--> Project Bill master list sorting need to be applied on Refno, approved By //
+2. Accounts --> Bills queue sort need to be applied on Bill -- not needed, as every bill will hve image
+3. When edit PO budget issue 
+4. In Accounts--> Revenue--> Reports--> TDS AR -- building selection close option to select other building 
+5. When new booking is created schedule is not created --- line no 4593 
+6. Cancel exit request full month invoice not raising  booking id 215257
+7. Dashboards getRevenueDashboard sum need to be added at line no 155 and date is hardcoded //
+8. Dashboards Building Bills need to show only New and raised as they are the only pending to pay line no 252 //
+9. Dashboards HO Bills need to show only New and raised as they are the only pending to pay line no 256 //
+10.Dashboards Project Capex Bills need to show only New and raised as they are the only pending to pay line no 260 //
+11.DashBoards Payouts Po Status need to be considerd as Not in Deleted Declined line no 265 //
+12.Dashboards payouts Due Vendor Count po Status need to be considerd as not in Declined Deleted 271 //
+13.Dashboards AccountsPayables payables AP amount po status need to be considered as not in declined line no 278 //
+14.Dashboards payouts Due Vendor Count po Status need to be considerd as not in Declined Deleted 271,283 //
+15.Dashboards Client Count and AR resource bookings need not to be considered 293 //
+16.Dashboards getcapexDashboard po status need to be considered as not in Declined, Deleted and date is hardcoded  line no 99
+17. Dashboards getExpenseDashboard po or bill status need to be considered as not in Declined Deleted and Date is hardcoded line no 137
+
+
+
+-----------rajesh todos--------------------------
+gst posting executive with ACL placed
+recurring bills->bills queue->master bills flow
+po invoices->bills queue->pos flow
+check for recurring bills which dont have images still
+
+
+1. Adding SBA, Carpet Areas, and floors of all buildings,
+2. Remove the decimal values from all totals like above. I see in Payouts and Account Payables, let it the totals be rounded to nearest integer. You can use RoundUp,
+3. The description of the report from report perspective. Like say, Whether is it based on expenses paid or yet to pay and so on...
+4. (a) Never increase the size of the number card. Let the space be empty is there arent enough number cards to fit. (b) Always show numbers in Lakhs. (c) These big numbers, let there no decimal value.
+5. once that duplicate bill data thing is resolved. We will focus on the below in that priority (1) HO expenses - reports and graphs (2) building expenses- report and graphs (3) capex - reports and graphs (4) Bill's and invoice upload data and compliance (5) posting data summary, reports and number cards (6) UI/UX issues in all graphs and reports. 
+
+(1) total single bar graph as default 
+(2) Month Ranges and Default current  FY
+
+
+due date should be considered in approval process
+accounting month for bill
+number cards for new & raised bills in each sub queues n master bill queue
+
+revenue realisatiom month
+
+
+
+1. graphs n numbers cards list. (basing on list, I can define the graph n parameters to use)
+1) How much dev time is left and how many more graphs can we include. This  depends on other work to get things correct. So I need you to tell me how much time is there for new things to be included.
+
+
+2. ACL (i can think but to what user roles we limit should come from you)
+On Point 2) all things that can get data bad and cannot be allowed need to be restricted. We can use Executive, Manager and Admin roles. Where executive has no permission to add anything. Manager has little authority over things and admin has the highest. You can decide these based on this outline for all areas of work. Let me know if you need any more information .
+
+Bookings - create booking, cancel booking, edit contract, approve contract, confirm contract, cancel future confirmed contract, 					raise invoice, edit invoice, add payment, edit payment, expansion/reduction booking, contract renewals, send notifications, 			onboarding booking, exit request booking, edit/add asset damages, edit/add other deductions, approve final statement, 
+			create resource booking, add credits, cancel resource booking, mark resource booking completed, add employees, edit employees
+	
+Accounts -  add/edit expense codes, add/edit recurring payment, view reports, 
+			edit credit entry, approve credit entry, add bill queue item, edit bill queue,  gst posting data to billqueue, map bill images, archieve bill queue, 
+
+Purchases - 
+
+
+3. UX improvements (no idea at all, we need to external thoughts on improving it)
+Point 3) we can just check spelling mistakes and format issues first. This can be the scope for now before we engage any third party
+
+will get all tooltips n notes and will check for all validations n list column formatting.
+any suggestions on current graphs n cards from team will be addressed.
+
+
+4. Company Controls (need your inputs)
+Point 4) this is to create a company (another co working company) and initial set up so they can go ahead and use the system), control their usage like allow, block for now.
+
+so we need to create a master admin menu where we can create companies and show have provision to give access to only specific modules. as of now we dont have control on modules, but we need to get control of enabling n disabled modules for a company as a master admin
+
+
+----------------------------------------------------
+
+1. no new functioanlity
+2. add terminology, status flow diagrams, report descriptions
+3. make sure UX is clean, to make it easily understandable
+4. menu items
+5. number formats, decimals, aligns, heading styles, sorts, 
+6. filters, counts to increase visual impact
+7. all should be in proportionate in scales
+8. add more number cards which are giving some alerts
+9. logs n audits to track status change
+10. exceptional should be logged on server
+11. internationlise / currency, timezone, number format
+
+frgt password
+
+
+red, green, expected value
+
+
+ Issues in bills
+1. Vendor search is not clearing for next bill vendor mapping //
+2. Bill due date is not getting changed  //
+4. HO master bills count is not implemented //
+5. Expense code is not getting saved.. //
+editing a prepaid bill changes status to New //
+1. When we add client company Contatcs it should take the companyId of the respective Company but not the current company from where we are ading the company Contacts //
+2. In user creation need an option to create a admin user for a client company insted of creating from backend //
+3. When we try to login as a client company companyId should be passed of the client company's companyid not '1' //
+shift+f5 is removing all access controls //
+locks not working for bookings, test with test server db //
+
+
+3. Building master bills count is wrong. //
+6. In credit attribution if we mark as suspense it's not marki`	````````ng as attributed but updating as suspense, but in debit attribution  if we mark as suspense its updating attributed and as well as suspense //
+
+1. When we edit user roles getting unassigned  //
+2. List getting displayed empty but getting in response in ( credit entry, debit entry, billsqueue, payouts) //
+
+1. Company Name should come correctly //
+2.  Payments doesn't have CompanyID need to add company id in payments Table //
+3. In Account Credit Entries Counts should be based on the companyId //
+suresh@test.com / Password1
+
+
+get bills of all pos for last year - to cross check if they upload it earlier or not
+
+modules n apps locks
+add * to all mandatory fileds
+add country code to all phone numbers 
+country to company definition
+
+date filters for billsqueue
+auto data verification for missed recurring bills
+check the monthwise bills listing once where we can see missed fields n data
+
+add units like per sqft in purchase items
+get report for all debits n credits which shows monthwise summary
+add  date filters to billsqueue, credit, debit entries 
+add indications to master list whether gst values are added or not
+hide gst file upload if payment is not done
+select subqueue : change word
+check for missed bill :https://i.hustlehub.xyz/8304_1599570789040.jpeg
+master bill queue will be handled by a higher resourse, so make all data collection as mandatory to proceed
+
+capex bills : view need to be reviewed as per context
+milestones can have partial payments which can create partial payouts
+
+
+9 sep
+-----------------
+SKUs page : 
+sku name should be validated for duplicate names //
+mark fields as mandatory with * //
+check for sku type code n sku code - may be redundant // 
+change lable symbol to unit //
+put config under purchases which will have SKUs n Sku Units
+SKU should be always capital in form and title n add button //
+add helpnotes to SKU form
+get inplace edit for all helpnotes for admins
+new menu for listing for sku with filters for asset, service, material and search with cat, type, sku, 
+
+
+POs:
+check totals and all filters based on search criteria //
+across all search , it shouldnt consider search in middle of texts and should start only from beginning of word //
+search by refNo, date filter for raisedDate, //
+flag to filter by po waiting for advance payment and column in the list //
+need to think on mark as opex action for dephase //
+remove column approved by, and change labels in po view for executive n manager to raised by, approved by //
+change budget to amount //
+add filter to show all due POs and add due amount column in master list //
+dephase : remove status update from master list and move to po view //
+remove /building in header title //
+hide quick filters by default //
+rearrange filters : put building filters as last row, add additional filterss in 2nd row, status counts in 3rd row //
+
+PO view:
+remove colen, and spcl chars in po view for labels //
+vendor info : remove info word in title, put all company in order n vendor contact  //
+
+move all overview to top single row n remove vendor column n give single link, show dates as popover  //
+accounting tab : 
+	where we can add same tax invoices n gst posting data to single tables // 
+	show info about gst to be paid, paid n due amount 
+	add columns for gst pending amont at vendor level
+milestones tab :
+	we should have multiple payouts for each milestone //
+	should have option to do a adhoc payment, which will automatically create a partial payment for first pending milestone
+
+raising po : 
+	can choose from agreed payment terms or they can create a new payment term for that PO itself
+
+check for services charges in POs - tomo need to discuss n finalise this //
+
+
+dashboards (no of cards) :
+1. 3 number cards :: no fo POs in raised status (waiting for advance / not) : vendor, project, refNo, date, lapsed by days, reason (waiting for advancepayment or not)  : red (>0)
+
+
+
+
+data to be given 
+------------------------------
+give list of skus whihc are marked as assets
+give list of all POs where some payment is done
+
+
+
+12 sep
+-----------------------------
+skus list add filters n new columns  //
+remove full coulmn color to red n yellow in pos lsit and put color on nly amount //
+in view dates, show approved by n raised by in popup only and remove from outside view //
+gst verification should be moved to seperate menu and need to enter all data again for verification //
+accept all gstr-2 files and make dashboards to view which are mismatching with posted gst values //
+remove tax invoice from gst posting modal //
+seperate out all invoice basic data, gst posting data into 2 differnt modals and dont show basic data to gst posting data //
+sitemanager, from site manager, will update milestone as completed, and then project manager will approve
+change released to completed
+projects (manager, head), cashflow (executive, manager), accounts(executive,manager) => this is the flow we need to follow for milestore approval to payout flow.
+change invoice labels to taxable amount,taxamount, invoiceamout, tds, payableamount (A+B=C-D=E) //
+follow same column names at invoice items level with same above terms //
+need to get tds calculations at vendor level  //
+set due dates should be in different dates  //
+no need to show TDS obligations on top of milestones //
+remove gst slabs to an invoice in the list, just totals should be fine in list n show it in modal //
+also show tds slabs for all items applicable in that po in modal view by clicking on tds amount ??
+show paymnet holder flag, tds applicable on vendor label in top line. 
+expected completion date, milestone completion date -> change terms //
+expected completion date, should ask for relative change of subsequent terms actual date changes and relatively milestone completion date should change as per its expected completion date. //
+expected date should be given while raising PO and should be to vendor to agree //
+whenever a milestone is released, we need to set actual date for that milestone. //
+actual date should be changed only if expected date is greater than actual date..  //
+and while approving milestone, manager should be triggered about this date change n ask if he wish to change further expected dates//

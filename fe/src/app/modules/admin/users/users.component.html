@@ -1,0 +1,251 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Users</h1>
+    <input
+      type="text"
+      placeholder="Search user by name, phone, email"
+      [formControl]="searchControl"
+      class="form-control form-control-rounde pull-left w-30 ml-2"
+    />
+    <button
+      class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right"
+      (click)="openUserModal(userModal)"
+    >
+      <i class="fa fa-plus"></i> User
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card o-hidden">
+        <loading [loading]="loading"></loading>
+        <data-list
+          #list
+          [filter]="filter"
+          [limit]="limit"
+          [dataUrl]="'internal/admin/listUsers'"
+          [config]="config"
+          (onAction)="action($event)"
+        ></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #userModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ user.id ? "Edit User" : "New User" }}
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{user|json}} -->
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            formControlName="name"
+            placeholder="Enter user name"
+            [(ngModel)]="user.name"
+          />
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="phone">Phone</label>
+          <input
+            class="form-control"
+            id="phone"
+            placeholder="Enter user phone"
+            formControlName="phone"
+            [(ngModel)]="user.phone"
+          />
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            placeholder="Enter email"
+            formControlName="email"
+            [(ngModel)]="user.email"
+          />
+        </div>
+        <!--  <div class="col-md-6 form-group mb-1">
+          <label for="phone">UserName</label>
+          <input class="form-control" id="username" placeholder="Enter username" formControlName="username" [(ngModel)]="user.username">
+        </div> -->
+        <div class="col-md-6 form-group mb-1">
+          <label for="phone">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            placeholder="Enter Password"
+            formControlName="password"
+            [(ngModel)]="user.password"
+          />
+        </div>
+        <div class="col-md-10 form-group mb-1">
+          <label for="roles">User Roles</label>
+          <ng-select
+            [items]="roles"
+            [multiple]="true"
+            [closeOnSelect]="false"
+            [hideSelected]="true"
+            bindLabel="name"
+            placeholder="Select User Roles"
+            [(ngModel)]="user.userRoles"
+            [ngModelOptions]="{ standalone: true }"
+            (add)="onRoleAdded($event)"
+            (remove)="onRoleRemoved($event)"
+          ></ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="user.active"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-12 form-group mt-2 mb-1" *ngIf="userRoles.length">
+          <h5 class="fs-14 border-bottom">User Role Specifics</h5>
+          <ngb-tabset class="nav-cente">
+            <ngb-tab
+              title="{{ role?.name }}"
+              *ngFor="let role of userRoles"
+              (click)="updateRoleSelections(role)"
+            >
+              <ng-template ngbTabContent>
+                <hr style="margin-top: -15px" />
+                <ng-container *ngIf="role.isGeoSpecific">
+                  <div class="col-md-10 form-group mb-1">
+                    <label>Cities</label>
+                    <ng-select
+                      [items]="citiesWithBuildings"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [hideSelected]="true"
+                      bindLabel="name"
+                      bindValue="id"
+                      placeholder="Select Cities"
+                      [(ngModel)]="role.cityIds"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onCitySelected(role)"
+                    ></ng-select>
+                  </div>
+
+                  <div
+                    class="col-md-10 form-group mb-1"
+                    *ngIf="role.cityIds && role.cityIds.length"
+                  >
+                    <label>Locations</label>
+                    <ng-select
+                      [items]="locations"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [hideSelected]="true"
+                      bindLabel="name"
+                      bindValue="id"
+                      placeholder="Select Locations"
+                      [(ngModel)]="role.locationIds"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onLocationSelected(role)"
+                    ></ng-select>
+                  </div>
+                  <div
+                    class="col-md-10 form-group mb-1"
+                    *ngIf="role.locationIds && role.locationIds.length"
+                  >
+                    <label>Buildings</label>
+                    <ng-select
+                      [items]="buildings"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [hideSelected]="true"
+                      bindLabel="name"
+                      bindValue="id"
+                      placeholder="Select Buildings"
+                      [(ngModel)]="role.buildingIds"
+                      [ngModelOptions]="{ standalone: true }"
+                      (ngModelChange)="onBuildingSelected(role)"
+                    ></ng-select>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="role.isSupport">
+                  <div class="col-md-12 row form-group mt-2 mb-1">
+                    <div class="col-md-6 form-group mb-1">
+                      <label for="firstName">Support Line Level</label>
+                      <ng-select
+                        [items]="supportLevels"
+                        [hideSelected]="true"
+                        [bindLabel]="'name'"
+                        [bindValue]="'type'"
+                        placeholder="Select Support Line Level"
+                        [(ngModel)]="role.supportLevel"
+                        [ngModelOptions]="{ standalone: true }"
+                        name="supportLevel"
+                        (ngModelChange)="onSupportLevelSelected(role)"
+                      >
+                      </ng-select>
+                    </div>
+                    <div class="col-md-6 form-group mb-1">
+                      <label for="firstName">Assignee Type</label>
+                      <ng-select
+                        [items]="assigneeTypes"
+                        [closeOnSelect]="false"
+                        [hideSelected]="true"
+                        [bindLabel]="'name'"
+                        [bindValue]="'type'"
+                        [multiple]="true"
+                        placeholder="Select Assignee Type"
+                        [(ngModel)]="role.assigneeTypes"
+                        [ngModelOptions]="{ standalone: true }"
+                        name="assigneeType"
+                        (ngModelChange)="onAssigneeTypeSelected(role)"
+                      >
+                      </ng-select>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-template>
+            </ngb-tab>
+          </ngb-tabset>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-light"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      class="btn btn-info ladda-button btn-ico"
+      [ladda]="loading"
+      [disabled]="loading || form.invalid"
+      (click)="save()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Save
+    </button>
+  </div>
+</ng-template>

@@ -1,0 +1,344 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Service Providers</h1>
+    <input type="text" placeholder="Search Service Provider by name, service" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-25 ml-20">
+    <div class="float-left ml-5 mt-2">
+      <label class="checkbox checkbox-success float-right">
+        <input type="checkbox" [(ngModel)]="filter.active" [ngModelOptions]="{standalone: true}">
+        <span> Active</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="float-left ml-5 mt-2">
+      <label class="checkbox checkbox-success float-right">
+        <input type="checkbox" [(ngModel)]="filter.hasGst" [ngModelOptions]="{standalone: true}">
+        <span> Has GST</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="float-left ml-5 mt-2">
+      <label class="checkbox checkbox-success float-right">
+        <input type="checkbox" [(ngModel)]="filter.hasTds" [ngModelOptions]="{standalone: true}">
+        <span> Has TDS</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="float-left ml-5 mt-2">
+      <label class="checkbox checkbox-success float-right">
+        <input type="checkbox" [(ngModel)]="filter.hasContact" [ngModelOptions]="{standalone: true}">
+        <span> Has Contact</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="float-left ml-5 mt-2">
+      <label class="checkbox checkbox-success float-right">
+        <input type="checkbox" [(ngModel)]="filter.isPaymentHolded" [ngModelOptions]="{standalone: true}">
+        <span> Payment Holded</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openServiceProviderModal()">
+      <i class="fa fa-plus"></i> Service Provider
+    </button>
+    <!--  <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right mr-1" (click)="openServicesModal()">
+      <i class="fa fa-list"></i> View Services
+    </button> -->
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/admin/listServiceProviders'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #serviceProviderModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{serviceProvider.id ? 'Edit ServiceProvider' : 'New ServiceProvider'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{serviceProvider|json}} -->
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-4 form-group mb-1">
+          <label for="roles">Opex Category</label>
+          <ng-select [items]="opexCategories" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Opex Category" [(ngModel)]="opexCategory" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="opexCategory?.types.length">
+          <label for="roles">Opex Type</label>
+          <ng-select [items]="opexCategory.types" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Opex Type" [(ngModel)]="opexType" formControlName="opexTypeId" (ngModelChange)="opexItem=null;">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="opexType?.items.length">
+          <label for="roles">Opex Item</label>
+          <ng-select [items]="opexType.items" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Opex Item" [(ngModel)]="opexItem" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Service Provider name" [(ngModel)]="serviceProvider.name">
+        </div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="roles">Type</label>
+          <ng-select [items]="providerTypes" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Provider Type" [(ngModel)]="serviceProvider.type" formControlName="type">
+          </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="roles">Payment Mode {{serviceProvider.paymentMode}}</label>
+          <ng-select [items]="paymentModes" [closeOnSelect]="true" [hideSelected]="true" bindLabel="label" bindValue="name" placeholder="Select Payment Mode" [(ngModel)]="serviceProvider.paymentMode" formControlName="paymentMode">
+          </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Address</label>
+          <textarea class="form-control" id="address" formControlName="address" placeholder="Enter Service Provider address" [(ngModel)]="serviceProvider.address"></textarea>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Description</label>
+          <textarea class="form-control" id="description" formControlName="description" placeholder="Enter Service Provider description" [(ngModel)]="serviceProvider.description"></textarea>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-3">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="serviceProvider.hasContact" [ngModelOptions]="{standalone: true}">
+            <span>Has Contact</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-3">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="serviceProvider.hasGst" [ngModelOptions]="{standalone: true}">
+            <span>Has GST</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-3">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="serviceProvider.hasTds" [ngModelOptions]="{standalone: true}">
+            <span>Has TDS</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-3">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="serviceProvider.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-3">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="serviceProvider.isPaymentHolded" [ngModelOptions]="{standalone: true}">
+            <span>Hold Payment</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class=" col-md-12 row mt-1" *ngIf="serviceProvider?.id && serviceProvider.hasContact && !serviceProvider.providerContact?.id ">
+          <div class="col-md-4 form-group mb-4 pl-1 pr-0">
+            <label>Contact Name</label>
+            <input type="text" name="contactName" class="form-control" placeholder="Enter Contact Name" [(ngModel)]="serviceProvider.contactName" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-4 form-group mb-4 pl-1 pr-0">
+            <label>Contact Email</label>
+            <input type="text" name="contactEmail" class="form-control" placeholder="Enter Contact Email" [(ngModel)]="serviceProvider.contactEmail" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-3 form-group mb-4 pl-1 pr-0">
+            <label>Contact Phone</label>
+            <input type="number" name="contactPhone" class="form-control" placeholder="Enter Contact Phone" [(ngModel)]="serviceProvider.contactPhone" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-1 form-group mb-1 pl-1 pr-0">
+            <button class="btn btn-sm btn-ico btn-outline-info  mt-4 pt-2" ngbTooltip="Add Contact" (click)="addProviderContact()">
+              <i class="fa fa-check"></i> Save
+            </button>
+          </div>
+        </div>
+        <div class=" col-md-12 row mt-1" *ngIf="serviceProvider?.id && serviceProvider.providerContact?.id">
+          <div class="col-md-3 form-group mb-1 pr-1">
+            <label class="d-b">Contact Name</label>
+            {{serviceProvider.providerContact?.name}}
+          </div>
+          <div class="col-md-3 form-group mb-1 pr-1">
+            <label class="d-b">Contact Email</label>
+            {{serviceProvider.providerContact?.email}}
+          </div>
+          <div class="col-md-4 form-group mb-1 pr-1">
+            <label class="d-b">Contact Phone</label>
+            {{serviceProvider.providerContact?.phone}}
+          </div>
+          <div class="col-md-1 form-group mb-1 pl-1 pr-1 mt-3">
+            <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Delete Contact" (click)="deleteProviderContact()">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class=" col-md-12 row mt-1" *ngIf="serviceProvider.paymentMode=='Other'">
+          <div class="col-md-12 form-group mb-1 pr-2">
+            <label class="d-b">Other Payment Info</label>
+            <textarea name="portalInfo" class="form-control" placeholder="Enter Other Payment Info" [(ngModel)]="serviceProvider.additionalPaymentInfo" [ngModelOptions]="{standalone:true}"></textarea>
+          </div>
+        </div>
+        <div class=" col-md-12 row mt-1" *ngIf="serviceProvider?.id && serviceProvider.paymentMode=='Online' && !serviceProvider.portal?.id">
+          <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+            <label>Online Portal AccountId</label>
+            <input type="text" name="portalAccountId" class="form-control" placeholder="Enter Online Portal AccountID" [(ngModel)]="serviceProvider.accountId" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+            <label>Online Portal Username</label>
+            <input type="text" name="portalUserName" class="form-control" placeholder="Enter Online Portal Username" [(ngModel)]="serviceProvider.username" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+            <label>Online Portal Password</label>
+            <input type="text" name="portalPassword" class="form-control" placeholder="Enter Online Portal Password" [(ngModel)]="serviceProvider.password" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-5 form-group mb-1 pl-2 pr-2">
+            <label>Online Portal URL</label>
+            <input type="text" name="portalUrl" class="form-control" placeholder="Enter Online Portal URL" [(ngModel)]="serviceProvider.webUrl" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-5 form-group mb-1 pl-2 pr-2">
+            <label>Online Portal Additional Info</label>
+            <textarea name="portalInfo" class="form-control" placeholder="Enter Online Portal Additional Info" [(ngModel)]="serviceProvider.additionalPaymentInfo" [ngModelOptions]="{standalone:true}"></textarea>
+          </div>
+          <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+            <button class="btn btn-sm btn-ico btn-outline-info  mt-4 pt-2" ngbTooltip="Add Online Portal" (click)="addProviderPortal()">
+              <i class="fa fa-check"></i> Save
+            </button>
+          </div>
+        </div>
+        <div class=" col-md-12 row mt-1" *ngIf="serviceProvider?.id && serviceProvider.paymentMode=='Online' && serviceProvider.portal?.id">
+          <div class="col-md-4 form-group mb-1 pr-2">
+            <label class="d-b">Online Portal AccountId</label>
+            {{serviceProvider.portal.accountId}}
+          </div>
+          <div class="col-md-4 form-group mb-1 pr-2">
+            <label class="d-b">Online Portal Username</label>
+            {{serviceProvider.portal.username}}
+          </div>
+          <div class="col-md-4 form-group mb-1 pr-2">
+            <label class="d-b">Online Portal Password</label>
+            {{serviceProvider.portal.password}}
+          </div>
+          <div class="col-md-4 form-group mb-1 pr-2">
+            <label class="d-b">Online Portal URL</label>
+            <a [href]="serviceProvider.portal.webUrl" target="_blank">{{serviceProvider.portal.webUrl}}</a>
+          </div>
+          <div class="col-md-7 form-group mb-1 pr-2">
+            <label class="d-b">Online Additional Info</label>
+            {{serviceProvider.portal.info || '-'}}
+          </div>
+          <div class="col-md-1 form-group mb-1 pl-2 pr-2 mt-3">
+            <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Delete Portal" (click)="deleteProviderPortal()">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class=" col-md-12 row mt-1" *ngIf="serviceProvider?.id && serviceProvider.paymentMode=='BankTransfer' && !serviceProvider.bankAccount?.id">
+          <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+            <label>Bank Account Number</label>
+            <input type="text" name="bankAccountNumber" class="form-control" placeholder="Enter Bank Account Number" [(ngModel)]="serviceProvider.bankAccountNumber" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+            <label>Bank IFSC Code</label>
+            <input type="text" name="bankIfscCode" class="form-control" placeholder="Enter Bank IFSC Code" [(ngModel)]="serviceProvider.bankIfscCode" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+            <label>Account Holder Name</label>
+            <input type="text" name="accountHolderName" class="form-control" placeholder="Enter Bank Name" [(ngModel)]="serviceProvider.accountHolderName" [ngModelOptions]="{standalone:true}">
+          </div>
+          <div class="col-md-2 form-group mb-1 pl-2 pr-2 mt-4 pt-2">
+            <button class="btn btn-sm btn-ico btn-outline-info" ngbTooltip="Add BankAccount" (click)="addProviderBankAccount()">
+              <i class="fa fa-check"></i> Save
+            </button>
+          </div>
+        </div>
+        <div class=" col-md-12 row mt-1" *ngIf="serviceProvider?.id && serviceProvider.paymentMode=='BankTransfer' && serviceProvider.bankAccount?.id">
+          <div class="col-md-3 form-group mb-1 pr-2">
+            <label class="d-b">Bank Account Number</label>
+            {{serviceProvider.bankAccount.accountNumber}}
+          </div>
+          <div class="col-md-3 form-group mb-1 pr-2">
+            <label class="d-b">Bank IFSC Code</label>
+            {{serviceProvider.bankAccount.ifscCode}}
+          </div>
+          <div class="col-md-4 form-group mb-1 pr-2">
+            <label class="d-b">Account Holder Name</label>
+            {{serviceProvider.bankAccount.accountHolderName}}
+          </div>
+          <div class="col-md-2 form-group mb-1 pl-2 pr-2 mt-3">
+            <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Delete BankAccount" (click)="deleteProviderBankAccount()">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #servicesModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Service Provider Services</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <button class="btn btn-primary btn-ico float-right" (click)="providerService.form=true" *ngIf="!providerService.form">
+      <i class="fa fa-check" *ngIf="!loading"></i> Service</button>
+    <form [formGroup]="serviceForm" *ngIf="providerService.form" class="mt--10">
+      <div class="row">
+        <div class="col-md-8 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter service name" [(ngModel)]="providerService.name">
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="providerService.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-4">
+          <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||serviceForm.invalid" (click)="saveService()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+          <i class="fa fa-times fa-2x m-2" ngbTooltip="Cancel" (click)="providerService={}"></i>
+        </div>
+      </div>
+    </form>
+    <div class="clear"></div>
+    <div class="row mt-1">
+      <div class="col-12">
+        <loading [loading]="loading"></loading>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" style="max-height: 350px;">
+          <thead>
+            <tr>
+              <th class="w-80 pl-3">Service</th>
+              <th class="w-20 text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll" style="max-height: 325px;">
+            <tr *ngFor="let service of services;">
+              <td class="w-80">{{service.name}}</td>
+              <td class="w-20 text-center">
+                <button class="btn btn-info btn-icon" (click)="editService(service)" ngbTooltip="Edit"><i class="fa fa-pencil"></i></button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <strong *ngIf="!services.length" class="text-center ">No Services are added yet </strong>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

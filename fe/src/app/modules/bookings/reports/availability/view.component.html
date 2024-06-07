@@ -1,0 +1,166 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Availability Report</h4>
+    <input type="text" placeholder="Search by office or location" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2 mt--10">
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:Availability'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row p-1 ml-0 mr-0 w-50">
+          <div class="form-group pl-1 col-md-4 mb-1">
+            <label for="roles">Select Country</label>
+            <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-4 mb-1" *ngIf="selectedCountry?.id">
+            <label for="roles">Select City</label>
+            <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-4 mb-1" *ngIf="selectedCity?.id">
+            <label for="roles">Select Location</label>
+            <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLocationSelected()">
+            </ng-select>
+          </div>
+        </div>
+        <div style="margin-top: -40px;margin-bottom: 20px;">
+          <div class="pull-right mr-10">Little Occupied </div>
+          <div class="desk pull-right m-1">
+            <div class="p-2 bg-danger" ngbTooltip="More than half available"></div>
+          </div>
+          <div class="pull-right mr-10">Less Occupied </div>
+          <div class="desk pull-right m-1">
+            <div class="p-2 bg-warning" ngbTooltip="Less than half available"></div>
+          </div>
+          <div class="pull-right mr-10">Well Occupied </div>
+          <div class="desk pull-right m-1">
+            <div class="p-2 bg-success" ngbTooltip="Few Available"></div>
+          </div>
+          <div class="pull-right mr-10">Full Occupied </div>
+          <div class="desk pull-right m-1">
+            <div class="p-2 bg-light" ngbTooltip="All Sold"></div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="table-responsive pl-4 pr-1" *ngIf="buildings.length" [ngClass]="officesFilters.buildingId ? 'col-3':'col-12'">
+            <loading [loading]="loading"></loading>
+            <h5 class="pull-left mb-1">Buildings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-50">Name</th>
+                  <th class="w-10 text-center" *ngIf="!officesFilters.buildingId">Total Desks</th>
+                  <th class="w-10 text-center" *ngIf="!officesFilters.buildingId">Booked Desks</th>
+                  <th class="text-center w-10" *ngIf="!officesFilters.buildingId">Available Desks</th>
+                  <th class="text-center w-30" *ngIf="officesFilters.buildingId">Desks</th>
+                  <th class="text-center" [ngClass]="officesFilters.buildingId ? 'w-20':'w-10'">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings;" [ngClass]="{'bg-light':building.available==0 , 'bg-danger':building.available>building.total/2,
+                      'bg-warning':(building.available<building.total/2 && building.available>10), 'bg-success':building.available>0&&building.available<10}">
+                  <td class="w-50">{{building.building}}</td>
+                  <td class="w-10 text-center" *ngIf="!officesFilters.buildingId">{{building.total}}</td>
+                  <td class="w-10 text-center" *ngIf="!officesFilters.buildingId">{{building.booked}}</td>
+                  <td class="text-center" [ngClass]="officesFilters.buildingId ? 'w-30':'w-10'">{{building.available}}</td>
+                  <td class="text-center" [ngClass]="officesFilters.buildingId ? 'w-20':'w-10'">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Floors" (click)="loadOffices(building)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-responsive pl-1 pr-1" *ngIf="offices.length" [ngClass]="officesFilters.officeId ? 'col-3':'col-9'">
+            <loading [loading]="loading"></loading>
+            <div class="border-bottom" *ngIf="!selectedOffice?.id">
+              <h5 class="float-left w-30">'{{selectedBuilding?.building}}' Floors</h5>
+              <div class="float-right w-70 text-right">
+                <span class="d-ib mr-10"><strong>Total Desks :</strong> {{selectedBuilding?.total}} </span>
+                <span class="d-ib mr-10"><strong>Booked Desks : </strong> {{selectedBuilding?.booked}}</span>
+                <span class="d-ib mr-10"><strong>Available Desks :</strong> {{selectedBuilding?.available}} </span>
+                <a class="btn btn-icon btn-danger btn-sm text-white mr-20" (click)="officesFilters={}; offices=[];selectedBuilding=null;" ngbTooltip="Close Building">
+                  <i class="fa fa-times pt-1"></i></a>
+              </div>
+              <div class="clear"></div>
+            </div>
+            <h5 class="pull-left mb-1" *ngIf="selectedOffice?.id">'{{selectedBuilding?.building}}' Floors</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="" [ngClass]="officesFilters.officeId ? 'w-50':'w-30'">Name</th>
+                  <th class="w-10 text-center" *ngIf="!officesFilters.officeId">Cabins</th>
+                  <th class="w-15 text-center" *ngIf="!officesFilters.officeId">Total Desks</th>
+                  <th class="w-15 text-center" *ngIf="!officesFilters.officeId">Booked Desks</th>
+                  <th class="text-center w-15" *ngIf="!officesFilters.officeId">Available Desks</th>
+                  <th class="text-center" [ngClass]="officesFilters.officeId ? 'w-30':'w-15'" *ngIf="officesFilters.officeId">Desks</th>
+                  <th class="text-center" [ngClass]="officesFilters.officeId ? 'w-20':'w-10'">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let office of offices;" [ngClass]="{'bg-light':office.available==0 , 'bg-danger':office.available>office.total/2,
+                      'bg-warning':(office.available<office.total/2 && office.available>10), 'bg-success':office.available>0&&office.available<10}">
+                  <td class="" [ngClass]="officesFilters.officeId ? 'w-50':'w-30'">{{office.office}}</td>
+                  <td class="w-15 text-center" *ngIf="!officesFilters.officeId">{{office.cabinsCount}}</td>
+                  <td class="w-15 text-center" *ngIf="!officesFilters.officeId">{{office.total}}</td>
+                  <td class="w-15 text-center" *ngIf="!officesFilters.officeId">{{office.booked}}</td>
+                  <td class="text-center" [ngClass]="officesFilters.officeId ? 'w-30':'w-15'">{{office.available}}</td>
+                  <td class="text-center" [ngClass]="officesFilters.officeId ? 'w-20':'w-10'">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Cabins" (click)="loadCabins(office)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-6 p-1" *ngIf="selectedOffice?.id">
+            <div class="border-bottom">
+              <h5 class="float-left w-30">'{{selectedOffice?.office}}' Cabins</h5>
+              <div class="float-right w-70 text-right">
+                <span class="d-ib mr-10"><strong>Cabins :</strong> {{selectedOffice?.cabinsCount}} </span>
+                <span class="d-ib mr-10"><strong>Total :</strong> {{selectedOffice?.total}} </span>
+                <span class="d-ib mr-10"><strong>Booked : </strong> {{selectedOffice?.booked}}</span>
+                <span class="d-ib mr-10"><strong>Available :</strong> {{selectedOffice?.available}} </span>
+                <a class="btn btn-icon btn-danger btn-sm text-white mr-20" (click)="officesFilters.officeId=null;selectedOffice=null;" ngbTooltip="Close Office">
+                  <i class="fa fa-times pt-1"></i></a>
+              </div>
+              <div class="clear"></div>
+            </div>
+            <div class="bg-accordians tableBodyScroll" style="min-height: 300px;height: calc(100% - 480px); overflow: auto;">
+              <loading [loading]="cabinsLoading"></loading>
+              <ngb-accordion #acc="ngbAccordion" [closeOthers]="true">
+                <ngb-panel *ngFor="let cabin of selectedOffice?.cabins;let i=index;">
+                  <ng-template ngbPanelTitle>
+                    <div [ngClass]="{'bg-light':cabin.available==0 , 'bg-danger':cabin.available>cabin.total/2,
+                      'bg-warning':(cabin.available<=cabin.total/2 && cabin.available>3), 'bg-success':cabin.available>0&&cabin.available<=3}" (click)="loadDesks(cabin)">
+                      <span class="pull-left d-ib">{{cabin.cabin}} </span>
+                      <span class="pull-right d-ib mr-20"> Future Exits : {{cabin.futureExits}}</span>
+                      <span class="pull-right d-ib mr-20"> Future Bookings : {{cabin.futureBookings}}</span>
+                      <span class="pull-right d-ib mr-20"> Desks : {{cabin.available}} available / {{cabin.total}} total </span>
+                    </div>
+                  </ng-template>
+                  <ng-template ngbPanelContent>
+                    <div class="row" *ngFor="let client of cabin.clients">
+                      <a class="col-4" *ngIf="client.client!='null'" target="_blank" href="#/bookings/view/{{client.bookingId}}">{{client.client}}</a>
+                      <div class="col-4 text-success f-b fs-16" *ngIf="client.client=='null'">Available</div>
+                      <div class="col-8">
+                        <div class="desk pull-left card m-1" *ngFor="let desk of client.desks;let i=index;">
+                          <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-success" *ngIf="desk.booked==0&&desk.futureBookings==0&&desk.futureExits==0" ngbTooltip="{{desk.desk}}">{{i+1}}</div>
+                          <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-info" *ngIf="desk.futureBookings==1" ngbTooltip="Booked from {{desk.started | date : 'MMM dd, yyyy'}}">{{i+1}}</div>
+                          <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-warning" *ngIf="desk.status=='Releasing'" ngbTooltip="{{desk.desk}}, available from {{desk.releaseDate | date : 'MMM dd, yyyy'}}">{{i+1}}</div>
+                          <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-light" *ngIf="desk.booked>0" ngbTooltip="Booked">{{i+1}}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </ng-template>
+                </ngb-panel>
+              </ngb-accordion>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

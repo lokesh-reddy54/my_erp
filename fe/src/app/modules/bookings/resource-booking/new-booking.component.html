@@ -1,0 +1,234 @@
+<div #resourceBookingModal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Resource Booking</h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row p-0 mt--10 ml-0 mr-0" *ngIf="bookings.length">
+      <div class="form-group col-md-12 mb-1">
+        <label for="roles">Select Booking</label>
+        <ng-select [items]="bookings" [hideSelected]="true" bindLabel="refNo" placeholder="Select Booking" [(ngModel)]="selectedBooking" name="booking" (ngModelChange)="bookingId=selectedBooking.id;officeId=selectedBooking.office.id;">
+          <ng-template ng-option-tmp let-item="item">
+            <div><strong>{{item.refNo}}</strong></div>
+            <span>{{item.office?.name}}, {{item.office?.building?.name}}, {{item.office?.building?.address}}</span>
+          </ng-template>
+        </ng-select>
+      </div>
+    </div>
+    <div class="row p-3 pt-0" style="padding-top: 0 !important;" *ngIf="!bookingId">
+      <div class="col-md-2">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="existingClient" [ngModelOptions]="{standalone: true}">
+          <span>Existing Client</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div class="col-md-4" *ngIf="existingClient">
+        <label>Search by Phone Number or Company GST</label>
+        <input type="text" autocomplete="werwerwes21" class="form-control w-90 d-ib" [(ngModel)]="searchInput" [ngbTypeahead]="clientSearch" placeholder="Enter Phone Number or Company GST" [inputFormatter]="typeAheadFormatter" [resultFormatter]="typeAheadFormatter" (ngModelChange)="onClientChanged()" (selectItem)="client=$event.item" />
+        <span *ngIf="searching" class="pl-1"><i class="fa fa-spinner fa-spin"></i></span>
+      </div>
+    </div>
+    <div class="row p-0 ml-0 mr-0" *ngIf="!bookings.length || (bookings.length>1 && bookingId)">
+      <!-- <div class="row p-3 pt-0" style="padding-top: 0 !important;">
+        <div class="col-md-6 form-group mb-1 p-1">
+          <label for="firstName">Client Registered Company Name</label>
+          <input type="text" class="form-control" id="company" formControlName="company" placeholder="Enter Client  Company" [(ngModel)]="client.company">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="name">Contact Name</label>
+          <input class="form-control" id="name" placeholder="Enter Contact Name" formControlName="name" [(ngModel)]="client.name">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Authorised person email" formControlName="email" [(ngModel)]="client.email">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="phone">Phone</label>
+          <input class="form-control" id="phone" placeholder="Authorised person phone" formControlName="phone" [(ngModel)]="client.phone">
+        </div>
+        <div class="col-md-6 form-group mb-1 p-1">
+          <label for="address">Registered Address</label>
+          <input class="form-control" id="address" placeholder="Enter client registered address" formControlName="address" [(ngModel)]="client.address">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="gstNo">GST No</label>
+          <input class="form-control" id="gstNo" placeholder="Registered GST Number" formControlName="gstNo" [(ngModel)]="client.gstNo">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="panNo">PAN No</label>
+          <input class="form-control" type="text" id="panNo" placeholder="Registered PAN Number" formControlName="panNo" [(ngModel)]="client.panNo">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="website">Website</label>
+          <input class="form-control" id="website" placeholder="Enter website URL" formControlName="website" [(ngModel)]="client.website">
+        </div>
+      </div> -->
+      <!-- *************************************************** -->
+
+      <!-- {{search|json}} -->
+      <!-- <div class="col-md-2 form-group mb-1  pl-1 pr-1" *ngIf="!client?.id && !bookingId">
+        <label>Phone Number</label>
+        <input  autocomplete="werwerwes" class="form-control w-90 d-ib" [(ngModel)]="searchInput" [ngbTypeahead]="clientSearch" placeholder="Enter Phone Number..." [inputFormatter]="typeAheadFormatter" [resultFormatter]="typeAheadFormatter" (selectItem)="clientSelected($event)" />
+        <span *ngIf="searching" class="pl-1"><i class="fa fa-spinner fa-spin"></i></span>
+      </div>
+      <div class="col-md-2 form-group mb-1  pl-1 pr-1" *ngIf="client.id && !bookingId">
+        <label>Contact Phone Number</label>
+        <input type="number" class="form-control" [(ngModel)]="client.phone" placeholder="Enter Phone Number" (ngModelChange)="onClientChanged()" id="phone" />
+      </div> -->
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>Client Company</label>
+        <input type="text" class="form-control" [(ngModel)]="client.company" placeholder="Enter Company Name" (ngModelChange)="onClientChanged()" id="company" />
+      </div>
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>Contact Name</label>
+        <input type="text" class="form-control" [(ngModel)]="client.name" placeholder="Enter Contact Name" (ngModelChange)="onClientChanged()" id="name" />
+      </div>
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>Contact email</label>
+        <input type="text" class="form-control" [(ngModel)]="client.email" placeholder="Enter Contact Name" (ngModelChange)="onClientChanged()" id="email" />
+      </div>
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>Contact Phone Number</label>
+        <input type="text" class="form-control" [(ngModel)]="client.phone" placeholder="Enter Phone Number" (ngModelChange)="onClientChanged()" id="phone" />
+      </div>
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>Registered Address</label>
+        <input type="text" class="form-control" [(ngModel)]="client.address" placeholder="Enter Registered Address" (ngModelChange)="onClientChanged()" id="phone" />
+      </div>
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>GST No</label>
+        <input type="text" class="form-control" [(ngModel)]="client.gstNo" placeholder="Enter Client GST Number" (ngModelChange)="onClientChanged()" id="phone" />
+      </div>
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>Pan No</label>
+        <input type="text" class="form-control" [(ngModel)]="client.panNo" placeholder="Enter Client PAN Number" (ngModelChange)="onClientChanged()" id="phone" />
+      </div>
+      <div class="col-md-3 form-group mb-1  pl-1 pr-1" *ngIf="!bookingId">
+        <label>Website</label>
+        <input type="text" class="form-control" [(ngModel)]="client.website" placeholder="Enter Client Website" (ngModelChange)="onClientChanged()" id="phone" />
+      </div>
+      <!-- <div class="form-group mb-1  pl-1 pr-1 col-md-2" *ngIf="validClient"> -->
+      <div class="form-group mb-1  pl-1 pr-1 col-md-2" *ngIf="validClient">
+        <label for="roles">Select Resource Type</label>
+        <ng-select [items]="resourceTypes" [hideSelected]="true" placeholder="Select Resource Type" [(ngModel)]="search.type" [ngModelOptions]="{standalone: true}" [bindLabel]="'name'" (ngModelChange)="searchResources()"> </ng-select>
+      </div>
+      <div class="col-md-3">
+        <label class="fs-10 mb-0">Booking Type</label>
+        <ng-select [items]="['Hourly', 'For Days']" [multiple]="false" [closeOnSelect]="false" [hideSelected]="true" placeholder="Product Type" [(ngModel)]="search.bookingType" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+      </div>
+      <!-- <div class="col-md-2 col-12 form-group mb-1  pl-1 pr-1" *ngIf="search?.type">
+        <label for="firstName">Style</label>
+        <ng-select [items]="search?.type?.styles" [hideSelected]="true" placeholder="Select Style" [(ngModel)]="search.style" [bindLabel]="'name'" [bindValue]="'type'" name="style" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchResources()">
+        </ng-select>
+      </div>
+      <div class="col-md-1 form-group mb-1  pl-1 pr-1" *ngIf="search?.type">
+        <label for="firstName">{{search?.type?.subUnitsLabel}}</label>
+        <input type="number" class="form-control" id="subUnits" placeholder="Count " [(ngModel)]="search.subUnits" (ngModelChange)="searchResources()" [ngModelOptions]="{standalone: true}">
+      </div>
+      <div class="col-md-2 form-group mb-1  pl-1 pr-1" *ngIf="search?.type">
+        <label for="firstName">{{search?.type?.subUnitsLabel}} Type</label>
+        <ng-select [items]="search?.type?.subUnitTypes" [hideSelected]="true" placeholder="Select {{search?.type?.subUnitsLabel}} Type" [(ngModel)]="search.subUnitType" [bindLabel]="'name'" [bindValue]="'type'" name="subUnitType" (ngModelChange)="searchResources()" [ngModelOptions]="{standalone: true}">
+        </ng-select>
+      </div>
+      <div class="col-md-4 form-group mb-1  pl-1 pr-1" *ngIf="search?.type">
+        <label for="firstName">Facilities</label>
+        <ng-select [items]="search?.type?.facilities" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Facilities" [(ngModel)]="search.facilities" [bindLabel]="'name'" [bindValue]="'type'" name="facilities" (ngModelChange)="searchResources()" [ngModelOptions]="{standalone: true}">
+        </ng-select>
+      </div> -->
+      <!-- <div class="form-group p-1 pt-0 col-md-2" *ngIf="search.forDate &&bookingId">
+        <label for="roles"> In same Building ?</label>
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="inSameBuilding" (ngModelChange)="searchResources()" [ngModelOptions]="{standalone: true}">
+          <span class="checkmark"></span>
+        </label>
+      </div> -->
+      <div class="form-group  mb-1  pl-1 pr-1 col-md-2" *ngIf="search.type && search.bookingType">
+        <label for="roles">For Date</label>
+        <!-- <input placeholder="Select for date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="search.forDate" [ngModelOptions]="{standalone: true}" (dateSelect)="dp.close()" (focus)="dp.toggle()" (ngModelChange)="searchResources()" /> -->
+        <input placeholder="Select for date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="search.forDate" [ngModelOptions]="{standalone: true}" (dateSelect)="dp.close()" (focus)="dp.toggle()" (ngModelChange)="searchResources()" />
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="search.forDate && resources?.length && search.bookingType=='Hourly'">
+        <label for="roles">Start Time</label>
+        <!-- <input type="time" placeholder="Select start time" class="form-control" name="dp" [(ngModel)]="search.startTime" [ngModelOptions]="{standalone: true}" (change)="updateSlots()" /> -->
+        <input type="time" placeholder="Select start time" class="form-control" name="dp" [(ngModel)]="search.startTime" [ngModelOptions]="{standalone: true}" />
+
+      </div>
+      <div class="form-group  mb-1  pl-1 pr-1 col-md-2" *ngIf="search.type && search.forDate && search.bookingType!='Hourly'">
+        <label for="roles">To Date</label>
+        <input placeholder="Select for date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="search.toDate" [ngModelOptions]="{standalone: true}" (dateSelect)="dp.close()" (focus)="dp.toggle()" (ngModelChange)="searchResources()" />
+      </div>
+      <!-- <div class="form-group p-1 col-md-2" *ngIf="search.forDate && resources?.length  && search.bookingType!='Hourly'">
+        <label for="roles">End Time</label>
+        <input type="time" placeholder="Select start time" class="form-control" name="dp" [(ngModel)]="search.endTime" [ngModelOptions]="{standalone: true}" (change)="updateSlots()" />
+      </div> -->
+      <div class="form-group p-1 col-md-2" *ngIf="search.forDate && !inSameBuilding">
+        <label for="roles">Select Country</label>
+        <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (change)="onCountrySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="search.forDate&&selectedCountry?.id && !inSameBuilding">
+        <label for="roles">Select City</label>
+        <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (change)="onCitySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="search.forDate&&selectedCity?.id && !inSameBuilding">
+        <label for="roles">Select Location</label>
+        <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (change)="onLocationSelected()">
+        </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="search.startTime">
+        <label for="roles">Duration <small>(in mins)</small></label>
+        <input type="number" placeholder="Duration" class="w-70 form-control d-ib mr-1" [(ngModel)]="search.duration" [ngModelOptions]="{standalone: true}" (ngModelChange)="updateSlots()" /> <span></span>
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="selectedResource.resourceId">
+        <label for="roles">Amount</label>
+        <input type="number" placeholder="Amount" class="form-control d-ib mr-1" [(ngModel)]="selectedResource.amount" [ngModelOptions]="{standalone: true}" [disabled]="client.clientSide" /> <span></span>
+      </div>
+    </div>
+
+    <!-- *************************************************** -->
+
+    <div *ngIf="resources?.length==0 && this.search.forDate" class="mt-4">
+      <p class="text-center mt-4">No {{this.search.type.name}} are found for above criteria .</p>
+    </div>
+    <div *ngIf="resources?.length>0">
+      <span class="text-secondary d-ib w-100 p-1 fs-16">Total <strong>{{resources?.length}} resources</strong> are found for above criteria.</span>
+      <div class="row p-1" *ngFor="let resource of resources" style="border-bottom: 1px solid #82A0DF;">
+        <div class="desk col-md-3 card p-2 m-1">
+          <h5 class="item-title mb-1">{{resource.name}} <small>at {{resource.office}}</small></h5>
+          <span class="text-secondary fs-12 " ngbTooltip="Style and Type"><strong>I : </strong>{{resource.style}}, {{resource.subUnits}} {{resource.subUnitType}} {{search.type.subUnitsLabel}}</span>
+          <span class="text-secondary fs-12" ngbTooltip="Facilities"><strong>F : </strong>{{resource.facilities}}</span>
+          <div *ngIf="resource.price" class="w-100">
+            <span class="text-secondary d-ib w-40">Price / hour : </span> <span class="text-info">{{resource.price | inr}}</span>
+            <!-- <span class="w-40"><i class="fa fa-map text-secondary float-right" style="font-size: 1rem !important;" ngbTooltip="{{resource.address}}"></i></span> -->
+          </div>
+        </div>
+        <div class="col-md-9 row">
+          <div class="col-md-12" *ngIf="!inSameBuilding">
+            <strong>Address : </strong> {{resource.address}}
+          </div>
+          <div class="col-md-8 pt-2">
+            <div class="desk pull-left card m-1" *ngFor="let slot of resource.nslots;let i=index;" [ngClass]="{'selected':slot.selected}">
+              <div style="font-size:0.6rem;padding: 0.1rem 0.6rem !important;" class="p-3 bg-success" *ngIf="slot.available&&!slot.current" ngbTooltip="Available">{{slot.from}} - {{slot.to}}</div>
+              <div style="font-size:0.6rem;padding: 0.1rem 0.6rem !important;" class="p-3 bg-info" *ngIf="slot.current&&!slot.selected" ngbTooltip="Click to Select" (click)="selectSlot(slot, resource)">{{slot.from}} - {{slot.to}}</div>
+              <div style="font-size:0.6rem;padding: 0.1rem 0.6rem !important;" class="p-3 bg-info" *ngIf="slot.current&&slot.selected" ngbTooltip="Current Selected">{{slot.from}} - {{slot.to}}</div>
+              <div style="font-size:0.6rem;padding: 0.1rem 0.6rem !important;" class="p-3 bg-light" *ngIf="!slot.available&&!slot.current" ngbTooltip="Booked">{{slot.from}} - {{slot.to}}</div>
+            </div>
+          </div>
+          <div class="col-md-4" *ngIf="resource.images?.length">
+            <ng-image-slider [images]="resource.images" [infinite]="true" [autoSlide]="1" [imageSize]="{width:200,height:120}"></ng-image-slider>
+          </div>
+        </div>
+        <hr class="clear">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="activeModal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!selectedResource.resourceId||!selectedResource.amount" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</div>

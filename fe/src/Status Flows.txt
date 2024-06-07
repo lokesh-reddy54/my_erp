@@ -1,0 +1,135 @@
+Status Flows
+-- -- -- -- -- -- -- -- -- -
+
+Admin MOdule
+-- -- -- -- -- -- -- -- -- -
+
+1. Offices Status flow
+
+  Under Consideration -> Agreement In Progress -> Agreement Signed -> Live -> Dephased
+
+2. Property Contracting
+
+  New -> Under Consideration -> Negotiating -> Terms Agreed -> Contracting -> Agreement Signed
+
+-- -- -- -- -- -- -- -- -- -
+
+Bookings Module
+
+-- -- -- -- -- -- -- -- -- -
+
+1. Bookings Status flow
+
+  New -> Booked -> Active -> Exiting -> Exited -> TDS Holded -> Setteled
+  New -> Booked -> Cancelled
+  New -> Cancelled
+
+2. Contracts Status Flow
+
+  Draft -> Approved -> Confirmed
+
+3. Resource Bookings Status flows
+  Pending -> Booked -> Done
+
+4. Expansion
+ 
+ Expansion can be done when the no of desks wanted to be expanded is available
+
+ Relocation can be done when the no of desks available in the required location
+
+ Contraction can done when the lock on the desks is over and notice period to be served in order to do contraction
+  
+-- -- -- -- -- -- -- -- -- -
+
+Purchase Module
+
+---- -- -- -- -- -- -- -- -
+
+1. Vendors Status Flow
+
+  New -> Empanelled (for emapnelling vendor one contact and bank account  has to be verified)
+
+2. WorkOrders Status Flows
+
+  Raised -> Approved -> PO Raised
+  Raised -> Approved -> Rejected
+  Raised -> Approved -> Deleted
+  Raised -> Approved -> PO Raised -> Deleted
+  Raised -> Deleted
+
+3. PurchaseOrders Status Flows
+  
+  Raised -> Started -> Closed
+  Raised -> Started -> Deleted
+  Raised -> Deleted
+
+4. Project Bills
+  
+  Raised -> Approved -> Paid
+
+5. Projects Status Flow
+
+  Draft -> In Progress -> Closed
+  Draft -> In Progress -> On Hold
+  Draft -> In Progress -> On Hold -> Deferred
+  Draft -> On Hold -> Deferred
+  Draft -> On Hold -> In Progress -> Closed
+  Draft -> Deferred
+
+-- -- -- -- -- -- -- -- -- -
+
+Accounts Module
+
+-- -- -- -- -- -- -- -- -- -
+
+1. Credit Entries Status Flow
+  
+  Credited -> Attributed
+  Credited -> Suspense -> Attributed
+  Credited -> Non Revenue
+  Credited -> No Invoice
+
+2. Bills Queue
+
+  New -> Mapped
+  New -> Archieved
+  Draft -> New -> Mapped (Mapped to any of reuccring bill or PO)
+
+  Description : When bill is added to bills queue the bill will be mapped to the respective  master bills and then that bill need to be approved and submit the payment details and the flow is as follows
+
+  i. Capex Bill: 
+
+  New -> Mapped -> Capex Master Bill -> Approved -> Paid
+
+  ii. Building Bills:
+
+  New -> Mapped -> Building Master Bill -> Approved -> Paid
+
+  iii. HO Bills:
+
+  New -> Mapped -> HO Master Bills -> Apporved -> Paid
+
+3. Payouts Statu Flows
+  
+  Approved -> Process Payout -> Success
+  Approved -> Process Payout -> Pending Payment
+  Approved -> Process Payout -> Error
+  Approved -> Reject Payout
+  Approved -> Submit Payout Details
+  Approved -> Future Payout -> Process Payout
+  Approved -> PrePaid -> Submit Payment Details
+
+4. Debit Entries Status Flow
+
+  Debited -> Attributed
+  Debited -> Non Expense
+  Debited -> Suspense -> Attributed
+  Debited -> No Bill
+
+5. Recurring Bills Status
+
+  Riased -> New -> Approved -> Paid
+  Raised -> New -> Deleted
+  Raised -> Deleted
+
+-- -- -- -- -- -- -- -- -- -

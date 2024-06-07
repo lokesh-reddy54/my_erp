@@ -1,0 +1,149 @@
+<div class="card user-profile o-hidden mb-1 d-b" style="height: calc(100vh - 90px);">
+  <div class="card-body pt-1">
+    <div class="row">
+      <div class="col-md-12 border-bottom">
+        <div class="float-left pt-2">
+          <h3 *ngIf="workOrder?.id">WorkOrder - <small>{{workOrder.refNo}}</small></h3>
+        </div>
+      </div>
+      <div class="col-md-12 row border-bottom">
+        <div class="col-md-3 mb-2">
+          <p class="text-black f-b mb-0">Project</p>
+          <span class="">{{workOrder.project?.title || 'UnAssigned'}}</span>
+        </div>
+        <div class="col-md-1-5 mb-2">
+          <p class="text-black f-b mb-0">Building</p>
+          <span class="">{{workOrder.building?.name}}</span>
+        </div>
+        <div class="col-md-1 mb-2">
+          <p class="text-black f-b mb-0">Amount</p>
+          <span class="">{{workOrder.budget | inr}}</span>
+        </div>
+        <div class="col-md-1 mb-2">
+          <p class="text-black f-b mb-0">Status</p>
+          <span class="badge badge-info" *ngIf="workOrder.status=='Raised'">Raised</span>
+          <span class="badge badge-primary" *ngIf="workOrder.status=='Approved'">Approved</span>
+          <span class="badge badge-success" *ngIf="workOrder.status=='Accepted'">Accepted</span>
+          <span class="badge badge-success" *ngIf="workOrder.status=='PORaised'">PO Raised</span>
+          <span class="badge badge-warning" *ngIf="workOrder.status=='Declined'">Declined</span>
+          <span class="text-info cursor float-right f-b" [placement]="'bottom'" [ngbPopover]="datesPopContent" [popoverTitle]="datesPopTitle" triggers="mouseenter:mouseleave">H</span>
+          <ng-template #datesPopTitle>{{popOverTitle}}</ng-template>
+          <ng-template #datesPopContent>
+            <div class="ol-6 mb-2">
+              <p class="text-black f-b mb-0 float-left">Proposed : </p>
+              <span class="float-left ml-10">{{workOrder.proposedOn | date : 'MMM dd, yyyy'}} by {{workOrder.executive?.name}}</span>
+              <div class="clear"></div>
+            </div>
+            <div class="ol-6 mb-2">
+              <p class="text-black f-b mb-0 float-left">Approved : </p>
+              <span class="float-left ml-10">{{workOrder?.approvedOn | date : 'MMM dd, yyyy'}} by {{workOrder.manager?.name}}</span>
+              <div class="clear"></div>
+            </div>
+          </ng-template>
+        </div>
+        <div class="col-md-3">
+          <p class="text-black f-b mb-0">Vendor</p>
+          <a class="" target="_blank" href="/#/purchases/vendor/{{workOrder.vendor?.id}}">{{workOrder.vendor?.name}} <i class="fa fa-external-link"></i></a>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <ngb-tabset class="nav-center">
+          <ngb-tab title="Work Items">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+              <div style="margin-top: 0">
+                <div *ngIf="workOrder.status=='Raised'" class=" mt-20">
+                  <button *ngIf="allItemsActed" class="btn btn-primary ladda-button btn-ico btn-sm float-right" [ladda]="loading" [disabled]="loading" (click)="openExpectedDatesModal()"><i class="fa fa-check" *ngIf="!loading"></i> Approve & Request Vendor Acceptance</button>
+                  <div class="clear"></div>
+                </div>
+                <!-- *ngIf="workOrder.status=='Approved'" -->
+                <div  class="float-right mt-20" *ngIf="workOrder.status=='Approved'">
+                  <button class="btn btn-primary ladda-button btn-ico btn-sm "  [ladda]="loading" [disabled]="loading" (click)="raisePurchaseOrder()"><i class="fa fa-check" *ngIf="!loading"></i> Force Accept PO</button>
+                  <div class="clear"></div>
+                </div>
+                <!-- *ngIf="workOrder.status=='Approved'" -->
+                <div  class="float-right mr-10 ml-10 mt-20" *ngIf="workOrder.status=='Approved'">
+                  <button class="btn btn-info btn-ico btn-sm float-right" (click)="openExpectedDatesModal()"><i class="fa fa-pencil"></i> Edit Milestone Dates</button>
+                  <div class="clear"></div>
+                </div>
+                <div class="row mt-1" *ngIf="(workOrder.status=='Raised' && allItemsActed) || workOrder.status=='Approved'">
+                  <div class="col-8 pt-2">
+                    <textarea class="form-control" [disabled]="workOrder.status=='Approved'" [(ngModel)]="workOrder.additionalChargesNote" placeholder="Enter Additional Notes  (atleast 10 characters)"></textarea>
+                  </div>
+                  <div class="col-md-2 form-group mb-1 p-1">
+                    <label for="firstName">Additional Charges</label>
+                    <input type="text" class="form-control" id="additionalCharges" placeholder="Enter Additional Charge" [(ngModel)]="workOrder.additionalCharges" [disabled]="workOrder.status=='Approved' || workOrder.additionalChargesNote?.length<10">
+                  </div>
+                  <div class="col-md-2 form-group mb-1 p-1">
+                    <label for="firstName">Delivery Charges</label>
+                    <input type="text" class="form-control" id="deliveryCharges" [disabled]="workOrder.status=='Approved'" placeholder="Enter Delivery Charge" [(ngModel)]="workOrder.deliveryCharges">
+                  </div>
+                </div>
+              </div>
+              <div class="mt-1">
+                <data-list #workItemsList [filter]="workItemsFilters" [dataUrl]="'internal/purchases/listWorkItems'" [config]="workItemsConfig" (onAction)="action($event)" (onLoadMore)="workItemsLoaded()"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+        </ngb-tabset>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #declineModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{workItem.declinedComments ? 'View' : 'Enter'}} Decline Message </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="declineForm">
+      <div class="row">
+        <div class="col-12" *ngIf="!workItem.declinedComments">
+          <textarea class="form-control" [(ngModel)]="declinedComments" placeholder="Enter your comments to decline work item" formControlName="comments"></textarea>
+        </div>
+        <p class="pl-3 pr-3" *ngIf="workItem.declinedComments">{{workItem.declinedComments}}</p>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" *ngIf="!workItem.declinedComments" [ladda]="loading" [disabled]="loading||declineForm.invalid" (click)="declineWorkItem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #paymentTermsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Payment Milestones Expected Completion Dates</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <h5 class="f-b"><small>Please enter your expected payment dates for each milestone.</small></h5>
+    <table class="table table-stripped table-sm">
+      <thead>
+        <tr>
+          <th>Milestone</th>
+          <th class="text-right">Amount</th>
+          <th class="text-center">Expected Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let term of milestones;let i=index;">
+          <td>{{term.name}}</td>
+          <td class="text-right">{{term.amount | inr}}</td>
+          <td class="pl-4">
+            <input type="date" class="form-control" [(ngModel)]="term.expectedDate" placeholder="Expected By" [ngModelOptions]="{standalone: true}" (ngModelChange)="expectedDateChanged()" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" *ngIf="!workItem.declinedComments" [ladda]="loading" [disabled]="loading||!allExpectedDatesAdded" (click)="saveDates()"><i class="fa fa-check" *ngIf="!loading"></i> Proceed to send Request</button>
+  </div>
+</ng-template>

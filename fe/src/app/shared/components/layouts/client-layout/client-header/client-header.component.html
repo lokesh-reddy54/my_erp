@@ -1,0 +1,30 @@
+<div class="main-header row pl-4" style="background: #008080d1; margin: 0;">
+  <div class="logo" style="width: 160px !important;">
+    <img [src]="logo" alt="" style="margin: 0 1rem;width: 100% !important;height: auto !important;">
+  </div>
+  <div style="margin: auto" class="d-none d-md-block"></div>
+  <div class="header-part-right ">
+    <div ngbDropdown [placement]="'bottom-right'" class="">
+      <i ngbDropdownToggle class="i-Posterous text-muted header-icon" style="color:#fff !important;"></i>
+      <div ngbDropdownMenu class="menu-icon-grid-dropdown">
+        <div class="menu-icon-grid">
+          <a href="#/client/dashboard"><i class="i-Bar-Chart"></i> Dashboard</a>
+          <a href="javascript:void(0)" (click)="viewBooking()"><i class="i-Library"></i> Bookings</a>
+          <a href="javascript:void(0)" (click)="viewEmployees()" class="cursor"><i class="i-MaleFemale"></i> Employees</a>
+          <a href="#/client/resource-bookings" *ngIf="authService.myBookings[0]?.contract.deskType!='EnterpriseOffice' && authService.myBookings[0]?.contract.deskType!='PrivateOffice'"><i class="i-File-Horizontal-Text"></i> Resource Bookings</a>
+          <a href="javascript:void(0)" (click)="viewCredits()" class="cursor" *ngIf="authService.myBookings[0]?.contract.deskType!='EnterpriseOffice' && authService.myBookings[0]?.contract.deskType!='PrivateOffice'"><i class="i-Dollar-Sign"></i> CreditBalance</a>
+          <a href="#/client/tickets/0"><i class="i-Support"></i> SupportTickets</a>
+        </div>
+      </div>
+    </div>
+    <div ngbDropdown [placement]="'bottom-right'" class="user col align-self-end">
+      <img src="./assets/images/faces/default.png" id="userDropdown" ngbDropdownToggle alt="">
+      <div ngbDropdownMenu aria-labelledby="userDropdown" class="header-account-dropdown">
+        <div class="dropdown-header">
+          <i class="i-Lock-User mr-1"></i> {{user.name}}
+        </div>
+        <button class="dropdown-item" (click)="signout()">Sign out</button>
+      </div>
+    </div>
+  </div>
+</div>

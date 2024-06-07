@@ -1,0 +1,89 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left f-b">Payments List</h5>
+      <input type="text" placeholder="Search by Name, Company, RefNO, UTR, <10000, >5000, 1000-10000" [formControl]="search" class="form-control form-control-rounde pull-left w-30 ml-10">
+      <div class="w-20 pull-left">
+        <input class="form-control float-left ml-5 w-80" autocomplete="off" placeholder="PaidOn : Start Date - End Date" name="dp" id="daterangepicker">
+        <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Clear Dates Selection" *ngIf="filters.endDate" (click)="clearDates()"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="float-left ml-5 w-20">
+        <ng-select class="" multiple="true" [items]="['BankTransfer','Online','Cheque','Cash']" [hideSelected]="true" placeholder="Payment Modes" [(ngModel)]="filters.types" [ngModelOptions]="{standalone: true}"></ng-select>
+      </div>
+      <div class="ml-10 d-ib mt-1 float-left">
+        <label class="checkbox checkbox-danger">
+          <input type="checkbox" [(ngModel)]="filters.cancelled" [ngModelOptions]="{standalone: true}">
+          <span class="d-ib mt--10">Show Cancelled</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <button *checkAccess="'accounts:addTenantPayment'" class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openPaymentModal()">
+        <i class="fa fa-plus"></i> Payment
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden" *ngIf="!filters.cancelled">
+          <data-list #paymentsList [filter]="filters" [dataUrl]="'internal/accounts/listPayments'" [config]="paymentsConfig" (onAction)="action($event)"></data-list>
+        </div>
+        <div class="card  o-hidden" *ngIf="filters.cancelled">
+          <data-list #cancelledPaymentsList [filter]="filters" [dataUrl]="'internal/accounts/listPayments'" [config]="cancelledPaymentsConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #paymentModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Make New Payment</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="paymentForm">
+      <div class="row">
+        <div class="form-group col-md-12" *ngIf="selectedBookings.length>0">
+          <label class="d-b"> Selected Booking : &nbsp;
+            <strong>{{selectedBookings[0].name}} [{{selectedBookings[0].refNo}}] @ {{selectedBookings[0].office}}</strong>
+            &nbsp; &nbsp; <i class="fa fa-times fa-2x" ngbTooltip="Clear Booking" (click)="selectedBookings=[]"></i></label>
+        </div>
+        <div class="form-group col-md-12" *ngIf="selectedBookings.length==0">
+          <label>Select Booking</label>
+          <tag-input [formControl]="selectedBooking" theme='primary' [(ngModel)]="selectedBookings" placeholder="Type Office name to search" (onTextChange)="searchBookings($event)" maxItems="1" [onlyFromAutocomplete]="true" (ngModelChange)="onBookingSelected()">
+            <!-- [showDropdownIfEmpty]="true"  -->
+            <tag-input-dropdown [autocompleteItems]="autocompleteBookings" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+              <ng-template let-item="item" let-index="index">
+                {{item.name}} [{{item.refNo}}] @ {{item.office}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="col-md-5 form-group mb-1">
+          <label>Amount</label>
+          <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter amount" [(ngModel)]="payment.amount">
+        </div>
+        <div class="col-md-7 form-group mb-1">
+          <label>Type</label>
+          <ng-select [items]="['Online','BankTransfer','Cheque','Cash']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Payment Type" [(ngModel)]="payment.type" formControlName="type">
+          </ng-select>
+        </div>
+        <div class="col-md-5 form-group mb-1">
+          <label>Date</label>
+          <input class="form-control" id="date" formControlName="date" placeholder="Enter date" [(ngModel)]="payment.date" name="dp" ngbDatepicker #dp="ngbDatepicker" (dateSelect)="dp.close()" (focus)="dp.toggle()">
+        </div>
+        <div class="col-md-7 form-group mb-1">
+          <label>UTR</label>
+          <input type="text" class="form-control" id="utr" formControlName="utr" placeholder="Enter UTR" [(ngModel)]="payment.utr">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||paymentForm.invalid" (click)="makePayment()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

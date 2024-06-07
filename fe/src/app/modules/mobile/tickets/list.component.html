@@ -1,0 +1,149 @@
+<div class="">
+  <div class="breadcrumb row">
+    <h1 class="pull-left col-md-3 mb-1">{{setAside ? 'Requested Changes' : 'Support Tickets'}}</h1>
+    <!--     <div class="pull-left col-md-5 mb-1">
+      <input type="text" placeholder="Search by RefNo, Context" [formControl]="searchControl" class="form-control form-control-rounde w-90 float-left">
+      <button class="btn btn-info btn-icon float-right"><i class="i-Filter-2"></i></button>
+    </div> -->
+    <!--  <button class="mb-1 btn btn-outline-primar btn-primary btn-rounde btn-ico col-md-2 col-6 pull-right" (click)="newTicket()">
+      <i class="fa fa-plus"></i> New Ticket
+    </button> -->
+    <div class="clear"></div>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="clear"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);padding-top: 20px;margin-top: -10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12 pl-1 pr-1">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <a routerLink="/tickets/view/{{item.id}}" class="w-20 w-sm-100 pr-3" ngbTooltip="Ticket Details">
+              <div class="m-0 text-secondary text-smal">
+                <div>{{item.id}}, {{item.refNo}} <span class="pull-right">{{item.priority.name}}</span></div>
+              </div>
+              <div>
+                <span ngbTooltip="Assigned To">{{item.assigned?.name || 'UnAssigned'}}</span>
+                <span class="pull-right"><small>{{item.date | date : 'MMM dd, yyyy'}}</small></span>
+              </div>
+            </a>
+            <div class="m-0 text-muted text-small w-50 w-sm-100 pl-1">
+              <div class="text-primary">{{item.issue}}</div>
+              <div class="d-b text-info">{{item.description | ellipses}}</div>
+            </div>
+            <div class="w-30 w-sm-100">
+              <div class="m-0 text-muted text-small w-70 float-left">
+                <div class="d-b text-info" ngbTooltip="Category & Context"> {{item.category}}, {{item.subCategory}}, {{item.context}}</div>
+                <div class="d-b text-primary">
+                  <span class="text-secondary" ngbTooltip="Attend In">A : {{item.priority.attendIn}} {{item.priority.attendInType}}, </span>
+                  <span class="text-secondary" ngbTooltip="Resolve In">R : {{item.priority.resolveIn}} {{item.priority.resolveInType}}, </span>
+                  <span class="text-secondary" ngbTooltip="Close In">C : {{item.priority.closeIn}} {{item.priority.closeInType}} </span>
+                </div>
+              </div>
+              <div class="m-0 text-muted text-center text-small w-30 item-actions float-right">
+                <span class="ticket-status {{item.status}}">{{item.status}}</span>
+                <button class="btn btn-icon btn-info" ngbTooltip="View Ticket" routerLink="/client/ticket/{{item.id}}">
+                  <i class="i-Magnifi-Glass1 text-bold"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="text-center" *ngIf="!items?.length"><strong>No tickets are raised yet ... </strong></p>
+  </div>
+</div>
+<ng-template #newTicketModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ticket.id ? 'Edit Ticket' : 'New Ticket'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="ticketForm">
+      <div class="row">
+        <div class="form-group col-md-6 mb-1">
+          <label for="roles">Select Booking</label>
+          <ng-select [items]="bookings" [hideSelected]="true" bindLabel="refNo" placeholder="Select Booking" [(ngModel)]="selectedBooking" formControlName="booking" name="booking">
+            <ng-template ng-option-tmp let-item="item">
+              <div><strong>{{item.refNo}}</strong></div>
+              <span>{{item.office}}</span>
+            </ng-template>
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="selectedOffice.id">
+          <label for="firstName">Select Cabin <small>(which has issue, if any)</small></label>
+          <div *ngIf="!selectedBooking?.id"><small>Please select booking </small></div>
+          <ng-select [items]="selectedBooking?.cabins" *ngIf="selectedBooking?.id" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Cabin to report" [(ngModel)]="ticket.cabin" formControlName="cabin" name="cabin"> </ng-select>
+        </div>
+      </div>
+      <div class="row" *ngIf="selectedBooking?.id">
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">Issue Category</label>
+          <ng-select [items]="categories" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Category" [(ngModel)]="ticket.category" formControlName="category" name="category"> </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">Sub Category</label>
+          <div *ngIf="!ticket.category"><small>Please select category </small></div>
+          <ng-select [items]="ticket.category.subCategories" *ngIf="ticket.category" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select SubCategory" [(ngModel)]="ticket.subCategory" formControlName="subCategory" name="subCategory"> </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1">
+          <label for="firstName">Category Context</label>
+          <div *ngIf="!ticket.subCategory"><small>Please select subcategory </small></div>
+          <ng-select [items]="ticket.subCategory.contexts" *ngIf="ticket.subCategory" [hideSelected]="true" [bindLabel]="'context'" placeholder="Select Ticket Context" [(ngModel)]="ticket.context" formControlName="context" name="context"> </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1" *ngIf="ticket.context">
+          <label for="roles">Priority</label>
+          <div>{{ticket.context?.priority?.name}}</div>
+        </div>
+        <div class="col-md-12 form-group mb-1" *ngIf="ticket.context">
+          <label for="roles">Issue Title</label>
+          <input type="text" placeholder="Enter Issue title here" class="form-control" name="issue" [(ngModel)]="ticket.issue" formControlName="issue" />
+        </div>
+        <div class="col-md-12 form-group mb-1" *ngIf="ticket.context">
+          <label for="roles">Issue Description</label>
+          <textarea placeholder="Describe in detail here" class="form-control" name="description" [(ngModel)]="ticket.description" formControlName="description"></textarea>
+        </div>
+        <div class="col-12 mb-2 form-group" *ngIf="ticket.context">
+          <label for="roles" class="d-b">File Attachment (if any)</label>
+          <a class="f-b badge badge-secondary fs-10 float-left" *ngIf="ticket.attachment?.file" [href]="ticket.attachment?.file" target="_blank" ngbTooltip="Click to View">Attachment</a>
+          <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Remove Attachment" (click)="ticket.attachment=null;" *ngIf="ticket.attachment"></i>
+          <div class="input-group" *ngIf="!ticket.attachment">
+            <div class="custom-file" *ngIf="!attachmentFile">
+              <input class="custom-file-input" id="attachmentId" (change)="attachmentFileChange($event)" type="file">
+              <label class="custom-file-label" for="attachmentId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="attachmentFile">
+              <span class="float-left">{{attachmentFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="attachmentFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="attachmentFileError">
+                  {{ attachmentFileError.message }}
+                </div>
+                <div *ngIf="attachmentUploadResponse.status === 'error'">
+                  {{ attachmentUploadResponse.message }}
+                </div>
+                <div *ngIf="attachmentUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="attachmentUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{attachmentUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadAttachementFile()">Upload</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||ticketForm.invalid" (click)="saveTicket()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

@@ -1,0 +1,256 @@
+<div class="breadcrumb">
+  <h1 class="pt-2">Ticket View - <small>{{ticket.refNo}}</small>
+    <span class="badge" *ngIf="ticket.status=='Resolved'" (click)="changeStatus('Close')">Close</span>
+    <span class="badge" *ngIf="ticket.status=='Close'" (click)="changeStatus('ReOpened')">ReOpen</span>
+  </h1>
+  <div class="clear"></div>
+</div>
+<div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+<div class="card user-profile o-hidden mb-1 d-b" style="height: calc(100vh - 140px);">
+  <div class="card-body pt-1">
+    <ngb-tabset class="nav-center nav-no-bg">
+      <ngb-tab title="Ticket Info">
+        <ng-template ngbTabContent>
+          <div class="row" style="margin-top: -35px">
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Raised On</p>
+              <span class="">{{ticket.date | date :'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Assigned To </p>
+              <span class="">{{ticket.assigned?.name || 'UnAssigned'}}</span>
+            </div>
+            <div class="col-md-4 col-12 mb-2">
+              <p class="text-black f-b mb-0">Category & Context</p>
+              <span class="">{{ticket.category}}, {{ticket.subCategory}}, {{ticket.context}} </span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Priority</p>
+              <span class="">{{ticket.priority?.name}}</span>
+            </div>
+            <div class="col-md-1 col-6 mb-2">
+              <p class="text-black f-b mb-0">Status</p>
+              <span class="badge" [ngClass]="{'badge-info':ticket.status=='New','badge-success':ticket.status=='Assigned','badge-info':ticket.status=='Attended','badge-success':ticket.status=='Resolved','badge-secondary':ticket.status=='Closed','badge-warning':ticket.status=='AwaitingInternalReply', 'badge-light':ticket.status=='AwaitingClientReply'}">{{ticket.status}}</span>
+            </div>
+            <div class="" [ngClass]="{'col-md-9':ticket.attachments.length, 'col-md-12':!ticket.attachments.length}">
+              <div class="font-12"><strong>{{ticket.issue}}</strong></div>
+              <div class="font-12">{{ticket.description}}</div>
+            </div>
+            <div class="col-md-3" *ngIf="ticket.attachments.length>0">
+              <div class="lb-i text-muted">Attachments</div>
+              <p *ngFor="let attachment of ticket.attachments;"><a [href]="attachment.file" target="_blank">{{attachment.name}}</a></p>
+            </div>
+          </div>
+          <div class="row mt-3 border-top pt-2">
+            <div class="col-md-5">
+              <h5>Assignment History</h5>
+              <table class="tableBodyScroll table table-striped table-hover table-sm" style="margin: auto">
+                <thead>
+                  <tr>
+                    <th class="w-50">Assigned To</th>
+                    <th class="w-50 text-center">DateTime</th>
+                  </tr>
+                </thead>
+                <tbody class="tableBodyScroll" style="max-height: 300px;">
+                  <tr *ngFor="let history of ticket.assignmentHistory;">
+                    <td class="w-50">{{history.user.name}}</td>
+                    <td class="w-50 text-center">{{history.date | date :'MMM dd, yyyy hh:mm a'}}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="text-center mt-2" *ngIf="!ticket.assignmentHistory?.length"><strong>No assignments are done yet.</strong></p>
+            </div>
+            <div class="col-md-7">
+              <h5>Status Change History</h5>
+              <table class="tableBodyScroll table table-striped table-hover table-sm" style="margin: auto">
+                <thead>
+                  <tr>
+                    <th class="w-50 text-center">Status</th>
+                    <th class="w-50 text-center">DateTime</th>
+                  </tr>
+                </thead>
+                <tbody class="tableBodyScroll" style="max-height: 300px;">
+                  <tr *ngFor="let status of ticket.statusHistory;">
+                    <td class="w-50 text-center">{{status.status}}</td>
+                    <td class="w-50 text-center">{{status.date | date :'MMM dd, yyyy hh:mm a'}}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="text-center mt-2" *ngIf="!ticket.statusHistory?.length"><strong>No status changes are done yet.</strong></p>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Messages">
+        <ng-template ngbTabContent>
+          <div style="margin-top: -80px" class="d-none d-md-block">
+            <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openMessageModal()">
+              <i class="fa fa-plus"></i> New Message
+            </button>
+            <div class="clear"></div>
+          </div>
+          <div class="row mt-3 d-none d-md-block">
+            <!--  <data-list #messagesList [dataUrl]="'internal/support/getTicketMessages/'+id" [config]="messagesConfig" (onAction)="action($event)"></data-list> -->
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-45">Message</th>
+                  <th class="w-15 pl-4">From</th>
+                  <th class="w-15 pl-4">To</th>
+                  <th class="w-15 text-center">DateTime</th>
+                  <th class="w-10 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody class="tableBodyScroll" style="max-height: 300px;">
+                <tr *ngFor="let msg of ticket.messages;">
+                  <td class="w-45">{{msg.reply}}</td>
+                  <!-- <td class="w-15" *ngIf="msg.by=='Client'">MySelf</td> -->
+                  <td class="w-15">{{msg.by|| '-'}}</td>
+                  <!-- <td class="w-15" *ngIf="msg.to=='Client'">MySelf</td> -->
+                  <td class="w-15">{{(msg.user || '-')}}</td>
+                  <td class="w-15 text-center">{{msg.date | date :'MMM dd, yyyy hh:mm a'}}</td>
+                  <td class="w-10 text-center">
+                    <button class="btn btn-info btn-sm btn-icon" (click)="message=msg;openViewMessageModal();"><i class="fa fa-search"></i></button>
+                    <a class="btn btn-info btn-sm btn-icon" *ngIf="msg?.attachment" [href]="msg.attachment?.file" target="_blank"><i class="fa fa-paperclip"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div *ngIf="!ticket.messages?.length" class="fs-14 f-b text-center p-4 w-100">No messages are added yet .</div>
+          </div>
+          <div class="list-horizontal tableBodyScroll" style="overflow:auto;height: calc(100vh - 250px);margin-top: -30px;padding-right: 10px;">
+            <div class="clear"></div>
+            <ul class="timeline d-block d-md-none mt-3">
+              <li class="timeline-line"></li>
+              <li class="timeline-item" *ngFor="let message of ticket.messages;">
+                <div class="timeline-group text-center">
+                  <button class="btn btn-icon-text btn-primary  btn-sm">
+                    {{message.date | date : 'MMM dd, yy hh:mm a'}}
+                  </button>
+                </div>
+                <div class="timeline-card card mb-2">
+                  <div class="card-body">
+                    <p>{{message.reply}}</p>
+                    <span class="float-right"> <small> - <i> by </i> </small> <strong> {{message.by}} </strong> ({{message.from}})</span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="SLAs" *ngIf="!ticket.setAside">
+        <ng-template ngbTabContent>
+          <div class="row d-none d-md-block" style="margin-top: -35px">
+            <table class="tableBodyScroll table table-striped table-hover table-sm w-90" style="margin: auto">
+              <thead>
+                <tr>
+                  <th class="w-25 text-center">Type</th>
+                  <th class="w-25 text-center">Expected Time</th>
+                  <th class="w-25 text-center">Actual Time</th>
+                  <th class="w-25 text-center">InTime</th>
+                </tr>
+              </thead>
+              <tbody class="tableBodyScroll" style="max-height: 325px;">
+                <tr *ngFor="let sla of ticket.priorities;">
+                  <td class="w-25 text-center">{{sla.type}}</td>
+                  <td class="w-25 text-center">{{sla.expectedTime | date :'MMM dd, yyyy hh:mm a'}}</td>
+                  <td class="w-25 text-center">{{sla.actualTime ? (sla.actualTime| date :'MMM dd, yyyy hh:mm a') : '-'}}</td>
+                  <td class="w-25 text-center pr-3 pl-3" *ngIf="sla.inTime" [ngClass]="{'bg-danger':sla.inTime=='Not InTime','bg-success':sla.inTime=='InTime'}">{{sla.inTime}}</td>
+                  <td class="w-25 text-center" *ngIf="!sla.inTime">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="list-horizontal tableBodyScroll" style="overflow:auto;height: calc(100vh - 250px);margin-top: -10px;padding-right: 10px;">
+            <ul class="timeline d-block d-md-none">
+              <li class="timeline-line"></li>
+              <li class="timeline-item" *ngFor="let sla of ticket.priorities;">
+                <div class="timeline-group text-center">
+                  <button class="btn btn-icon-text btn-primary  btn-sm">
+                    {{sla.type}} - {{sla.inTime}}</button>
+                </div>
+                <div class="timeline-card card mb-2">
+                  <div class="card-body" [ngClass]="{'bg-danger text-white':sla.inTime=='Not InTime','bg-success text-white':sla.inTime=='InTime'}">
+                    <p class="mb-0"><strong class="d-b">Expected Time : </strong> {{sla.expectedTime | date :'MMM dd, yyyy hh:mm a'}}</p>
+                    <p class="mb-0 f-b"><strong class="d-b">Actual Time : </strong> {{sla.actualTime ? (sla.actualTime| date :'MMM dd, yyyy hh:mm a') : '-'}}</p>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+</div>
+<ng-template #messageModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{message.id ? 'Edit Message' : 'New Message'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="messageForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Message</label>
+          <textarea placeholder="Enter Message here " rows=10 class="form-control" name="comment" [(ngModel)]="message.reply" formControlName="comment"></textarea>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <div class="mb-1" *ngIf="message.attachment">
+            <a [href]="message.attachment.file" target="_blank">{{message.attachment.name}}</a>
+          </div>
+          <span class="input-group">
+            <div class="custom-file" *ngIf="!messageAttachmentFile">
+              <input class="custom-file-input" id="messageAttachmentId" (change)="messageAttachmentFileChange($event)" type="file">
+              <label class="custom-file-label" for="messageAttachmentId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="messageAttachmentFile">
+              <span class="float-left">{{messageAttachmentFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="messageAttachmentFile=null;message.docId=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="messageAttachmentFileError">
+                  {{ messageAttachmentFileError.message }}
+                </div>
+                <div *ngIf="messageAttachmentUploadResponse.status === 'error'">
+                  {{ messageAttachmentUploadResponse.message }}
+                </div>
+                <div *ngIf="messageAttachmentUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="messageAttachmentUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{messageAttachmentUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadMessageAttachmentFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||messageForm.invalid" (click)="saveTicketMessage()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #viewMessageModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">View Message</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>{{message.reply}}</p>
+    <p *ngIf="message.attachment"><strong>Attachment : </strong><a [href]="message.attachment.file" target="_blank">{{message.attachment.name}}</a></p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

@@ -1,0 +1,406 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">{{isHq ? "HeadOffice" : "Building"}} Expenses Recurring Payment Configurations</h4>
+    <input type="text" placeholder="Search by office or opex code" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-1 mt--10">
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row p-1 ml-0 mr-0">
+          <div class="form-group pl-1 col-md-2 mb-1" *ngIf="!isHq">
+            <label for="roles">Select Country</label>
+            <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-2 mb-1" *ngIf="!isHq && selectedCountry?.id">
+            <label for="roles">Select City</label>
+            <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-2 mb-1" *ngIf="!isHq && selectedCity?.id">
+            <label for="roles">Select Location</label>
+            <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLocationSelected()">
+            </ng-select>
+          </div>
+          <div class="pull-right" [ngClass]="{'col-md-6':!isHq, 'col-md-12 mt--20':isHq}">
+            <button class="btn btn-outline-primar mt-4 btn-primary btn-rounde btn-ico pull-right" (click)="openOpexPaymentModal({})">
+              <i class="fa fa-plus"></i> Configure New Payment
+            </button>
+          </div>
+        </div>
+        <div class="row">
+          <div class="table-responsive pl-4 pr-1 col-2" *ngIf="!isHq && buildings.length">
+            <loading [loading]="loading"></loading>
+            <h5 class="pull-left mb-1">Buildings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-90">Name</th>
+                  <th class="text-center w-10">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings;" [ngClass]="{'selected':building.id==selectedBuilding.id}">
+                  <td class="w-50">{{building.name}}</td>
+                  <td class="text-center w-10">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Recurring Payments" (click)="loadBuildingOpexPayments(building)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="" [ngClass]="{'col-md-10':!isHq, 'col-md-12 mt--20':isHq}">
+            <h5 class="border-bottom pb-1 pl-2 f-b">{{selectedBuilding?.name}} Recurring Payments</h5>
+            <p class="text-center mt-4 pt-4 f-b" *ngIf="!opexCategoryPayments.length">No recurring payments are configured yet.</p>
+            <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0" [closeOthers]="true" class="mini">
+              <ngb-panel *ngFor="let category of opexCategoryPayments; let i=index;" id="ngb-panel-{{i}}">
+                <ng-template ngbPanelTitle>
+                  <span class="pull-left d-ib fs-16 f-b">{{category.name}}</span>
+                  <span class="pull-right d-ib">
+                    {{category.payments}} Payments Registered
+                  </span>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                  <div class="table border-bottom">
+                    <div class="row" *ngIf="category.serviceProviderId">
+                      <div class="cell f-b p-1 pl-0 pr-1 w-10">Floor</div>
+                      <div class="cell f-b p-1 pl-0 pr-1 w-15">Opex Type</div>
+                      <div class="cell f-b p-1 pl-0 pr-1 w-30">Provider</div>
+                      <div class="cell f-b p-1 pl-4 pr-1 w-20">Amount</div>
+                      <div class="cell f-b pt-1 pb-1 pl-0 pr-1 w-5">BillDay</div>
+                      <div class="cell f-b p-1 pl-0 pr-1 w-5">DueDay</div>
+                      <div class="cell f-b p-1 pl-0 pr-1 w-10">PaymentMode</div>
+                      <div class="cell f-b p-1 pl-0 pr-1 w-5 text-center">Actions</div>
+                    </div>
+                  </div>
+                  <div *ngFor="let officePayment of category.officePayments;">
+                    <strong class="fs-14 mt-1 d-b" *ngIf="officePayment.name!='null'">{{officePayment.name}}</strong>
+                    <div *ngFor="let opexTypePayment of officePayment.opexTypePayments;">
+                      <div class="table" *ngFor="let payment of opexTypePayment.payments;let ti=index;">
+                        <div *ngIf="payment.serviceProviderId" class="row" [ngClass]="{'text-light':!payment.active, 'bg-light': payment.status=='Draft'}">
+                          <div class="cell f-b w-10" [ngClass]="{'border-bottom':ti == opexTypePayment.payments.length-1}"></div>
+                          <div class="cell w-15 f-b" [ngClass]="{'border-bottom':ti == opexTypePayment.payments.length-1}">
+                            <span *ngIf="ti==0">{{opexTypePayment.name}}</span></div>
+                          <div class="cell border-bottom w-30">{{payment.providerName}}</div>
+                          <div class="cell border-bottom w-20" *ngIf="payment.amountType=='Fixed'">{{payment.amount|inr}}</div>
+                          <div class="cell border-bottom w-20" *ngIf="payment.amountType!='Fixed'">
+                            {{payment.minCharge|inr}} - {{payment.maxCharge|inr}}</div>
+                          <div class="cell border-bottom w-5">{{payment.invoiceDay}}</div>
+                          <div class="cell border-bottom w-5">{{payment.invoiceDueDay}}</div>
+                          <div class="cell border-bottom w-10">{{payment.paymentMode}}</div>
+                          <div class="cell border-bottom w-5">
+                            <button class="btn btn-icon btn-sm btn-info" ngbTooltip="Edit Payment" (click)="openOpexPaymentModal(payment)">
+                              <i class="fa fa-pencil"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="!category.serviceProviderId" class="m-3">
+                    <div class="cell w-100 text-center">
+                      No payments are configured for <b class="fs-14">{{category.opexType}}</b> which is an essential OpEx.
+                      <a href="javascript:void(0)" class="ml-20 f-b fs-16" (click)="openOpexPaymentModal(category.payment)">Please click here to configure now</a>
+                    </div>
+                  </div>
+                </ng-template>
+              </ngb-panel>
+            </ngb-accordion>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #opexPaymentModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{opexPayment.id ? 'Edit Opex Payment' : 'New Opex Payment'}} <small *ngIf="opexPayment.opexTypeId">for {{opexPayment?.opexType}}, {{opexPayment?.opexCategory}}</small> </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row" *ngIf="!opexPayment.opexTypeId">
+        <div class="col-md-4 form-group mb-1">
+          <label for="roles">Opex Category</label>
+          <ng-select [items]="opexCategories" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Opex Category" [(ngModel)]="opexCategory" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="opexCategory?.types.length">
+          <label for="roles">Opex Type</label>
+          <ng-select [items]="opexCategory.types" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Opex Type" [(ngModel)]="opexType" (ngModelChange)="opexItem=null;onOpexTypeSelected();" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="opexType?.items.length">
+          <label for="roles">Opex Item</label>
+          <ng-select [items]="opexType.items" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Opex Item" [(ngModel)]="opexItem" (ngModelChange)="onOpexTypeSelected();" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+      </div>
+      <div class="row" *ngIf="opexPayment.opexTypeId || opexType">
+        <div class="col-md-5 form-group mb-1 pl-2 pr-2" *ngIf="!isHq">
+          <label for="roles">Offices</label>
+          <ng-select [items]="offices" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Office" [(ngModel)]="opexPayment.office" formControlName="officeId">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Service Provider</label>
+          <ng-select [items]="serviceProviders" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Service Provider" [(ngModel)]="selectedServiceProvider" formControlName="serviceProviderId" (ngModelChange)="onServiceProviderSelected()">
+          </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4 pt-1">
+          <button class="btn btn-icon btn-outline-primary btn-sm" (click)="selectedServiceProvider=null;newProviderForm=true;" *ngIf="!newProviderForm" ngbTooltip="Add New Provider"><i class="fa fa-plus"></i></button>
+        </div>
+      </div>
+      <form [formGroup]="providerForm" *ngIf="newProviderForm">
+        <div class="row">
+          <div class="col-md-6 form-group mb-1">
+            <label for="firstName">Provider Name</label>
+            <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Provider name" [(ngModel)]="serviceProvider.name">
+          </div>
+          <div class="col-md-6 form-group mb-1">
+            <label for="roles">Address</label>
+            <textarea class="form-control" id="address" formControlName="address" placeholder="Enter Provider address" [(ngModel)]="serviceProvider.address"></textarea>
+          </div>
+          <div class="col-md-3 form-group mb-1">
+            <label for="roles">Type</label>
+            <ng-select [items]="providerTypes" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Provider Type" [(ngModel)]="serviceProvider.type" formControlName="type">
+            </ng-select>
+          </div>
+          <div class="col-md-3 form-group mb-1">
+            <label for="roles">PaymentMode</label>
+            <ng-select [items]="paymentModes" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Payment Mode" bindLabel="label" bindValue="name" [(ngModel)]="serviceProvider.paymentMode" formControlName="paymentMode">
+            </ng-select>
+          </div>
+          <div class="col-md-2 form-group mb-1 mt-4 pt-1">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="serviceProvider.hasContact" [ngModelOptions]="{standalone: true}">
+              <span>Has Contact</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-2 form-group mb-1 mt-4 pt-1">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="serviceProvider.hasGst" [ngModelOptions]="{standalone: true}">
+              <span>Has GST</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-2 form-group mb-1 mt-4 pt-1">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="serviceProvider.hasTds" [ngModelOptions]="{standalone: true}">
+              <span>Has TDS</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class=" col-md-12 row" *ngIf="serviceProvider && serviceProvider.hasContact ">
+            <div class="col-md-4 form-group mb-4">
+              <label>Contact Name</label>
+              <input type="text" name="contactName" class="form-control" placeholder="Enter Contact Name" [(ngModel)]="serviceProvider.contactName" formControlName="contactName">
+            </div>
+            <div class="col-md-4 form-group mb-4">
+              <label>Contact Email</label>
+              <input type="text" name="contactEmail" class="form-control" placeholder="Enter Contact Email" [(ngModel)]="serviceProvider.contactEmail" formControlName="contactEmail">
+            </div>
+            <div class="col-md-4 form-group mb-4">
+              <label>Contact Phone</label>
+              <input type="number" name="contactPhone" class="form-control" placeholder="Enter Contact Phone" [(ngModel)]="serviceProvider.contactPhone" formControlName="contactPhone">
+            </div>
+          </div>
+          <div class=" col-md-12 row mt-1" *ngIf="serviceProvider.paymentMode=='Other'">
+            <div class="col-md-6 form-group mb-1 pl-2 pr-2">
+              <label>Additional Payment Info</label>
+              <textarea class="form-control" placeholder="Additional Payment Info" [(ngModel)]="serviceProvider.additionalPaymentInfo" [ngModelOptions]="{standalone:true}"></textarea>
+            </div>
+          </div>
+          <div class=" col-md-12 row mt-1" *ngIf="serviceProvider.paymentMode=='Online'">
+            <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+              <label>Online Portal AccountId</label>
+              <input type="text" name="portalAccountId" class="form-control" placeholder="Enter Online Portal AccountId" [(ngModel)]="serviceProvider.accountId" [ngModelOptions]="{standalone:true}">
+            </div>
+            <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+              <label>Online Portal Username</label>
+              <input type="text" name="portalUserName" class="form-control" placeholder="Enter Online Portal Username" [(ngModel)]="serviceProvider.username" [ngModelOptions]="{standalone:true}">
+            </div>
+            <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+              <label>Online Portal Password</label>
+              <input type="text" name="portalPassword" class="form-control" placeholder="Enter Online Portal Password" [(ngModel)]="serviceProvider.password" [ngModelOptions]="{standalone:true}">
+            </div>
+            <div class="col-md-5 form-group mb-1 pl-2 pr-2">
+              <label>Online Portal URL</label>
+              <input type="text" name="portalUrl" class="form-control" placeholder="Enter Online Portal URL" [(ngModel)]="serviceProvider.webUrl" [ngModelOptions]="{standalone:true}">
+            </div>
+            <div class="col-md-6 form-group mb-1 pl-2 pr-2">
+              <label>Additional Info</label>
+              <textarea class="form-control" placeholder="Additional Payment Info" [(ngModel)]="serviceProvider.info" [ngModelOptions]="{standalone:true}"></textarea>
+            </div>
+            <!-- <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+              <button class="btn btn-sm btn-ico btn-outline-info  mt-4 pt-2" ngbTooltip="Add Online Portal" (click)="addProviderPortal()">
+                <i class="fa fa-check"></i> Save
+              </button>
+            </div> -->
+          </div>
+          <div class=" col-md-12 row mt-1" *ngIf="serviceProvider.paymentMode=='BankTransfer'">
+            <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+              <label>Bank Account Number</label>
+              <input type="text" name="bankAccountNumber" class="form-control" placeholder="Enter Bank Account Number" [(ngModel)]="serviceProvider.bankAccountNumber" [ngModelOptions]="{standalone:true}">
+            </div>
+            <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+              <label>Bank IFSC Code</label>
+              <input type="text" name="bankIfscCode" class="form-control" placeholder="Enter Bank IFSC Code" [(ngModel)]="serviceProvider.bankIfscCode" [ngModelOptions]="{standalone:true}">
+            </div>
+            <div class="col-md-5 form-group mb-1 pl-2 pr-2">
+              <label>Account Holder Name</label>
+              <input type="text" name="accountHolderName" class="form-control" placeholder="Enter Bank Name" [(ngModel)]="serviceProvider.accountHolderName" [ngModelOptions]="{standalone:true}">
+            </div>
+          </div>
+          <div class="col-md-12 form-group mb-1 mt-4">
+            <button class="btn btn-sm btn-outline-danger btn-icon float-right" ngbTooltip="Cancel" (click)="newProviderForm=false;serviceProvider={};"><i class="fa fa-times"></i></button>
+            <button class="btn btn-sm btn-outline-primary btn-ico float-right" (click)="saveProvider()" [disabled]="providerForm.invalid"><i class="fa fa-check"></i> Save Provider</button>
+          </div>
+        </div>
+      </form>
+      <div class="row" *ngIf="selectedServiceProvider">
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Effective From</label>
+          <input class="form-control" placeholder="Select Effective From" [(ngModel)]="opexPayment.effectiveFrom" formControlName="effectiveFrom" name="dp" ngbDatepicker #dp="ngbDatepicker" (focus)="dp.toggle()">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">GST % </label>
+          <input type="number" class="form-control" placeholder="Enter GST%" [(ngModel)]="opexPayment.gst" formControlName="gst">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">TDS % </label>
+          <input type="number" class="form-control" placeholder="Enter TDS%" [(ngModel)]="opexPayment.tds" formControlName="tds">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="opexPayment.isAdvancePayment" [ngModelOptions]="{standalone: true}">
+            <span>Advance Payment</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Amount Type</label>
+          <ng-select [items]="['Fixed','Variable']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Amount Type" [(ngModel)]="opexPayment.amountType" formControlName="amountType">
+          </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Amount </label>
+          <input type="number" class="form-control" placeholder="Enter Bill Amount" [(ngModel)]="opexPayment.amount" formControlName="amount" [attr.disabled]="opexPayment.amountType=='Variable'?true:null">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Min Amount </label>
+          <input type="number" name="minAmount" class="form-control" placeholder="Enter Min Amount" [(ngModel)]="opexPayment.minCharge" formControlName="minCharge" [attr.disabled]="opexPayment.amountType=='Fixed'?true:null">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Max Amount </label>
+          <input type="number" name="maxAmount" class="form-control" placeholder="Enter Max Amount" [(ngModel)]="opexPayment.maxCharge" formControlName="maxCharge" [attr.disabled]="opexPayment.amountType=='Fixed'?true:null">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="opexPayment.autoPay" [ngModelOptions]="{standalone: true}">
+            <span>Auto Pay</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Start Date</label>
+          <input class="form-control" placeholder="Month Date" [(ngModel)]="opexPayment.invoiceStartDay" formControlName="invoiceStartDay" type="number">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Date</label>
+          <input class="form-control" placeholder="Month Date" [(ngModel)]="opexPayment.invoiceDay" formControlName="invoiceDay" type="number">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Due Date</label>
+          <input class="form-control" placeholder="Month Date" [(ngModel)]="opexPayment.invoiceDueDay" formControlName="invoiceDueDay" type="number">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Frequency <small>(in months)</small></label>
+          <input type="number" name="invoiceFrequency" class="form-control" placeholder="Enter Bill Frequency" [(ngModel)]="opexPayment.invoiceFrequency" formControlName="invoiceFrequency">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Remind Days</label>
+          <input type="number" name="remindBeforeDays" class="form-control" placeholder="Enter days to remind before" [(ngModel)]="opexPayment.remindBeforeDays" formControlName="remindBeforeDays">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 pl-2 pr-2 pt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="opexPayment.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <strong class="border-bottom d-b mt-2 fs-14" *ngIf="selectedServiceProvider">Payment Method</strong>
+      <div class="row" *ngIf="selectedServiceProvider">
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label class="d-b">Opted Method</label>
+          <strong>{{opexPayment.paymentMode}}</strong>
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='Online'">
+          <label>Online Portal UserName</label>
+          <input type="text" name="portalUserName" class="form-control" placeholder="Enter Online Portal Username" [(ngModel)]="opexPayment.portalUserName" formControlName="portalUserName">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='Online'">
+          <label>Online Portal Password</label>
+          <input type="text" name="portalPassword" class="form-control" placeholder="Enter Online Portal Password" [(ngModel)]="opexPayment.portalPassword" formControlName="portalPassword">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='Online'">
+          <label>Online Portal AccountId</label>
+          <input type="text" name="portalAccountId" class="form-control" placeholder="Enter Online Portal URL" [(ngModel)]="opexPayment.portalAccountId" formControlName="portalAccountId">
+        </div>
+        <div class="col-md-5 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='Online'">
+          <label>Online Portal URL</label>
+          <input type="text" name="portalUrl" class="form-control" placeholder="Enter Online Portal URL" [(ngModel)]="opexPayment.portalUrl" formControlName="portalUrl">
+        </div>
+        <div class="col-md-7 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='Online'">
+          <label>Online Portal Additional Info</label>
+          <textarea name="additionalPaymentInfo" class="form-control" placeholder="Enter Payment Info" [(ngModel)]="opexPayment.additionalPaymentInfo" formControlName="additionalPaymentInfo"></textarea>
+        </div>
+        <div class="col-md-12 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='Other'">
+          <label>Payment Additional Info</label>
+          <textarea name="additionalPaymentInfo" class="form-control" placeholder="Additional Payment Info" [(ngModel)]="opexPayment.additionalPaymentInfo" formControlName="additionalPaymentInfo"></textarea>
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='BankTransfer'">
+          <label class="d-b">Bank Account Number</label>
+          {{selectedServiceProvider.bankAccount?.accountNumber}}
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='BankTransfer'">
+          <label class="d-b">Bank IFSC Code</label>
+          {{selectedServiceProvider.bankAccount?.ifscCode}}
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-2 pr-2" *ngIf="opexPayment.paymentMode=='BankTransfer'">
+          <label class="d-b">Account Holder Name</label>
+          {{selectedServiceProvider.bankAccount?.accountHolderName}}
+        </div>
+      </div>
+      <strong class="border-bottom d-b mt-2 fs-14" *ngIf="selectedServiceProvider && selectedServiceProvider.hasContact">Contact Details</strong>
+      <div class="row" *ngIf="selectedServiceProvider && selectedServiceProvider.hasContact ">
+        <div class="col-md-4 form-group mb-4 pl-2 pr-2">
+          <label class="d-b">Name</label>
+          {{selectedServiceProvider.providerContact?.name}}
+        </div>
+        <div class="col-md-4 form-group mb-4 pl-2 pr-2">
+          <label class="d-b">Email</label>
+          {{selectedServiceProvider.providerContact?.email}}
+        </div>
+        <div class="col-md-4 form-group mb-4 pl-2 pr-2">
+          <label class="d-b">Phone</label>
+          {{selectedServiceProvider.providerContact?.phone}}
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer d-b">
+    <button class="btn btn-info btn-sm ladda-button btn-ico float-right ml-10" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()" *ngIf="!newProviderForm"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+    <button type="button" class="btn btn-outline-light float-right" (click)="modal.close(false)">Close</button>
+    <button class="btn btn-info btn-sm ladda-button btn-ico float-left" [ladda]="aprroveLoading" [disabled]="aprroveLoading" (click)="approvePayment(aprroveLoading)" *ngIf="!newProviderForm&&opexPayment.serviceProviderId && opexPayment.status=='Draft'"><i class="fa fa-check" *ngIf="!aprroveLoading"></i> Approve</button>
+    <button class="btn btn-danger btn-sm ladda-button btn-ico float-left" [ladda]="declineLoading" [disabled]="declineLoading" (click)="declinePayment(declineLoading)" *ngIf="!newProviderForm&&opexPayment.serviceProviderId && opexPayment.status=='Draft'"><i class="fa fa-check" *ngIf="!declineLoading"></i> Decline </button>
+  </div>
+</ng-template>

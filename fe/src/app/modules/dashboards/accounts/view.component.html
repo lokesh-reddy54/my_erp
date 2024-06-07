@@ -1,0 +1,226 @@
+<div class="mt-0 mb-4">
+  <div class="breadcrumb">
+    <h4 class="pull-left mb-0 mr-5">{{expensesFilters.isHq == '0'? 'Building' : 'HO'}} Expenses
+      <help-notes [context]="'Dashboards:BuildingExpenses'" [type]="'tooltip'" [placement]="'right'" class="float-right ml-5"></help-notes>
+    </h4>
+    <div class="btn-group btn-group-toggle pull-left ml-5 mr-10" data-toggle="buttons">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="expensesFilters.isHq" (ngModelChange)="hoFilterUpdated()">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="1"> HO
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="0"> Buildings
+        </label>
+      </div>
+    </div>
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-3 pr-1" *ngIf="expensesFilters.isHq=='0'">
+      <ng-select class="" [items]="buildings" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Building" [(ngModel)]="sbuildings" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildExpensesReport()"></ng-select>
+    </div>
+    <div class="col-md-3 pr-1">
+      <ng-select class="" [items]="ecats" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Expense Category" bindLabel="name" [(ngModel)]="escats" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildExpensesReport()"></ng-select>
+    </div>
+    <div class="col-md-3 pt-1" *ngIf="!escats.length">
+      <div style="width: 24px; float: left;" ngbTooltip="View Stacked Bar Graph">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="eshowStack" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildExpensesReport()">
+          <span class="d-ib mt--10"></span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+    </div>
+    <div class="col-md-3" *ngIf="escats.length==1">
+      <ng-select class="" [items]="etypes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Expense Type" [(ngModel)]="estypes" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildExpensesReport()"></ng-select>
+    </div>
+    <div class="col-md-3">
+      <input class="form-control pull-left w-100 ml-5" autocomplete="off" placeholder="PaidOn : Start Date - End Date" name="edp" id="edaterangepicker">
+      <!-- <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Clear Dates Selection" *ngIf="expensesFilters.endDate" (click)="clearExpenseDates()"><i class="fa fa-times"></i></button> -->
+    </div>
+    <div class="col-md-6 mt-1">
+      <loading [loading]="loading"></loading>
+      <div class="card  br-0 o-hidden" style="min-height: calc(100vh - 180px);">
+        <main [class]="theme">
+          <div class="chart-col">
+            <div id="col-8" style="position: absolute; top: 20px; left: 10px; right: 10px; bottom: 10px;">
+              <ngx-charts-bar-vertical-stacked class="chart-container" [view]="view" [scheme]="colorScheme" [schemeType]="schemeType" [results]="expensesGraphData" [animations]="animations" [gradient]="gradient" [tooltipDisabled]="tooltipDisabled" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="eshowLegend" [legendTitle]="legendTitle" [legendPosition]="legendPosition" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Month'" [yAxisLabel]="'Amount'" [showGridLines]="showGridLines" [barPadding]="ebarPadding" [roundDomains]="roundDomains" [yScaleMax]="yScaleMax" [noBarWhenZero]="noBarWhenZero" [showDataLabel]="showDataLabel" [trimXAxisTicks]="trimXAxisTicks" [trimYAxisTicks]="trimYAxisTicks" [rotateXAxisTicks]="rotateXAxisTicks" [maxXAxisTickLength]="maxXAxisTickLength" [maxYAxisTickLength]="maxYAxisTickLength" (select)="onSelect($event)"></ngx-charts-bar-vertical-stacked>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="col-md-6 mt-1 pl-0" *ngIf="expensesFilters.isHq=='0'">
+      <loading [loading]="loading"></loading>
+      <div class="card  br-0 o-hidden" style="min-height: calc(100vh - 180px);">
+        <main [class]="theme">
+          <div class="chart-col" id="col-4">
+            <div style="position: absolute; top: 20px; left: 10px; right: 10px; bottom: 10px;">
+              <!-- <h4 class="text-center">Cost per SqFt</h4> -->
+              <ngx-charts-line-chart *ngIf="col4Height" [view]="[col4Width,col4Height]" class="chart-container" [scheme]="colorScheme" [schemeType]="schemeType" [results]="sqftExpenses" [animations]="animations" [legend]="showLegend" [legendTitle]="legendTitle" [legendPosition]="'below'" [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Month'" [yAxisLabel]="'Cost per SqFt'" [autoScale]="autoScale" [xScaleMin]="xScaleMin" [xScaleMax]="xScaleMax" [yScaleMin]="yScaleMin" [yScaleMax]="yScaleMax" [timeline]="timeline" [showGridLines]="showGridLines" [curve]="curve" [rangeFillOpacity]="rangeFillOpacity" [roundDomains]="roundDomains" [tooltipDisabled]="tooltipDisabled" [trimXAxisTicks]="trimXAxisTicks" [trimYAxisTicks]="trimYAxisTicks" [rotateXAxisTicks]="rotateXAxisTicks" [maxXAxisTickLength]="maxXAxisTickLength" [maxYAxisTickLength]="maxYAxisTickLength">
+              </ngx-charts-line-chart>
+            </div>
+            <div class="w-50 p-1  pl-2 fs-11 float-left">Live Carpet Area : <strong>{{ecarpetArea | num}}</strong> SqFt</div>
+            <div class="w-50 p-1 fs-11 float-left">Live Super Built Area : <strong>{{esba | num}}</strong> SqFt</div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mt-0 mb-4">
+  <div class="breadcrumb">
+    <h4 class="pull-left mb-0">Revenue
+      <help-notes [context]="'Dashboards:ProductRevenue'" [type]="'tooltip'" [placement]="'right'" class="float-right ml-5"></help-notes>
+    </h4>
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-3 pr-1">
+      <ng-select class="" [items]="rbuildings" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Building" [(ngModel)]="rsbuildings" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildRevenueReport()"></ng-select>
+    </div>
+    <div class="col-md-3 pl-0 pr-1">
+      <ng-select class="" [items]="rcats" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Invoice Category" bindLabel="name" [(ngModel)]="rscats" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildRevenueReport()"></ng-select>
+    </div>
+    <div class="col-md-3 pt-1" *ngIf="!rscats.length">
+      <div style="width: 24px; float: left;" ngbTooltip="View Stacked Bar Graph">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="rshowStack" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildRevenueReport()">
+          <span class="d-ib mt--10"></span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+    </div>
+    <div class="col-md-3 pl-0" *ngIf="rscats.length==1">
+      <ng-select class="" [items]="rtypes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Invoice Type" [(ngModel)]="rstypes" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildRevenueReport()"></ng-select>
+    </div>
+    <div class="col-md-3">
+      <input class="form-control pull-left w-100 ml-5" autocomplete="off" placeholder="InvoiceDate : Start Date - End Date" name="rdp" id="rdaterangepicker">
+      <!-- <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Clear Dates Selection" *ngIf="revenueFilters.endDate" (click)="clearRevenueDates()"><i class="fa fa-times"></i></button> -->
+    </div>
+    <div class="col-md-6 mt-1">
+      <loading [loading]="loading"></loading>
+      <div class="card  br-0 o-hidden" style="min-height: calc(100vh - 180px);">
+        <main [class]="theme">
+          <div class="chart-col">
+            <div style="position: absolute; top: 20px; left: 10px; right: 10px; bottom: 10px;">
+              <ngx-charts-bar-vertical-stacked class="chart-container" [view]="view" [scheme]="colorScheme" [schemeType]="schemeType" [results]="multi" [animations]="animations" [gradient]="gradient" [tooltipDisabled]="tooltipDisabled" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="rshowLegend" [legendTitle]="legendTitle" [legendPosition]="legendPosition" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Months'" [yAxisLabel]="'Amount'" [showGridLines]="showGridLines" [barPadding]="rbarPadding" [roundDomains]="roundDomains" [yScaleMax]="yScaleMax" [noBarWhenZero]="noBarWhenZero" [showDataLabel]="showDataLabel" [trimXAxisTicks]="trimXAxisTicks" [trimYAxisTicks]="trimYAxisTicks" [rotateXAxisTicks]="rotateXAxisTicks" [maxXAxisTickLength]="maxXAxisTickLength" [maxYAxisTickLength]="maxYAxisTickLength" (select)="onSelect($event)"></ngx-charts-bar-vertical-stacked>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="col-md-6 mt-1 pl-0">
+      <loading [loading]="loading"></loading>
+      <div class="card  br-0 o-hidden" style="min-height: calc(100vh - 180px);">
+        <main [class]="theme">
+          <div class="chart-col">
+            <div style="position: absolute; top: 20px; left: 10px; right: 10px; bottom: 10px;">
+              <!-- <h4 class="text-center">Revenue per SqFt</h4> -->
+              <ngx-charts-line-chart [view]="[col4Width,col4Height]" class="chart-container" [scheme]="colorScheme" [schemeType]="schemeType" [results]="sqftRevenue" [animations]="animations" [legend]="showLegend" [legendTitle]="legendTitle" [legendPosition]="'below'" [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="'showXAxisLabel'" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Month'" [yAxisLabel]="'Revenue per SqFt'" [autoScale]="autoScale" [xScaleMin]="xScaleMin" [xScaleMax]="xScaleMax" [yScaleMin]="yScaleMin" [yScaleMax]="yScaleMax" [timeline]="timeline" [showGridLines]="showGridLines" [curve]="curve" [rangeFillOpacity]="rangeFillOpacity" [roundDomains]="roundDomains" [tooltipDisabled]="tooltipDisabled" [trimXAxisTicks]="trimXAxisTicks" [trimYAxisTicks]="trimYAxisTicks" [rotateXAxisTicks]="rotateXAxisTicks" [maxXAxisTickLength]="maxXAxisTickLength" [maxYAxisTickLength]="maxYAxisTickLength">
+              </ngx-charts-line-chart>
+            </div>
+            <div class="w-50 p-1 pl-2 fs-11 float-left">Carpet Area : <strong>{{rcarpetArea | num}}</strong> SqFt</div>
+            <div class="w-50 p-1 fs-11 float-left">Super Built Area : <strong>{{rsba | num}}</strong> SqFt</div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mt-0 mb-4">
+  <div class="breadcrumb">
+    <h4 class="pull-left mb-0">Profit and Loss
+      <help-notes [context]="'Dashboards:ProfitandLoss'" [type]="'tooltip'" [placement]="'right'" class="float-right ml-5"></help-notes>
+    </h4>
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-6 pr-1">
+      <ng-select class="" [items]="plbuildings" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Building" [(ngModel)]="plsbuildings" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildProfitLossReport()"></ng-select>
+    </div>
+    <div class="col-md-6">
+      <input class="form-control pull-left w-50 ml-5" autocomplete="off" placeholder="InvoiceDate : Start Date - End Date" name="pldp" id="pldaterangepicker">
+    </div>
+    <div class="col-md-6 mt-1">
+      <loading [loading]="loading"></loading>
+      <div class="card  br-0 o-hidden" style="min-height: calc(100vh - 180px);">
+        <main [class]="theme">
+          <div class="chart-col">
+            <div style="position: absolute; top: 20px; left: 10px; right: 10px; bottom: 10px;">
+              <ngx-charts-bar-vertical-2d class="chart-container" [view]="view" [scheme]="colorScheme" [schemeType]="schemeType" [results]="plGraphData" [animations]="animations" [gradient]="gradient" [tooltipDisabled]="tooltipDisabled" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="rshowLegend" [legendTitle]="legendTitle" [legendPosition]="legendPosition" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Months'" [yAxisLabel]="'Amount'" [showGridLines]="showGridLines" [barPadding]="plbarPadding" [roundDomains]="roundDomains" [yScaleMax]="yScaleMax" [noBarWhenZero]="noBarWhenZero" [showDataLabel]="showDataLabel" [trimXAxisTicks]="trimXAxisTicks" [trimYAxisTicks]="trimYAxisTicks" [rotateXAxisTicks]="rotateXAxisTicks" [maxXAxisTickLength]="maxXAxisTickLength" [maxYAxisTickLength]="maxYAxisTickLength" (select)="onSelect($event)"></ngx-charts-bar-vertical-2d>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="col-md-6 mt-1 pl-0">
+      <loading [loading]="loading"></loading>
+      <div class="card  br-0 o-hidden" style="min-height: calc(100vh - 180px);">
+        <main [class]="theme">
+          <div class="chart-col">
+            <div style="position: absolute; top: 20px; left: 10px; right: 10px; bottom: 10px;">
+              <!-- <h4 class="text-center">Revenue per SqFt</h4> -->
+              <ngx-charts-line-chart [view]="[col4Width,col4Height]" class="chart-container" [scheme]="colorScheme" [schemeType]="schemeType" [results]="sqftProfitLoss" [animations]="animations" [legend]="showLegend" [legendTitle]="legendTitle" [legendPosition]="'below'" [gradient]="gradient" [xAxis]="showXAxis" [yAxis]="showYAxis" [showXAxisLabel]="'showXAxisLabel'" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Month'" [yAxisLabel]="'Revenue per SqFt'" [autoScale]="autoScale" [xScaleMin]="xScaleMin" [xScaleMax]="xScaleMax" [yScaleMin]="yScaleMin" [yScaleMax]="yScaleMax" [timeline]="timeline" [showGridLines]="showGridLines" [curve]="curve" [rangeFillOpacity]="rangeFillOpacity" [roundDomains]="roundDomains" [tooltipDisabled]="tooltipDisabled" [trimXAxisTicks]="trimXAxisTicks" [trimYAxisTicks]="trimYAxisTicks" [rotateXAxisTicks]="rotateXAxisTicks" [maxXAxisTickLength]="maxXAxisTickLength" [maxYAxisTickLength]="maxYAxisTickLength">
+              </ngx-charts-line-chart>
+            </div>
+            <div class="w-50 p-1 pl-2 fs-11 float-left">Carpet Area : <strong>{{plcarpetArea | num}}</strong> SqFt</div>
+            <div class="w-50 p-1 fs-11 float-left">Super Built Area : <strong>{{plsba | num}}</strong> SqFt</div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mt-0 mb-4">
+  <div class="breadcrumb">
+    <h4 class="pull-left mb-0">Projects Capex
+      <help-notes [context]="'Dashboards:ProjectCapex'" [type]="'tooltip'" [placement]="'right'" class="float-right ml-5"></help-notes>
+    </h4>
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-3 pr-1">
+      <ng-select class="" [items]="projects" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Project" [(ngModel)]="sprojects" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildCapexReport()"></ng-select>
+    </div>
+    <div class="col-md-3 pl-0 pr-1">
+      <ng-select class="" [items]="cats" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select SKU Category" bindLabel="name" [(ngModel)]="scats" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildCapexReport()"></ng-select>
+    </div>
+    <div class="col-md-3 pt-1" *ngIf="!scats.length">
+      <div style="width: 24px; float: left;" ngbTooltip="View Stacked Bar Graph">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="cshowStack" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildCapexReport()">
+          <span class="d-ib mt--10"></span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+    </div>
+    <div class="col-md-3 pl-0" *ngIf="scats.length==1">
+      <ng-select class="" [items]="types" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select SKU Type" [(ngModel)]="stypes" [ngModelOptions]="{standalone: true}" (ngModelChange)="buildCapexReport()"></ng-select>
+    </div>
+    <div class="col-md-3">
+      <input class="form-control pull-left w-100 ml-5" autocomplete="off" placeholder="PaidOn : Start Date - End Date" name="cdp" id="cdaterangepicker">
+      <!-- <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Clear Dates Selection" *ngIf="capexFilters.endDate" (click)="clearCapexDates()"><i class="fa fa-times"></i></button> -->
+    </div>
+    <div class="col-md-12 mt-1">
+      <loading [loading]="loading"></loading>
+      <div class="card  br-0 o-hidden" style="min-height: calc(100vh - 180px);">
+        <main [class]="theme">
+          <div class="chart-col" id="chart-col">
+            <div style="position: absolute; top: 20px; left: 10px; right: 10px; bottom: 10px;">
+              <ngx-charts-bar-vertical-stacked class="chart-container" [view]="view" [scheme]="colorScheme" [schemeType]="schemeType" [results]="capexGraphData" [animations]="animations" [gradient]="gradient" [tooltipDisabled]="tooltipDisabled" [xAxis]="showXAxis" [yAxis]="showYAxis" [legend]="cshowLegend" [legendTitle]="legendTitle" [legendPosition]="legendPosition" [showXAxisLabel]="showXAxisLabel" [showYAxisLabel]="showYAxisLabel" [xAxisLabel]="'Project'" [yAxisLabel]="'Amount'" [showGridLines]="showGridLines" [barPadding]="barPadding" [roundDomains]="roundDomains" [yScaleMax]="yScaleMax" [noBarWhenZero]="noBarWhenZero" [showDataLabel]="showDataLabel" [trimXAxisTicks]="trimXAxisTicks" [trimYAxisTicks]="trimYAxisTicks" [rotateXAxisTicks]="rotateXAxisTicks" [maxXAxisTickLength]="maxXAxisTickLength" [maxYAxisTickLength]="maxYAxisTickLength" (select)="onSelect($event)"></ngx-charts-bar-vertical-stacked>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>

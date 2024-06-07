@@ -1,0 +1,84 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Revenue Invoices Report</h4>
+    <input type="text" class="form-control w-30 ml-4 float-left" placeholder="Search by Client Name" [(ngModel)]="searchClient" (ngModelChange)="loadData()">
+    <div class="clear"></div>
+    <!-- <help-notes [context]="'Reports:RevenueOverAll'"></help-notes> -->
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="card">
+    <loading [loading]="loading"></loading>
+    <div class="card-body pt-1">
+      <div class="float-right text-right pt-1">
+        <button class="btn btn-ico btn-sm btn-outline-primary" (click)="downloadInvoices()"><i class="fa fa-download"></i> Download Invoices</button>
+      </div>
+      <ngb-tabset class="nav-center" [activeId]="currentMonth.id">
+        <ngb-tab *ngFor="let month of months" id="{{month.id}}">
+          <ng-template ngbTabTitle>
+            <div (click)="currentMonth=month;loadData();">{{month.title}}</div>
+          </ng-template>
+          <ng-template ngbTabContent>
+            <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+            <div class="table-responsive pl-0 pr-0 row  border-bottom" style="overflow: hidden;">
+              <div class=" col-12 table mr-0 pr-0 pb-1 border-bottom">
+                <div class="row">
+                  <div class="cell f-b p-1 pl-0 pr-1 w-100">
+                    <span class="w-25 d-b float-left">Client</span>
+                    <span class="w-15 d-b float-left text-right">GST No</span>
+                    <span class="w-15 d-b float-left text-right">Pan No</span>
+                    <span class="w-10 d-b float-left text-right">Taxable Amount</span>
+                    <span class="w-10 d-b float-left text-right">GST</span>
+                    <span class="w-10 d-b float-left text-right">TDS</span>
+                    <span class="w-10 d-b float-left text-right">Total</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 pr-0 pb-1 border-bottom" *ngFor="let client of month.clients;let bi=index;">
+                <div class="row">
+                  <div class="cell p-1 pl-0 pr-1 w-100">
+                    <span class="w-25 d-b float-left f-b">{{client.client}}</span>
+                    <span class="w-15 d-b float-left text-right">{{client.gstNo || '-'}}</span>
+                    <span class="w-15 d-b float-left text-right">{{client.panNo || '-'}}</span>
+                    <span class="w-10 d-b float-left text-right" *ngIf="client.invoices.length>1">{{client.taxableAmount | inr}}</span>
+                    <span class="w-10 d-b float-left text-right" *ngIf="client.invoices.length>1">{{client.gst | inr}}</span>
+                    <span class="w-10 d-b float-left text-right" *ngIf="client.invoices.length>1">{{client.tds | inr}}</span>
+                    <span class="w-10 d-b float-left text-right" *ngIf="client.invoices.length>1">{{client.total | inr}}</span>
+                  </div>
+                </div>
+                <div *ngFor="let invoice of client.invoices;">
+                  <div class="row  border-bottom">
+                    <div class="cell p-1 pl-0 pr-1 w-100">
+                      <span class="w-35 d-b float-left">
+                        <span class="text-left" *ngIf="invoice.items.length>1"> &nbsp; </span>
+                        <span class="text-left" *ngIf="invoice.items.length==1" [innerHTML]="invoice.items[0].item"></span>
+                      </span>
+                      <span class="w-10 d-b float-left f-b"><a [href]="invoice.file" target="_blank">{{invoice.refNo}}</a></span>
+                      <span class="w-10 d-b float-left text-right" *ngIf="invoice.items.length>1">{{invoice.date | date : 'MMM dd, yyyy'}}</span>
+                      <span class="w-10 d-b float-left text-right" *ngIf="invoice.items.length==1">{{invoice.items[0].sacCode}}</span>
+                      <span class="w-10 d-b float-left text-right">{{invoice.taxableAmount | inr}}</span>
+                      <span class="w-10 d-b float-left text-right">{{invoice.gst | inr}}</span>
+                      <span class="w-10 d-b float-left text-right">{{invoice.tds | inr}}</span>
+                      <span class="w-10 d-b float-left text-right">{{invoice.invoiceAmount | inr}}</span>
+                    </div>
+                  </div>
+                  <div *ngIf="invoice.items.length>1" class="row border-bottom">
+                    <div class="cell p-1 pl-0 pr-1 w-100" *ngFor="let item of invoice.items">
+                      <span class="w-45 d-b float-left" [innerHTML]="item.item"></span>
+                      <span class="w-10 d-b float-left text-right">{{item.sacCode}}</span>
+                      <span class="w-10 d-b float-left text-right">{{item.taxableAmount | inr}}</span>
+                      <span class="w-10 d-b float-left text-right">{{item.gst | inr}}</span>
+                      <span class="w-10 d-b float-left text-right">{{item.tds | inr}}</span>
+                      <span class="w-10 d-b float-left text-right">{{item.invoiceAmount | inr}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="clear"></div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+</div>

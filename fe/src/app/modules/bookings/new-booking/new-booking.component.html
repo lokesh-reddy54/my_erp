@@ -1,0 +1,436 @@
+<div #bookingModal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title float-left" id="modal-basic-title">New Booking</h4>
+    <div [hidden]="true" class="btn-group btn-group-toggle float-left ml-3" data-toggle="buttons">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="contract.term">
+        <label ngbButtonLabel class="btn btn-ligh btn-sm">
+          <input ngbButton type="radio" value="LongTerm"> LongTerm
+        </label>
+        <label ngbButtonLabel class="btn btn-ligh btn-sm">
+          <input ngbButton type="radio" value="ShortTerm"> ShortTerm
+        </label>
+      </div>
+    </div>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <loading [loading]="loading"></loading>
+    <div class="row p-2 ml-0 mr-0 mt--10" *ngIf="!selectedOfficeId">
+      <div class="form-group p-1 col-md-2">
+        <label for="roles">Select Product Type</label>
+        <ng-select [items]="deskTypes" [hideSelected]="true" placeholder="Select Product Type" [(ngModel)]="selectedDeskType" [ngModelOptions]="{standalone: true}" bindLabel="name"> </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="selectedDeskType?.frequencies">
+        <label for="roles">Frequency</label>
+        <ng-select [items]="selectedDeskType?.frequencies" [hideSelected]="true" placeholder="Select Frequency" [(ngModel)]="contract.frequency" [ngModelOptions]="{standalone: true}"> </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-3" *ngIf="selectedDeskType?.types">
+        <label for="roles">Office Type</label>
+        <ng-select [items]="selectedDeskType?.types" [hideSelected]="true" placeholder="Select Office Type" [(ngModel)]="selectedOfficeType" [ngModelOptions]="{standalone: true}" bindLabel="name" (ngModelChange)="updateInclusions()"> </ng-select>
+      </div>
+      <!--       <div class="form-group p-1 pt-0 mt--10 col-md-1">
+        <label for="roles">Need Private Cabin ..
+          <help-notes [context]="'Booking:PrivateCabin'" [type]="'tooltip'"></help-notes></label>
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="contract.isPrivate" (ngModelChange)="searchOffices()" [ngModelOptions]="{standalone: true}">
+          <span>Yes</span>
+          <span class="checkmark"></span>
+        </label>
+      </div> -->
+      <div class="form-group p-1 col-md-1" *ngIf="selectedDeskType?.type=='FlexiDesk' || selectedDeskType?.type=='FixedDesk' || selectedDeskType?.type=='PrivateOffice'">
+        <label for="roles">No of Desks</label>
+        <input type="number" class="form-control" placeholder="Desks No" [(ngModel)]="booking.desks" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchOffices()" />
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="booking.desks || (selectedDeskType?.type=='EnterpriseOffice'&& selectedOfficeType) || (selectedDeskType?.type=='VirtualOffice')">
+        <label for="roles">Start Date</label>
+        <input placeholder="Select Start Date" class="form-control" name="dp" (dateSelect)="dp.close()" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="booking.startDate" [ngModelOptions]="{standalone: true}" (focus)="dp.toggle()" (ngModelChange)="searchOffices()" />
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="(selectedDeskType?.type=='VirtualOffice' || (selectedOfficeType?.type=='DayPasses' && booking.startDate))">
+        <label for="roles">End Date</label>
+        <input placeholder="Select End Date" class="form-control" name="dpe" (dateSelect)="dpe.close()" ngbDatepicker #dpe="ngbDatepicker" [(ngModel)]="booking.endDate" [ngModelOptions]="{standalone: true}" (focus)="dpe.toggle()" (ngModelChange)="searchOffices()" [minDate]="minDate" />
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="(contract.term!='ShortTerm'&&booking.startDate)||(contract.term=='ShortTerm'&&booking.endDate)">
+        <label for="roles">Select Country</label>
+        <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (change)="onCountrySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="booking.startDate&&selectedCountry?.id">
+        <label for="roles">Select City</label>
+        <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (change)="onCitySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="selectedCity?.id">
+        <label for="roles">Select Location</label>
+        <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (change)="searchOffices()">
+        </ng-select>
+      </div>
+      <div class="col-md-12 form-group mb-1 p-1" *ngIf="selectedOfficeType?.inclusions">
+        <h5 class="pull-left">Inclusions </h5> - <span>Below are the inclusions in your contract</span>
+        <div class="row">
+          <div class="col-md-2 form-group mb-1" *ngFor="let inclusion of selectedOfficeType.inclusions">
+            <label class="checkbox checkbox-success" *ngIf="inclusion.label">
+              <input type="checkbox" [checked]="'true'" [disabled]="'true'">
+              <span class="text-dark">{{inclusion.label}}</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12 form-group mb-1 p-1" *ngIf="selectedOfficeServices?.length">
+        <h5 class="pull-left">Services </h5> - <span>Below are the services included in your contract, please select desired services</span>
+        <div class="row">
+          <div class="col-md-2 form-group mb-1" *ngFor="let service of selectedOfficeServices">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="service.selected" [disabled]="service.default" [ngModelOptions]="{standalone: true}">
+              <span class="text-dark">{{service.label}}</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!--  -->
+    <div class="row" *ngIf="buildings.length>0 && !selectedBuilding">
+      <!-- Building Location Map -->
+      <div class="col-6" *ngIf="isMapReady && selectedOfficeType?.type!='DayPasses'">
+        <agm-map [latitude]="lat" [longitude]="lng" [zoom]="14">
+          <agm-marker *ngFor="let marker of markers" [label]="marker.label" [latitude]="marker.lat" [longitude]="marker.lng" [opacity]="marker.alpha" [animation]="marker.animation" [markerDraggable]="false" (mouseOut)="markerOut(marker)" (mouseOver)="markerOver(marker)">
+          </agm-marker>
+        </agm-map>
+      </div>
+
+      <div class="col-6">
+        <span class="text-secondary d-ib p-1 fs-16">Total <strong>{{buildings.length}} buildings</strong> are found for above criteria.</span>
+        <div class="tableBodyScroll cabins" style="height: calc(300px - 30px);overflow-y: auto;">
+          <div class="hot-desk card p-2 m-1 cursor" (click)="selectedBuilding=building; offices= selectedBuilding.offices" [ngClass]="{'selected':building.selected}" *ngFor="let building of buildings" (mouseenter)="hoverBuilding(building, true)" (mouseleave)="hoverBuilding(building, false)">
+            <div>
+              <span class="mb-1 fs-14 w-70 d-ib">{{building.name}}</span>
+              <span class="w-30 d-ib"><span class="badge badge-light text-white float-right">{{building.location}}</span></span>
+            </div>
+
+            <!--  -->
+            <div *ngIf="selectedDeskType?.type=='EnterpriseOffice'">
+              <p class="mb-0 fs-10">{{building.address}}</p>
+              <span class="d-ib w-50">
+                <span class="text-secondary">Total Area : </span> <span class="text-primary f-b">{{building.carpetArea}}</span>
+              </span>
+              <span class="text-secondary">Available Area : </span> <span class="text-info f-b">{{building.availableArea}}</span>
+            </div>
+            <!--  -->
+
+            <!--  -->
+            <div *ngIf="selectedDeskType?.type!='EnterpriseOffice'">
+              <p class="mb-0 fs-10">{{building.address}}</p>
+              <span class="d-ib w-50">
+                <span class="text-secondary">Total Desks : </span> <span class="text-primary f-b">{{building.total}}</span>
+              </span>
+              <span class="text-secondary">Available Desks : </span> <span class="text-info f-b">{{building.available}}</span>
+            </div>
+            <!--  -->
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--  -->
+
+
+    <!-- Total Floors availability for the Selected Building Start -->
+    <div *ngIf="selectedBuilding && (selectedOfficeType?.type!='DayPasses')">
+      <span class="text-secondary d-ib w-50 p-1 fs-16">Total <strong>{{selectedBuilding.offices.length}} floors</strong> are there in '{{selectedBuilding.name}}'.
+        <button class="btn btn-sm btn-icon ml-1 cursor" ngbTooltip="Click to Cancel Building Selection" (click)="selectedBuilding=null;"><i class="fa fa-times"></i> </button>
+      </span>
+
+      <!-- Availability color Codes Start -->
+      <span class="d-ib pull-right" *ngIf="selectedDeskType.type!='EnterpriseOffice'">
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-primary" ngbTooltip="Selected"></div>
+        </div>
+        <div class="pull-left mr-10">Selected </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-success" ngbTooltip="Available"></div>
+        </div>
+        <div class="pull-left mr-10">Available </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-warning" ngbTooltip="Will be Available"></div>
+        </div>
+        <div class="pull-left mr-10">Will be available in few days </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-light" ngbTooltip="Booked"></div>
+        </div>
+        <div class="pull-left mr-10">Booked </div>
+      </span>
+      <!-- Availability color Codes End -->
+
+    </div>
+    <div *ngIf="selectedBuilding && (selectedOfficeType?.type=='DayPasses')">
+      <span class="text-secondary d-ib w-50 p-1 fs-16"><strong>Selected Building for DayPasses : '{{selectedBuilding.name}}'</strong> 
+        <button class="btn btn-sm btn-icon ml-1 cursor" ngbTooltip="Click to Cancel Building Selection" (click)="selectedBuilding=null;"><i class="fa fa-times"></i> </button>
+      </span>
+    </div>
+    <!-- Total Floors availability for the Selected Building End -->
+
+
+    <!-- Selected Building Floor wise availability information Start  -->
+    <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0" [closeOthers]="true" *ngIf="(selectedOfficeType?.type!='DayPasses')">
+      <ngb-panel *ngFor="let office of selectedBuilding?.offices;let i=index;">
+
+        <!---------------------- Floor Header Start ------------------------>
+        <ng-template ngbPanelTitle>
+          <div *ngIf="selectedDeskType.type=='EnterpriseOffice'">
+            <span class="pull-left d-ib">{{office.name}} </span>
+            <span class="pull-right d-ib"> Available Area : {{office.availableArea}} sqft / {{office.carpetArea}} sqft </span>
+            <span class="pull-right d-ib mr-50"> Cabins : {{office.cabins.length}}</span>
+          </div>
+          <div *ngIf="selectedDeskType.type!='EnterpriseOffice'">
+            <span class="pull-left d-ib">{{office.name}} </span>
+            <span class="pull-right d-ib"> Desks : {{office.available}} available / {{office.total}} total </span>
+            <span class="pull-right d-ib mr-50"> Cabins : {{office.cabins.length}}</span>
+            <span class="pull-right d-ib mr-50"> Selected : {{desks.length}} out of {{booking.desks}} desks</span>
+          </div>
+        </ng-template>
+        <!---------------------- Floor Header End ------------------------>
+
+
+        <!-- Cabins -->
+        <ng-template ngbPanelContent >
+          <div class="row p-1 cabins">
+            <div class="row" [ngClass]="{'col-4 ml-0 hot-desk cursor':selectedDeskType=='FlexiDesk','col-12':selectedDeskType!='FlexiDesk'}" *ngFor="let cabin of office.cabins">
+              <div class="card p-2 m-1" [ngClass]="{'col-12':selectedDeskType=='FlexiDesk','col-3':selectedDeskType!='FlexiDesk'||selectedDeskType.type=='EnterpriseOffice','selected':cabin.selected}">
+                
+                <!--  -->
+                <div *ngIf="selectedDeskType.type=='EnterpriseOffice'" class="cursor" (click)="selectCabin(office, cabin)">
+                  <h5 class="item-title mb-1">{{cabin.name}}</h5>
+                  <span class="d-ib w-140">
+                    <div >
+                      <span class="pull-left">
+                        <span class="text-secondary">Total Area : </span> <span class="text-primary">{{cabin.totalArea}} SqFt</span>
+                      </span>
+                      <span class="pull-right">
+                        <span class="text-secondary">Used Area : </span> <span class="text-info">{{cabin.usedArea}}</span>
+                      </span>
+                    </div>
+                    <div >
+                      <span class="pull-left">
+                        <span class="text-secondary">Available Area : </span> <span class="text-info">{{cabin.totalArea - cabin.usedArea}} SqFt</span>
+                      </span>
+                      <span class="pull-right">
+                        <span class="text-secondary">Total Desks : </span> <span class="text-info">{{cabin.total}}</span>
+                      </span>
+                  </div>
+                  </span>
+                </div>
+                <!--  -->
+
+                <!--  -->
+                <div *ngIf="selectedDeskType.type!='EnterpriseOffice'">
+                  <h5 class="item-title mb-1 d-ib">{{cabin.name}}</h5>
+                  <button class="btn btn-sm btn-icon float-right" *ngIf="cabin.available && !cabin.selectedAll" (click)="selectAllDesks(cabin, true)" ngbTooltip="Select All Desks"><i class="fa fa-check-square-o"></i></button>
+                  <button class="btn btn-sm btn-icon float-right" *ngIf="cabin.selectedAll" (click)="selectAllDesks(cabin, false)" ngbTooltip="UnSelect All Desks"><i class="fa fa-check-square"></i></button>
+                  <div class="clear"></div>
+                  <span class="d-ib w-50">
+                    <span class="text-secondary">Total Desks : </span> <span class="text-primary">{{cabin.total}}</span>
+                  </span>
+                  <span class="text-secondary">Available Desks : </span> <span class="text-info">{{cabin.available}}</span>
+                </div>
+                <!--  -->
+
+                <div *ngIf="cabin.price">
+                  <span class="text-secondary d-ib w-50">Price per desk : </span> <span class="text-info">{{cabin.price | inr}}</span>
+                </div>
+                <div *ngIf="cabin.minPrice && cabin.maxPrice">
+                  <span class="d-ib w-50">
+                    <span class="text-secondary">Price Range : </span>
+                  </span>
+                  <span class="text-primary">{{cabin.minPrice | inr}}</span> - <span class="text-primary">{{cabin.maxPrice | inr}}</span>
+                </div>
+              </div>
+
+              <!--  -->
+              <div class="col-9 row" [ngClass]="{'d-none':selectedDeskType=='FlexiDesk'}">
+                <div class="desk pull-left card m-1" *ngFor="let desk of cabin.desks;let i=index;" (click)="selectDesk(desk)" [ngClass]="{'selected':desk.selected}">
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-success" *ngIf="desk.status=='Available'" ngbTooltip="{{desk.name}}">{{i+1}}</div>
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-warning" *ngIf="desk.status=='Releasing'" ngbTooltip="Available from {{desk.releaseDate}}">{{i+1}}</div>
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-light" *ngIf="desk.status=='Booked'||desk.status=='InUse'" ngbTooltip="Booked">{{i+1}}</div>
+                </div>
+              </div>
+              <!--  -->
+
+            </div>
+          </div>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+    <!-- Selected Building Floor wise availability information End  -->
+
+
+
+
+    <!-- Selected Cabins and Facilities setails Start  -->
+    <div *ngIf="selectedDeskType?.type!='EnterpriseOffice' && selectedOffices.length && selectedOfficeType?.type!='DayPasses'" class="mt-20">
+      <h5 class="pull-left">Selected Cabins </h5> - <span>Please review your cabin selection and select facilities to update effective price accordingly</span>
+      <div *ngFor="let office of selectedOffices;" style="border-bottom: 1px solid #82A0DF;padding-top: 10px;">
+        <p class="mb-1"><strong>{{office.office}}</strong></p>
+        <div *ngFor="let cabin of office.cabins;" class="row p-1 ml-0">
+          <div class="col-3 card p-2">
+            <h5 class="item-title mb-1">{{cabin.deskType}}</h5>
+            <span class="text-primary">{{cabin.names}}</span>
+          </div>
+          <div class="col-5 p-1 pl-3" *ngIf="contract.id">
+            <strong>Facilities : </strong>
+            <span class="text-primary">{{facilities}}</span>
+          </div>
+          <div class="col-5 p-1" *ngIf="!contract.id">
+            <ng-select [items]="cabin.pricings" [hideSelected]="true" placeholder="Select Facilities" [(ngModel)]="cabin.value" [ngModelOptions]="{standalone: true}" [bindLabel]="'facilities'" [bindValue]="'value'" (change)="updateBookingPrice()"> </ng-select>
+          </div>
+          <div class="col-2 p-1 pl-3" style="max-width: 12% !important">
+            <div>No of Desks : {{cabin.desksCount}}</div>
+            <div *ngIf="cabin.price">Price : {{cabin.price | inr}}</div>
+          </div>
+          <div class="col-1 p-1" *ngIf="contract.id">
+            <div>Total : <strong>{{totalBookingPrice | inr}}</strong></div>
+          </div>
+          <div class="col-1 p-1" *ngIf="cabin.price">
+            <div>Total : <strong>{{cabin.price*cabin.desksCount | inr}}</strong></div>
+          </div>
+          <div class="col-1 p-1" *ngIf="cabin.price">
+            <div>Final Discount<input type="number" class="form-control" placeholder="Final Discount" [(ngModel)]="contract.discount" [ngModelOptions]="{standalone: true}" /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Selected Cabins and Facilities details end  -->
+
+    <form [formGroup]="GSTSearchGroup" *ngIf="(selectedOffices.length && totalBookingPrice>0) || selectedCabins.length || (selectedOfficeType?.type=='DayPasses' && selectedBuilding)">
+      <div class="row pt-3">
+        <div class="col-md-6">
+          <h5 class="pull-left">Client Details </h5> - <span>Please enter accurate and valid client details</span>
+        </div>      
+        <div class="col-md-6" [formGroup]="GSTSearchGroup">
+        <input type="text" class="form-control w-80 d-ib mr-2" id="GSTNo" placeholder="Search Client Using GST Number to Autofill Client Form" [formGroup]="GSTSearchGroup" formControlName="GSTNo" [(ngModel)]="clientGST.GSTNo">
+        <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" *ngIf="clientGST.GSTNo"  (click)="GSTInfoSearch()"><i class="fa fa-check" *ngIf="!loading"></i> Search</button>
+        <span *ngIf="searching" class="pl-1"><i class="fa fa-spinner fa-spin"></i></span>
+      </div>
+      </div>
+
+  </form>
+    <!-- Client and Contract information Start  -->
+    <form [formGroup]="form" *ngIf="(selectedOffices.length && totalBookingPrice>0) || selectedCabins.length || (selectedOfficeType?.type=='DayPasses' && selectedBuilding)">
+      <div class="clear"></div>
+      <div class="row p-3 pt-0" style="padding-top: 0 !important;">
+        <div class="col-md-2">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="existingClient" [ngModelOptions]="{standalone: true}">
+            <span>Existing Client</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-4" *ngIf="existingClient">
+          <label>Search by Phone Number or Company GST</label>
+          <input type="text" autocomplete="werwerwes21" class="form-control w-90 d-ib" [(ngModel)]="searchInput" [ngbTypeahead]="clientSearch" placeholder="Enter Phone Number or Company GST" [inputFormatter]="typeAheadFormatter" [resultFormatter]="typeAheadFormatter" (selectItem)="client=$event.item" />
+          <span *ngIf="searching" class="pl-1"><i class="fa fa-spinner fa-spin"></i></span>
+        </div>
+      </div>
+      <div class="row p-3 pt-0" style="padding-top: 0 !important;">
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="firstName">Client Registered Company Name</label>
+          <input type="text" class="form-control" id="company" formControlName="company" placeholder="Enter Client  Company" [(ngModel)]="client.company">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="firstName">Client Company Brand Name</label>
+          <input type="text" class="form-control" id="brand" formControlName="brand" placeholder="Enter Client  Brand" [(ngModel)]="client.brand">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="name">Contact Name</label>
+          <input class="form-control" id="name" placeholder="Enter Contact Name" formControlName="name" [(ngModel)]="client.name">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Authorised person email" formControlName="email" [(ngModel)]="client.email">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="phone">Phone</label>
+          <input class="form-control" id="phone" placeholder="Authorised person phone" formControlName="phone" [(ngModel)]="client.phone">
+        </div>
+        <div class="col-md-6 form-group mb-1 p-1">
+          <label for="address">Registered Address</label>
+          <input class="form-control" id="address" placeholder="Enter client registered address" formControlName="address" [(ngModel)]="client.address">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="gstNo">GST No</label>
+          <input class="form-control" id="gstNo" placeholder="Registered GST Number" formControlName="gstNo" [(ngModel)]="client.gstNo">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="panNo">PAN No</label>
+          <input class="form-control" type="text" id="panNo" placeholder="Registered PAN Number" formControlName="panNo" [(ngModel)]="client.panNo">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="website">Website</label>
+          <input class="form-control" id="website" placeholder="Enter website URL" formControlName="website" [(ngModel)]="client.website">
+        </div>
+      </div>
+      <h5 class="pull-left">Contract Details </h5> - <span>Please enter accurate and agreed contract details</span>
+      <div class="clear"></div>
+      <div class="row p-3 pt-0" style="padding-top: 0 !important;">
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="security">Security Deposit</label>
+          <input type="number" class="form-control" id="security" placeholder="Enter Security Deposit amount" formControlName="security" [(ngModel)]="contract.security" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+        <div class="col-md-1 form-group mb-1 p-1">
+          <label for="security">Total Rent</label>
+          <div *ngIf="selectedDeskType.type=='EnterpriseOffice' || selectedOfficeType?.type=='DayPasses'">
+            <input type="number" class="form-control" id="rent" placeholder="Enter Rent Amount" [(ngModel)]="contract.rent" [ngModelOptions]="{standalone: true}">
+          </div>
+          <div *ngIf="selectedDeskType.type!='EnterpriseOffice' && (selectedOfficeType?.type!='DayPasses') "><strong>{{(totalBookingPrice - (contract.discount||0)) | inr}}</strong></div>
+        </div>
+        <div class="col-md-1 form-group mb-1 p-1">
+          <label for="Token">Token Amount</label>
+          <input type="number" class="form-control" id="token" placeholder="Token to pay" formControlName="token" [(ngModel)]="contract.token" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+        <div class="col-md-1 form-group mb-1 p-1">
+          <label for="lockin">LockIn Period</label>
+          <input type="number" class="form-control" id="lockin" placeholder="months" formControlName="lockin" [(ngModel)]="contract.lockIn" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 p-1">
+          <label for="lockin">LockIn Penalty Type</label>
+          <select class="form-control" id="lockinPenaltyType" placeholder="Type" formControlName="lockinPenaltyType" [(ngModel)]="contract.lockInPenaltyType" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+            <option value="Fixed">Fixed</option>
+            <option value="MonthRent">Month's Rent</option>
+          </select>
+        </div>
+        <div class="col-md-1 form-group mb-1 p-1">
+          <label for="lockin">LockIn Penalty</label>
+          <input type="number" class="form-control" id="lockInPenalty" placeholder="LockIn Penalty" formControlName="lockInPenalty" [(ngModel)]="contract.lockInPenalty" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+        <div class="col-md-1 form-group mb-1 p-1">
+          <label for="lockin">Notice Period</label>
+          <input type="number" class="form-control" id="noticePeriod" placeholder="months " formControlName="noticePeriod" [(ngModel)]="contract.noticePeriod" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 p-1">
+          <label for="lockin">Notice Penalty Type</label>
+          <select class="form-control" id="noticePeriodViolationType" placeholder="Type" formControlName="noticePeriodViolationType" [(ngModel)]="contract.noticePeriodViolationType" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+            <option value="Fixed">Fixed</option>
+            <option value="MonthRent">Month's Rent</option>
+          </select>
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="lockin">Notice Period Penalty</label>
+          <input type="number" class="form-control" id="noticePeriodViolation" placeholder="Notice Period Violation" formControlName="noticePeriodViolation" [(ngModel)]="contract.noticePeriodViolation" [attr.disabled]="(selectedDeskType.type=='VirtualOffice')||(selectedOfficeType?.type=='DayPasses')||contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+      </div>
+    </form>
+    <!-- Client and Contract information End -->
+
+
+    <!--  -->
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="activeModal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</div>

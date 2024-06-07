@@ -1,0 +1,1160 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left mr-5 f-b">
+        Debit Entries
+        <help-notes
+          [context]="'Accounts:PayoutStatusFlow'"
+          [type]="'popup'"
+          [placement]="'bottom'"
+          class="float-right ml-5"
+        ></help-notes>
+      </h5>
+      <input
+        type="text"
+        placeholder="Search by Benificiary, <10000,>1000,1000-10000"
+        [formControl]="search"
+        class="form-control form-control-rounde pull-left w-25 ml-5"
+      />
+      <input
+        class="form-control pull-left w-15 ml-5"
+        autocomplete="off"
+        placeholder="PaidOn : Start Date - End Date"
+        name="dp"
+        id="daterangepicker"
+      />
+      <button
+        class="btn btn-sm btn-icon btn-outline-danger"
+        ngbTooltip="Clear Dates Selection"
+        *ngIf="payoutsFilters.endDate"
+        (click)="clearDates()"
+      >
+        <i class="fa fa-times"></i>
+      </button>
+      <div class="ml-5 w-20 d-ib">
+        <ng-select
+          class=""
+          multiple="true"
+          [items]="['Debited', 'Issued', 'Attributed', 'Deleted']"
+          [hideSelected]="true"
+          placeholder="Statuses"
+          [(ngModel)]="payoutsFilters.statuses"
+          [ngModelOptions]="{ standalone: true }"
+        ></ng-select>
+      </div>
+      <!--  <div class="ml-5 w-5 d-ib mt-1">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="payoutsFilters.unmapped" [ngModelOptions]="{standalone: true}">
+          <span *ngIf="!payoutsFilters.unmapped" class="d-ib mt--10"><small>Show UnMapped</small></span>
+          <span *ngIf="payoutsFilters.unmapped" class="d-ib mt--10"><small>UnMapped Payments</small></span>
+          <span class="checkmark"></span>
+        </label>
+      </div> -->
+
+      <!--  <div class="float-right ml-0">
+        <button class="btn btn-outline-primary btn-ico btn-sm float-right" (click)="openEntryModal()" *ngIf="payoutsFilters.paymentMode=='Cheque'||payoutsFilters.paymentMode=='Cash'"><i class="fa fa-plus"></i> Entry</button>
+      </div> -->
+
+      <div
+        class="btn-group btn-group-toggle pull-right ml-5 mr-10"
+        data-toggle="buttons"
+      >
+        <div
+          class="btn-group btn-group-toggle"
+          ngbRadioGroup
+          name="radioBasic"
+          [(ngModel)]="payoutsFilters.paymentMode"
+          (ngModelChange)="getPayoutEntriesByStatus()"
+        >
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="BankTransfer" /> Bank
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="PG" /> PG
+          </label>
+          <label
+            ngbButtonLabel
+            class="btn btn-sm btn-secondary"
+            (click)="loadDebitCardAccounts()"
+          >
+            <input ngbButton type="radio" value="CardPayment" /> Cards
+          </label>
+          <label
+            ngbButtonLabel
+            class="btn btn-sm btn-secondary"
+            (click)="loadPettyCashAccounts()"
+          >
+            <input ngbButton type="radio" value="PettyCash" /> PettyCash
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Cheque" /> Cheques
+          </label>
+          <!--  <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Cash"> Cash
+          </label> -->
+        </div>
+      </div>
+      <div class="clear"></div>
+    </div>
+    <div class="row">
+      <div class="col-md-7 pl-4">
+        <!--  <div class="ml-10 d-ib mt-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="payoutsFilters.salary" [ngModelOptions]="{standalone: true}">
+            <span class="d-ib mt--10">Salary <strong>({{salary}})</strong></span>
+            <span class="checkmark"></span>
+          </label>
+        </div> -->
+        <div class="ml-10 d-ib mt-1">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payoutsFilters.noBill"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >NoBill <strong>({{ noBill }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-10 d-ib mt-1">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payoutsFilters.nonExpense"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >NonExpense <strong>({{ nonExpense }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-20 d-ib mt-1 mr-4">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payoutsFilters.suspense"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >Suspense <strong>({{ suspense }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-20 d-ib mt-1 ml-4 pl-4">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payoutsFilters.notAttributed"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >Not Attributed
+              <!-- <strong>({{notAttributed}})</strong> --></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-20 d-ib mt-1">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payoutsFilters.linked"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >Linked <strong>({{ linked }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div class="col-md-5 pt-1">
+        <strong class="float-left mr-10 d-ib"
+          >Total : ({{ totalPayins }})</strong
+        >
+        <span class="float-left mr-10 d-ib"
+          >Attributed : <strong>({{ attributedPayouts }})</strong></span
+        >
+        <span class="float-left mr-10 d-ib"
+          >NotAttributed :
+          <strong>({{ totalPayins - attributedPayouts }})</strong></span
+        >
+        <!--  <span class="float-left mr-10 d-ib" *ngFor="let status of statuses">{{status.status}} : (<strong>{{status.count}}</strong>)</span> -->
+        <span *checkAccess="'accounts:importDebitEntries'">
+          <button
+            class="btn btn-outline-info btn-ico btn-sm float-right"
+            (click)="openImport()"
+          >
+            <i class="fa fa-file-excel-o"></i> Import
+          </button>
+        </span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-7 pl-4">
+        <div
+          *ngIf="
+            payoutsFilters.paymentMode == 'PettyCash' ||
+            payoutsFilters.paymentMode == 'CardPayment' ||
+            payoutsFilters.paymentMode == 'PG'
+          "
+        >
+          <div
+            class="w-40 form-group float-left"
+            *ngIf="payoutsFilters.paymentMode == 'PettyCash'"
+          >
+            <ng-select
+              class="mini"
+              [items]="pettyCashAccounts"
+              [closeOnSelect]="true"
+              [hideSelected]="true"
+              bindLabel="name"
+              bindValue="id"
+              placeholder="Select PettyCash Account"
+              [(ngModel)]="payoutsFilters.pettyCashAccountId"
+              (ngModelChange)="getPayoutEntriesByStatus()"
+            ></ng-select>
+          </div>
+          <div
+            class="w-40 form-group float-left"
+            *ngIf="payoutsFilters.paymentMode == 'CardPayment'"
+          >
+            <ng-select
+              class="mini"
+              [items]="debitCardAccounts"
+              [closeOnSelect]="true"
+              [hideSelected]="true"
+              bindLabel="name"
+              bindValue="id"
+              placeholder="Select DebitCard Account"
+              [(ngModel)]="payoutsFilters.debitCardAccountId"
+              (ngModelChange)="getPayoutEntriesByStatus()"
+            ></ng-select>
+          </div>
+          <div class="w-60 form-group float-left pl-2 mt-1">
+            <span class="float-left mr-10 d-ib"
+              >Credited : {{ credited | inr }}</span
+            >
+            <span class="float-left mr-10 ml-10 d-ib"
+              >Debited : {{ debited | inr }}</span
+            >
+            <strong class="float-left mr-10 ml-10 d-ib"
+              >Balance : {{ credited - debited | inr }}</strong
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card o-hidden">
+          <loading [loading]="loading"></loading>
+          <data-list
+            #payoutsList
+            [dataUrl]="'internal/accounts/listPayoutEntries'"
+            [filter]="payoutsFilters"
+            [config]="payoutConfig"
+            (onAction)="action($event)"
+          ></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #entryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      <span *ngIf="isForm">Submit</span> {{ payoutsFilters.paymentMode }} PayOut
+      Entry
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div *ngIf="!isForm">
+      <div class="row mb-1">
+        <div class="col-md-3">
+          <label class="d-b f-b mb-0">Amount</label>
+          <span>{{ payout.amount | inr }}</span>
+        </div>
+        <div class="col-md-3">
+          <label class="d-b f-b mb-0">Status</label>
+          <span>{{ payout.status }}</span>
+        </div>
+        <div class="col-md-3">
+          <label class="d-b f-b mb-0">Debited On</label>
+          <span>{{ payout.paidOn | date : "MMM dd, yyyy" }}</span>
+        </div>
+        <div class="col-md-3">
+          <label class="d-b f-b mb-0">Added On</label>
+          <span ngbTooltip="{{ payout.addedBy }}">{{
+            payout.addedOn | date : "MMM dd, yyyy"
+          }}</span>
+        </div>
+        <div class="col-md-6" *ngIf="payout.paymentMode == 'BankTransfer'">
+          <label class="d-b f-b mb-0">UTR</label>
+          <span>{{ payout.utr }}</span>
+        </div>
+        <div class="col-md-6" *ngIf="payout.paymentMode == 'Cheque'">
+          <label class="d-b f-b mb-0">Cheque No</label>
+          <span>{{ payout.chequeNo }}</span>
+        </div>
+        <div class="col-md-6">
+          <label class="d-b f-b mb-0">Narration</label>
+          <span>{{ payout.narration }}</span>
+        </div>
+      </div>
+      <div class="row mt-2" *ngIf="payout.linkedTo">
+        <div class="col-md-12">
+          <h4 class="border-bottom pb-1 fs-14 d-ib pr-2 f-b">Linked To :</h4>
+        </div>
+        <div class="col-md-2">
+          <label class="d-b f-b mb-0">Payment Mode</label>
+          <span>{{ payout.linkedTo.paymentMode }}</span>
+        </div>
+        <div class="col-md-2">
+          <label class="d-b f-b mb-0">Amount</label>
+          <span>{{ payout.linkedTo.amount | inr }}</span>
+        </div>
+        <div class="col-md-2">
+          <label class="d-b f-b mb-0">Status</label>
+          <span>{{ payout.linkedTo.status }}</span>
+        </div>
+        <div class="col-md-3" *ngIf="payout.linkedTo.paymentMode == 'Cheque'">
+          <label class="d-b f-b mb-0">Cheque No</label>
+          <span>{{ payout.linkedTo.chequeNo }}</span>
+        </div>
+        <div class="col-md-3" *ngIf="payout.linkedTo.paymentMode == 'Online'">
+          <label class="d-b f-b mb-0">PG Settlement Id</label>
+          <span>{{ payout.linkedTo.pgSettlementId }}</span>
+        </div>
+        <div class="col-md-2">
+          <label class="d-b f-b mb-0">Received On</label>
+          <span>{{
+            payout.linkedTo.receivedDate | date : "MMM dd, yyyy"
+          }}</span>
+        </div>
+        <div class="col-md-2">
+          <label class="d-b f-b mb-0">Credited On</label>
+          <span>{{
+            payout.linkedTo.creditedDate | date : "MMM dd, yyyy"
+          }}</span>
+        </div>
+      </div>
+      <div class="mt-2" *ngIf="payout.attributed && payout.info">
+        <h4 class="border-bottom pb-1 fs-14 d-ib pr-2 f-b">Attributed To :</h4>
+        {{ payout.info }}
+      </div>
+    </div>
+    <form [formGroup]="payoutForm" *ngIf="isForm">
+      <div class="row">
+        <div class="col-md-2 form-group mb-1 pr-0">
+          <label for="roles">Amount</label>
+          <input
+            type="number"
+            placeholder="Enter Amount"
+            class="form-control"
+            [(ngModel)]="payout.amount"
+            formControlName="amount"
+          />
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="roles">DebitedOn</label>
+          <input
+            placeholder="Select Date"
+            class="form-control"
+            name="dpi"
+            ngbDatepicker
+            #dpi="ngbDatepicker"
+            [(ngModel)]="payout.paidOn"
+            formControlName="paidOn"
+            (dateSelect)="dpi.close()"
+            (focus)="dpi.toggle()"
+          />
+        </div>
+        <div
+          class="col-md-3 pl-0 pr-0 form-group mb-1"
+          *ngIf="payoutsFilters.paymentMode == 'BankTransfer'"
+        >
+          <label for="roles">Bank Unique Reference No (URN)</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Bank Transfer Reference Number"
+            [(ngModel)]="payout.utr"
+            formControlName="utr"
+          />
+        </div>
+        <div
+          class="col-md-3 form-group mb-1"
+          *ngIf="payoutsFilters.paymentMode == 'Cheque'"
+        >
+          <label for="roles">Cheque No</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Cheque Number"
+            [(ngModel)]="payout.chequeNo"
+            formControlName="chequeNo"
+          />
+        </div>
+        <div class="col-md-12">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="payout.narration"
+            placeholder="Enter description of the Expense"
+            formControlName="narration"
+          />
+        </div>
+      </div>
+    </form>
+    <div class="row mt-3" *ngIf="cheques.length">
+      <h5 class="f-b fs-14 pb-1 float-left mt-2">Cheques to Link :</h5>
+      <table class="table table-stripped table-sm table-hover">
+        <thead>
+          <tr>
+            <th class="w-15">Issued On</th>
+            <th class="text-right w-15">Amount</th>
+            <th class="w-60">ChequeNo</th>
+            <th class="text-center w-10">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of cheques">
+            <td class="text-right w-10">
+              {{ item.issuedOn | date : "MMM dd, yyyy" }}
+            </td>
+            <td class="text-right w-10">{{ item.amount | inr }}</td>
+            <td class="w-70">{{ item.chequeNo }}</td>
+            <td class="text-center">
+              <button
+                class="btn btn-sm btn-outline-primary btn-icon"
+                ngbTooltip="Link to this Cheque"
+                (click)="linkToCheque(item)"
+              >
+                <i class="fa fa-check"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="text-center fs-14 mt-2" *ngIf="!vendorSuggestions.length">
+        No suggestions found for payout attribution
+      </p>
+    </div>
+    <div class="row mt-2" *ngIf="selectedPayout">
+      <div class="col-md-2 f-b">Selected Payout :</div>
+      <div class="col-md-9">
+        {{ selectedPayout.info }}
+        <span *ngIf="selectedPayout.title">
+          for {{ selectedPayout.title }} to {{ selectedPayout.vendor }}</span
+        >
+        <button
+          class="btn btn-sm btn-outline-primary btn-ico float-right"
+          (click)="confirmAttribution()"
+        >
+          <i class="fa fa-check"></i> Confirm Attribution
+        </button>
+      </div>
+      <div class="col-md-1">
+        <button
+          class="btn btn-sm btn-danger btn-icon float-right"
+          (click)="selectedPayout = null"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+    </div>
+    <div
+      class="p-2"
+      *ngIf="payout.id && !isForm && !payout.attributed && !payout.nonExpense"
+    >
+      <h5 class="f-b fs-14 pb-1 float-left mt-2">Possible Attributions :</h5>
+      <!-- <input type="text" placeholder="Search by Vendor / ServiceProvider Name" [formControl]="vendorSearchControl" class="form-control form-control-rounde col-md-5 w-50 float-right mb-1" [(ngModel)]="vendorSearch"> -->
+      <input
+        type="text"
+        placeholder="Search by exact Payout Amount to attribute this entry "
+        [formControl]="amountSearchControl"
+        class="form-control form-control-rounde col-md-5 w-50 float-right mb-1"
+        [(ngModel)]="amountSearch"
+      />
+      <div class="clear"></div>
+      <table
+        class="table table-stripped table-sm table-hover"
+        *ngIf="suggestions.length"
+      >
+        <thead>
+          <tr>
+            <th class="w-15">Date</th>
+            <th class="text-right w-15">Amount</th>
+            <th class="w-60">Info</th>
+            <th class="text-center w-10">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of suggestions">
+            <td class="w-15">{{ item.date | date : "MMM dd, yyyy" }}</td>
+            <td class="text-right w-15">{{ item.amount | inr }}</td>
+            <td class="w-60">
+              {{ item.info }}
+              <span *ngIf="item.title">
+                for {{ item.title }} to {{ item.vendor }}</span
+              >
+            </td>
+            <td class="text-center">
+              <button
+                class="btn btn-sm btn-outline-primary btn-icon"
+                ngbTooltip="Attribute to this Payout"
+                (click)="selectedPayout = item"
+              >
+                <i class="fa fa-check"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p
+        class="text-center fs-14 mt-2"
+        *ngIf="!suggestions.length && !searches.length"
+      >
+        No suggestions found for payout attribution.<br />
+        <strong
+          >Please create milestone or bills and process payout to attribute
+        </strong>
+      </p>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      *ngIf="isForm"
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading || payoutForm.invalid"
+      (click)="savePayout()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Submit
+    </button>
+    <!-- <button *ngIf="!isForm && !payout.attributed" class="btn btn-outline-light ladda-button btn-ico float-left" (click)="payout.salary=1;payout.suspense=0;payout.status='Attributed';savePayout()" ngbTooltip="Mark as Salary"><i class="fa fa-check" *ngIf="!loading"></i> Salary</button> -->
+    <button
+      *ngIf="!isForm && !payout.attributed"
+      class="btn btn-outline-light ladda-button btn-ico float-left"
+      (click)="payout.noBill = 1; payout.suspense = 0; openBillReason()"
+      ngbTooltip="Mark to NoBill"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> No Bill
+    </button>
+    <button
+      *ngIf="!isForm && !payout.attributed"
+      class="btn btn-outline-warning ladda-button btn-ico float-left ml-10"
+      (click)="payout.suspense = 1; openBillReason()"
+      ngbTooltip="Mark as Suspense"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Suspense
+    </button>
+    <button
+      *ngIf="!isForm && !payout.attributed"
+      class="btn btn-outline-info ladda-button btn-ico float-left"
+      (click)="
+        payout.nonExpense = 1;
+        payout.suspense = 0;
+        payout.attributed = 1;
+        payout.status = 'Attributed';
+        payout.suspense = 0;
+        openBillReason()
+      "
+      ngbTooltip="Mark as NonExpense"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> NonExpense
+    </button>
+    <div
+      ngbDropdown
+      class="d-inline-block float-left"
+      *ngIf="!isForm && !payout.attributed"
+    >
+      <a class="btn btn-outline-info btn-ico btn-sm" ngbDropdownToggle
+        ><i class="fa fa-sign-out"></i> Credit To</a
+      >
+      <div ngbDropdownMenu>
+        <a
+          class="btn btn-sm text-left d-b border-bottom"
+          (click)="creditToPettyCash()"
+          >Petty Cash</a
+        >
+        <a
+          class="btn btn-sm text-left d-b border-bottom"
+          (click)="confirmCreditToDebitCard()"
+          >Debit Card</a
+        >
+        <a class="btn btn-sm text-left d-b border-bottom" (click)="creditToPG()"
+          >Payout Gateway</a
+        >
+      </div>
+    </div>
+  </div>
+</ng-template>
+<ng-template #infoModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ payout.paymentMode }} Entry
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mb-1">
+      <div class="col-md-3">
+        <label class="d-b f-b mb-0">Amount</label>
+        <span>{{ payout.amount | inr }}</span>
+      </div>
+      <div class="col-md-3">
+        <label class="d-b f-b mb-0">Status</label>
+        <span>{{ payout.status }}</span>
+      </div>
+      <div class="col-md-3">
+        <label class="d-b f-b mb-0">Debited On</label>
+        <span>{{ payout.paidOn | date : "MMM dd, yyyy" }}</span>
+      </div>
+      <div class="col-md-3">
+        <label class="d-b f-b mb-0">Added On</label>
+        <span ngbTooltip="{{ payout.addedBy }}">{{
+          payout.addedOn | date : "MMM dd, yyyy"
+        }}</span>
+      </div>
+      <div class="col-md-6" *ngIf="payout.paymentMode == 'BankTransfer'">
+        <label class="d-b f-b mb-0">UTR</label>
+        <span>{{ payout.utr }}</span>
+      </div>
+      <div class="col-md-6" *ngIf="payout.paymentMode == 'Cheque'">
+        <label class="d-b f-b mb-0">Cheque No</label>
+        <span>{{ payout.chequeNo }}</span>
+      </div>
+      <div class="col-md-6">
+        <label class="d-b f-b mb-0">Narration</label>
+        <span>{{ payout.narration }}</span>
+      </div>
+    </div>
+    <div class="row mt-2" *ngIf="payout.linkedTo">
+      <div class="col-md-12">
+        <h4 class="border-bottom pb-1 fs-14 d-ib pr-2 f-b">Linked To :</h4>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Payment Mode</label>
+        <span>{{ payout.linkedTo.paymentMode }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Amount</label>
+        <span>{{ payout.linkedTo.amount | inr }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Status</label>
+        <span>{{ payout.linkedTo.status }}</span>
+      </div>
+      <div class="col-md-3" *ngIf="payout.linkedTo.paymentMode == 'Cheque'">
+        <label class="d-b f-b mb-0">Cheque No</label>
+        <span>{{ payout.linkedTo.chequeNo }}</span>
+      </div>
+      <div class="col-md-3" *ngIf="payout.linkedTo.paymentMode == 'Online'">
+        <label class="d-b f-b mb-0">PG Settlement Id</label>
+        <span>{{ payout.linkedTo.pgSettlementId }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Received On</label>
+        <span>{{ payout.linkedTo.receivedDate | date : "MMM dd, yyyy" }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Credited On</label>
+        <span>{{ payout.linkedTo.creditedDate | date : "MMM dd, yyyy" }}</span>
+      </div>
+    </div>
+    <div class="mt-2" *ngIf="payout.attributed && payout.info">
+      <h4 class="border-bottom pb-1 fs-14 d-ib pr-2 f-b">Attributed To :</h4>
+      {{ payout.info }}
+    </div>
+    <div class="mt-2" *ngIf="payout.purchaseOrder">
+      <h4 class="border-bottom pb-1 fs-14 d-b pr-2 f-b">
+        Tagged PurchasedOrder :
+      </h4>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">RefNo </strong> :
+        <a
+          target="_blank"
+          href="#/purchases/purchaseorder/{{ payout.purchaseOrder.id }}"
+          >{{ payout.purchaseOrder.refNo }}</a
+        >
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">Project </strong> :
+        {{ payout.purchaseOrder.project }}
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">Vendor </strong> :
+        {{ payout.purchaseOrder.vendor }}
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">PurchaseOrder PDF </strong> :
+        <a
+          *ngIf="payout.purchaseOrder.pdf"
+          target="_blank"
+          href="{{ payout.purchaseOrder.pdf }}"
+          ><span class="badge badge-info">View</span></a
+        >
+        <a *ngIf="!payout.purchaseOrder.pdf"
+          ><span class="badge badge-danger">No Attachment</span></a
+        >
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">TaxInvoice </strong> :
+        <a
+          *ngIf="payout.purchaseOrder.taxInvoice"
+          target="_blank"
+          href="{{ payout.purchaseOrder.taxInvoice }}"
+          ><span class="badge badge-info">View</span></a
+        >
+        <a *ngIf="!payout.purchaseOrder.taxInvoice"
+          ><span class="badge badge-danger">No Attachment</span></a
+        >
+      </p>
+    </div>
+    <div class="mt-2" *ngIf="payout.bill">
+      <h4 class="border-bottom pb-1 fs-14 d-b pr-2 f-b">Tagged Opex Bill :</h4>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">BillNo </strong> :
+        <a
+          target="_blank"
+          href="{{ payout.bill.billImage }}"
+          *ngIf="payout.bill.billImage"
+          class="cursor f-b"
+          >{{ payout.bill.indexNo }}</a
+        >
+        <span *ngIf="!payout.bill.billImage"
+          >{{ payout.bill.indexNo }}
+          <span class="badge badge-danger">No Attachment</span></span
+        >
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">Building </strong> :
+        {{ payout.bill.building }}
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">ServiceProvider </strong> :
+        {{ payout.bill.serviceProvider }}
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">Expense Code </strong> :
+        {{ payout.bill.opexCategory }}, {{ payout.bill.opexType }}
+      </p>
+    </div>
+    <div class="mt-2" *ngIf="payout.noBill">
+      <h4 class="border-bottom pb-1 fs-14 d-b pr-2 f-b">Tagged as NoBill :</h4>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">Building </strong> :
+        {{ payout.noBill.building || "HeadOffice" }}
+      </p>
+      <p class="mb-1">
+        <strong class="w-25 d-ib">Expense Code </strong> :
+        {{ payout.noBill.opexCategory }}, {{ payout.noBill.opexType }}
+      </p>
+    </div>
+    <div
+      class="mt-2"
+      *ngIf="payout.pettyCashAccount || payout.debitCardAccount"
+    >
+      <h4 class="border-bottom pb-1 fs-14 d-ib pr-2 f-b">Paid through :</h4>
+      <span *ngIf="payout.pettyCashAccount"
+        >{{ payout.pettyCashAccount }} PettyCash</span
+      >
+      <span *ngIf="payout.debitCardAccount"
+        >{{ payout.debitCardAccount }} DebitCard</span
+      >
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+  </div>
+</ng-template>
+<ng-template #importModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      Import {{ payoutsFilters.paymentMode }} Excel Entries
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div *ngIf="!importRows.length">
+      <div class="row">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+          <strong> Import {{ payoutsFilters.paymentMode }} Excel File </strong>
+          <span class="input-group">
+            <div class="custom-file">
+              <input
+                class="custom-file-input"
+                id="import"
+                (change)="onImportFileChange($event)"
+                type="file"
+              />
+              <label class="custom-file-label" for="import">Choose file</label>
+            </div>
+          </span>
+          <help-notes
+            [context]="'Accounts:DebitEntriesImportFormat'"
+            *ngIf="payoutsFilters.paymentMode == 'BankTransfer'"
+            [type]="'popup'"
+            [placement]="'bottom'"
+            class="float-right mr-5"
+          ></help-notes>
+          <help-notes
+            [context]="'Accounts:DebitCardEntriesImportFormat'"
+            *ngIf="payoutsFilters.paymentMode == 'CardPayment'"
+            [type]="'popup'"
+            [placement]="'bottom'"
+            class="float-right mr-5"
+          ></help-notes>
+        </div>
+      </div>
+      <div class="row mt-4" *ngIf="payoutsFilters.paymentMode == 'CardPayment'">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+          <strong> Import Happay PassBook Excel File </strong>
+          <span class="input-group">
+            <div class="custom-file">
+              <input
+                class="custom-file-input"
+                id="import"
+                (change)="onPassBookImportFileChange($event)"
+                type="file"
+              />
+              <label class="custom-file-label" for="import">Choose file</label>
+            </div>
+          </span>
+        </div>
+      </div>
+    </div>
+    <table
+      class="tableBodyScroll table table-striped table-hover table-sm"
+      *ngIf="importRows.length"
+    >
+      <thead>
+        <tr>
+          <th class="w-15">Date</th>
+          <th class="w-15 text-right">Amount</th>
+          <th class="w-25">UTR</th>
+          <th class="w-40">Narration</th>
+          <th class="w-5 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody class="tableBodyScroll" infiniteScroll [autoHeightAdjust]="350">
+        <tr *ngFor="let row of importRows">
+          <td class="w-15">{{ row.date | date : "MMM dd, yyyy hh:mm aa" }}</td>
+          <td class="w-15 text-right">{{ row.amount | inr }}</td>
+          <td class="w-25">{{ row.utr }}</td>
+          <td class="w-40">{{ row.narration }}</td>
+          <td class="w-5">
+            <button
+              *ngIf="!row.id"
+              class="btn btn-sm btn-outline-primary btn-icon"
+              ngbTooltip="Save Entry"
+              (click)="savePayoutRow(row)"
+            >
+              <i class="fa fa-upload"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      *ngIf="importRows.length"
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading"
+      (click)="confirmImport()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm Import
+    </button>
+  </div>
+</ng-template>
+<ng-template #pettyCashModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      Credit to PettyCash Account
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row" *ngIf="!importRows.length">
+      <div class="col-md-4 form-group">
+        <label class="d-b">Amount to Credit</label>
+        <strong>{{ payout.amount | inr }}</strong>
+      </div>
+      <div class="col-md-8 form-group">
+        <label for="roles">PettyCash Account</label>
+        <ng-select
+          [items]="pettyCashAccounts"
+          [closeOnSelect]="true"
+          [hideSelected]="true"
+          bindLabel="name"
+          placeholder="Select Petty Cash Account"
+          [(ngModel)]="selectedPettyCashAccount"
+        ></ng-select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading || !selectedPettyCashAccount"
+      (click)="confirmCreditToPettyCash()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm Credit
+    </button>
+  </div>
+</ng-template>
+<ng-template #debitCardModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      Credit to DebitCard Account
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row" *ngIf="!importRows.length">
+      <div class="col-md-4 form-group">
+        <label class="d-b">Amount to Credit</label>
+        <strong>{{ payout.amount | inr }}</strong>
+      </div>
+      <div class="col-md-8 form-group">
+        <label for="roles">DebitCard Account</label>
+        <ng-select
+          [items]="debitCardAccounts"
+          [closeOnSelect]="true"
+          [hideSelected]="true"
+          bindLabel="name"
+          placeholder="Select Petty Cash Account"
+          [(ngModel)]="selectedDebitCardAccount"
+        ></ng-select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading || !selectedDebitCardAccount"
+      (click)="confirmCreditToDebitCard()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm Credit
+    </button>
+  </div>
+</ng-template>
+<ng-template #billReasonModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ payout.noBill ? "Set as No Bill" : "Mention your Reason" }}
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mt-2" *ngIf="payout.noBill">
+      <div class="col-md-3 text-right f-b">Bill To :</div>
+      <div class="col-md-4">
+        <div
+          class="btn-group btn-group-toggle"
+          ngbRadioGroup
+          name="radioBasic"
+          [(ngModel)]="payout.isHO"
+          (ngModelChange)="onHOSelected()"
+        >
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="0" /> Building
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="1" /> HO
+          </label>
+        </div>
+      </div>
+      <div class="col-md-5" *ngIf="payout.isHO == '0'">
+        <ng-select
+          [items]="buildings"
+          [closeOnSelect]="true"
+          [hideSelected]="true"
+          bindLabel="name"
+          placeholder="Select  Building"
+          [(ngModel)]="selectedBuilding"
+          [ngModelOptions]="{ standalone: true }"
+        >
+        </ng-select>
+      </div>
+    </div>
+    <div
+      class="row mt-2"
+      *ngIf="(payout.isHO || payout.buildingId) && payout.noBill"
+    >
+      <div class="col-md-4 pr-1 form-group mb-1">
+        <label for="roles">Expense Category</label>
+        <ng-select
+          [items]="opexCategories"
+          [closeOnSelect]="true"
+          [hideSelected]="true"
+          bindLabel="name"
+          placeholder="Select  Category"
+          [(ngModel)]="opexCategory"
+          [ngModelOptions]="{ standalone: true }"
+        >
+        </ng-select>
+      </div>
+      <div
+        class="col-md-4 pl-0 pr-1 form-group mb-1"
+        *ngIf="opexCategory?.types.length"
+      >
+        <label for="roles">Expense Type</label>
+        <ng-select
+          [items]="opexCategory.types"
+          [closeOnSelect]="true"
+          [hideSelected]="true"
+          bindLabel="name"
+          placeholder="Select Type"
+          [(ngModel)]="opexType"
+          (ngModelChange)="opexItem = null; onOpexTypeSelected()"
+          [ngModelOptions]="{ standalone: true }"
+        >
+        </ng-select>
+      </div>
+      <div class="col-md-4 pl-0 form-group mb-1" *ngIf="opexType?.items.length">
+        <label for="roles">Expense Item</label>
+        <ng-select
+          [items]="opexType.items"
+          [closeOnSelect]="true"
+          [hideSelected]="true"
+          bindLabel="name"
+          placeholder="Select Item"
+          [(ngModel)]="opexItem"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="onOpexTypeSelected()"
+        >
+        </ng-select>
+      </div>
+    </div>
+    <div class="row mt-2" *ngIf="!payout.noBill">
+      <div class="col-md-12">
+        <textarea
+          class="col-md-12 form-control"
+          [(ngModel)]="payout.reason"
+          placeholder="Please mention your reason to mark this bill as {{
+            payout.suspense ? 'Suspense' : 'NonExpense'
+          }}"
+        ></textarea>
+      </div>
+    </div>
+    <!--  <div class="row mt-2" *ngIf="payout.noBill && payout.opexTypeId">
+      <div class="col-md-12">
+        <textarea class="col-md-12  form-control" [(ngModel)]="payout.reason" placeholder="NoBill reason"></textarea>
+      </div>
+    </div> -->
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading || !payout.reason"
+      (click)="confirmReason()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm
+    </button>
+  </div>
+</ng-template>

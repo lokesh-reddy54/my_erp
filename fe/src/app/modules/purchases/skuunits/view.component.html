@@ -1,0 +1,49 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">SKU Units </h1>
+    <!-- <input type="text" placeholder="Search purchase order by vendor, building" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-25 ml-1"> -->
+    <div class="clear"></div>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-6">
+      <form [formGroup]="unitForm">
+        <div class="row">
+          <div class="col-md-5 form-group mb-1">
+            <label for="firstName">Name *</label>
+            <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="skuUnit.name">
+          </div>
+          <div class="col-md-3 form-group mb-1">
+            <label for="firstName">Symbol *</label>
+            <input type="text" class="form-control" id="name" formControlName="symbol" placeholder="Enter Symbol" [(ngModel)]="skuUnit.symbol">
+          </div>
+          <div class="col-md-2 form-group mb-1">
+            <button class="btn btn-info ladda-button btn-ico mt-4" [ladda]="loading" [disabled]="loading||unitForm.invalid" (click)="saveSkuUnit()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+          </div>
+          <div class="col-md-2 form-group mb-1">
+            <button type="button" class="btn btn-outline-light mt-4" (click)="unitForm.reset()">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="col-md-3 mt-2"></div>
+    <div class="col-md-3 mt-2"></div>
+    <div class="col-md-6 mt-2">
+      <table class="table table-sm table-hover table-strip">
+        <thead>
+          <th class="w-50">Name</th>
+          <th class="w-30">Symbol</th>
+          <th class="w-20 text-center">Actions</th>
+        </thead>
+        <tbody>
+          <tr *ngFor="let unit of skuUnits;">
+            <td class="w-50">{{unit.name}}</td>
+            <td class="w-30">{{unit.symbol}}</td>
+            <td class="w-20 text-center"><button class="btn btn-sm btn-icon btn-danger" (click)="deleteSkuUnit(unit)"><i class="fa fa-times"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

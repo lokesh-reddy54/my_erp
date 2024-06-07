@@ -1,0 +1,206 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left mr-5 f-b">Payouts
+        <help-notes [context]="'Accounts:PayoutStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+        <help-notes [context]="'Accounts:PayoutStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+        <help-notes [context]="'Accounts:PaymentModeDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+      </h5>
+      <input type="text" placeholder="Search by Benificiary name" [formControl]="search" class="form-control form-control-rounde pull-left w-15 ml-5">
+      <input class="form-control pull-left w-15 ml-5" autocomplete="off" placeholder="PaidOn : Start - End Date" name="dp" id="daterangepicker">
+      <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Clear Dates Selection" *ngIf="payoutsFilters.endDate" (click)="clearDates()"><i class="fa fa-times"></i></button>
+      <!--   <div class="ml-5 w-10 d-ib mt-1">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="payoutsFilters.showUnpaid" [ngModelOptions]="{standalone: true}">
+          <span *ngIf="!payoutsFilters.showUnpaid"><small>Show UnPaid</small></span>
+          <span *ngIf="payoutsFilters.showUnpaid" class="d-ib mt--10"><small>UnPaid Payments</small></span>
+          <span class="checkmark"></span>
+        </label>
+      </div> -->
+      <div class="float-right ml-5 w-25">
+        <ng-select class="" multiple="true" [items]="[{label:'Projects',value:'VendorPayment'},{label: 'Building / HO Expenses', value :'BillPayment'},{label:'Tenants',value:'ExitRefund'}]" [hideSelected]="true" placeholder="Payment Types" bindLabel="label" bindValue="value" [(ngModel)]="payoutsFilters.types" [ngModelOptions]="{standalone: true}" (ngModelChange)="getPayoutsByStatus()"></ng-select>
+      </div>
+      <div class="float-right ml-5 w-25">
+        <ng-select class="" multiple="true" [items]="['CashFree','BankTransfer','CardPayment','Cheque','Cash']" [hideSelected]="true" placeholder="Payment Modes" [(ngModel)]="payoutsFilters.paymentModes" [ngModelOptions]="{standalone: true}" (ngModelChange)="getPayoutsByStatus()"></ng-select>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <div class="row p-1">
+      <div class="col-md-6 pl-4">
+        <!-- <strong class="float-left mr-10 d-ib">Total : ({{totalPayouts}})</strong> -->
+        <span class="float-left mr-10 d-ib f-b" *ngFor="let status of statuses">{{status.status}} : (<strong>{{status.count}}</strong>)</span>
+      </div>
+      <div class="col-md-6">
+        <ng-select class="float-right mini w-100" multiple="true" [items]="['Approved','Error','Rejected','Paid','PrePaid','PayoutPending','FuturePayout']" [hideSelected]="true" placeholder="Filter by Payment Statuses" [(ngModel)]="payoutsFilters.statuses" [ngModelOptions]="{standalone: true}"></ng-select>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <!-- <div class="separator-breadcrumb border-top mb-10 mt-10"></div> -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <loading [loading]="loading"></loading>
+          <data-list #payoutsList [dataUrl]="'internal/accounts/listPayouts'" [filter]="payoutsFilters" [config]="payoutConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #rejectMessageModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{payout.status=='Rejected' ? 'View Message' : 'Reject Payout'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="rejectForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1" *ngIf="payout.status!='Rejected'">
+          <label for="firstName">Reject Message</label>
+          <textarea class="form-control" id="rejectedMessage" formControlName="rejectedMessage" placeholder="Enter your Message for Rejection" [(ngModel)]="payout.rejectedMessage"></textarea>
+        </div>
+        <div class="col-md-12 form-group mb-1" *ngIf="payout.status=='Rejected'">
+          <label for="firstName">Rejected Message</label>
+          <p>{{payout.rejectedMessage}}</p>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="payout.status!='Rejected'" class="btn btn-warning ladda-button btn-ico" [ladda]="loading" [disabled]="loading||rejectForm.invalid" (click)="rejectPayout()"><i class="fa fa-check" *ngIf="!loading"></i> Reject Payout</button>
+  </div>
+</ng-template>
+<ng-template #futurePayoutModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Future Planned Payout</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 form-group mb-1">
+        <label for="firstName">Planned Payment Date</label>
+        <div class="btn-group btn-group-toggle float-left mb-2" ngbRadioGroup name="radioBasic" [(ngModel)]="futureDays" (ngModelChange)="updateFuturePayoutDate()">
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="1"> Tomorrow
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="7"> 7 days
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="10"> 10 days
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="20"> 20 days
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="30"> Month
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="61"> 2 Months
+          </label>
+        </div>
+        <input placeholder="Select Payout Date" class="mt-2 form-control wl-50" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="payout.futurePayoutDate" (dateSelect)="dp.close()" [ngModelOptions]="{standalone:true}" (focus)="dp.toggle()" />
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="payout.status!='Rejected'" class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!payout.futurePayoutDate" (click)="saveFuturePayoutDate()"><i class="fa fa-check" *ngIf="!loading"></i> Set Future Planned Payout Date</button>
+  </div>
+</ng-template>
+<ng-template #infoModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">'{{payout.benificiary}}' Payout Info</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    {{payout.info}}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #submitPayoutModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Submit Payout Details</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="payoutForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1 row">
+          <label for="roles" class="i-b col-md-2 f-b">Select Payment Mode </label>
+          <label class="radio radio-primary col-md-2">
+            <input type="radio" name="paymentMode" [value]="'BankTransfer'" (ngModelChange)="paymentModeChanged()" [(ngModel)]="payout.paymentMode" formControlName="paymentMode">
+            <span>Manual Bank Transfer</span>
+            <span class="checkmark"></span>
+          </label>
+          <label class="radio radio-primary col-md-2">
+            <input type="radio" name="paymentMode" [value]="'CardPayment'" (ngModelChange)="paymentModeChanged()" [(ngModel)]="payout.paymentMode" formControlName="paymentMode">
+            <span>Card Payment</span>
+            <span class="checkmark"></span>
+          </label>
+          <label class="radio radio-primary col-md-2">
+            <input type="radio" name="paymentMode" [value]="'PettyCash'" (ngModelChange)="paymentModeChanged()" [(ngModel)]="payout.paymentMode" formControlName="paymentMode">
+            <span>Petty Cash</span>
+            <span class="checkmark"></span>
+          </label>
+          <label class="radio radio-primary col-md-2">
+            <input type="radio" name="paymentMode" [value]="'Online'" (ngModelChange)="paymentModeChanged()" [(ngModel)]="payout.paymentMode" formControlName="paymentMode">
+            <span>Online Payment</span>
+            <span class="checkmark"></span>
+          </label>
+          <label class="radio radio-primary col-md-2">
+            <input type="radio" name="paymentMode" [value]="'Cheque'" [(ngModel)]="payout.paymentMode" formControlName="paymentMode" (ngModelChange)="paymentModeChanged()">
+            <span>Cheque Payment</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1" *ngIf="payout.paymentMode=='Cheque'">
+          <label for="roles">Issued Date</label>
+          <input placeholder="Select Encashed Date" class="form-control" name="dpi" ngbDatepicker #dpi="ngbDatepicker" [(ngModel)]="payout.issuedOn" formControlName="issuedOn" (dateSelect)="dpi.close()" (focus)="dpi.toggle()" />
+        </div>
+        <div class="col-md-3 form-group mb-1" *ngIf="payout.paymentMode!='Cheque'">
+          <label for="roles">Payout Date</label>
+          <input placeholder="Select Payout Date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="payout.paidOn" formControlName="paidOn" (dateSelect)="dp.close()" (focus)="dp.toggle()" />
+        </div>
+        <div class="col-md-8  form-group" *ngIf="payout.paymentMode=='PettyCash'">
+          <label for="roles">PettyCash Account</label>
+          <ng-select [items]="pettyCashAccounts" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select PettyCash Account" [(ngModel)]="payout.pettyCashAccountId" formControlName="pettyCashAccountId"></ng-select>
+        </div>
+        <div class="col-md-8  form-group" *ngIf="payout.paymentMode=='CardPayment'">
+          <label for="roles">DebitCard Account</label>
+          <ng-select [items]="debitCardAccounts" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select DebitCard Account" [(ngModel)]="payout.debitCardAccountId" formControlName="debitCardAccountId"></ng-select>
+        </div>
+        <div class="col-md-7 form-group mb-1" *ngIf="payout.paymentMode=='Cheque'">
+          <label for="roles">Cheque No</label>
+          <input type="text" class="form-control" placeholder="Enter Cheque Number" [(ngModel)]="payout.chequeNo" formControlName="chequeNo" />
+        </div>
+        <div class="col-md-3 form-group mb-1" *ngIf="payout.paymentMode=='Cheque'">
+          <label for="roles">Encashed Date</label>
+          <input placeholder="Select Encashed Date" class="form-control" name="dpe" ngbDatepicker #dpe="ngbDatepicker" [(ngModel)]="payout.paidOn" formControlName="paidOn" (dateSelect)="dpe.close()" (focus)="dpe.toggle()" />
+        </div>
+        <div class="col-md-7 form-group mb-1" *ngIf="payout.paymentMode=='Online'||payout.paymentMode=='BankTransfer'||payout.paymentMode=='Cheque'">
+          <label for="roles">Bank Unique Reference No (URN)</label>
+          <input type="text" class="form-control" placeholder="Enter Bank Transfer Reference Number" [(ngModel)]="payout.utr" formControlName="utr" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-primary ladda-button btn-ico" [ladda]="loading" [disabled]="loading||payoutForm.invalid" (click)="confirmPayout()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Payout</button>
+  </div>
+</ng-template>

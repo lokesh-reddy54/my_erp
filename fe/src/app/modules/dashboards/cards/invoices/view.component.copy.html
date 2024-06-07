@@ -1,0 +1,257 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Accounts Cards</h4>
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12 mt-1">
+      <loading [loading]="loading"></loading>
+      <div class="card tableBodyScroll" style="height: calc(100vh - 120px);overflow: auto;">
+        <main [class]="theme">
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Credit Entries</h5>
+            <!--  <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.credits" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.credits">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Debit Entries</h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.debits" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.debits">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Pending Expense Bills</h5>
+            <!--  <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.expenses" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.expenses">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Pending Payouts</h5>
+            <!--  <ngx-charts-number-card class="chart-container w-50" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.payouts" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.payouts">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Account Receivables</h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.ar" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.ar">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Account Payables</h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.ap" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.ap">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">POs GST Postings <small>(current financial year)</small></h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.posGstPostings" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.posGstPostings">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Bills GST Postings <small>(current financial year)</small></h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.billsGstPostings" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.billsGstPostings">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">TDS Due by Quarter</h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.tdsDue" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.tdsDue">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Pending TDS Due Clients Count </h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.pendingTds" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.pendingTds">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">TDS Paid Clients Count </h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.uploadedTds" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.uploadedTds">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+            <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Miscellaneous </h5>
+            <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.tdsDueWarningClients" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+            <div class="row ml-0 mr-0">
+              <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.tdsDueWarningClients">
+                <div class="card mb-2 {{card.level}}">
+                  <div class="card-body p-2 pl-3">
+                    <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                    <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                    <div>
+                      <strong>{{card.name}}</strong>
+                      <div class="i-db float-right w-20">
+                        <card-suggestion [card]="card"></card-suggestion>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>

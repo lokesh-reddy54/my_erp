@@ -1,0 +1,14 @@
+<div *ngIf="content && type=='notes'" class="p-1">
+  <span [innerHtml]="popOverBody"></span>
+</div>
+<span *ngIf="content && type=='popup' && !popOverBody" class="cursor" placement="{{placement}}" ngbPopover="{{content}}" triggers="mouseenter:mouseleave">
+  <i class="fa fa-question-circle-o"></i>
+</span>
+<span *ngIf="content && type=='popup' && popOverBody" class="cursor" placement="{{placement}}" [ngbPopover]="popContent" [popoverTitle]="popTitle" triggers="mouseenter:mouseleave">
+  <i class="fa fa-question-circle-o"></i>
+</span>
+<span *ngIf="content && type=='tooltip'" class="cursor" placement="{{placement}}" ngbTooltip="{{content}}">
+  <i class="fa fa-question-circle-o"></i>
+</span>
+<ng-template #popTitle>{{popOverTitle}}</ng-template>
+<ng-template #popContent><span [innerHtml]="popOverBody"></span></ng-template>

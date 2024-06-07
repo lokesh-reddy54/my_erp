@@ -1,0 +1,121 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Customers List</h4>
+    <input type="text" class="form-control w-20 ml-20 float-left" placeholder="Search by Customer Name" [(ngModel)]="searchClient" (ngModelChange)="loadData()">
+    <div class="d-ib ml-10 float-left w-30">
+      <ng-select class="w-90" [items]="['New','Booked','Active','Exiting','Exited','TDSHolded','Settled','Cancelled']" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Statuses" [(ngModel)]="filters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadData()"></ng-select>
+    </div>
+    <div class="ml-10 d-ib mt-1 w-15">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="filters.itLedgerNotAdded" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadData()">
+        <span class="d-ib mt--10">Ledger NotAdded</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="ml-15 d-ib mt-1">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="filters.itLedgerNotsettled" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadData()">
+        <span class="d-ib mt--10">Ledger NotClosed</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="pl-1 d-ib mt-1 float-right fs-14">
+      Customers : <strong>{{clients.length}}</strong>
+    </div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:CustomersList'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+  <div class="card">
+    <loading [loading]="loading"></loading>
+    <div class="card-body pt-1">
+      <div class="table-responsive pl-0 pr-0 row  border-bottom" style="overflow: hidden;">
+        <div class=" col-12 table mr-0 pr-0 pb-1 border-bottom">
+          <div class="row">
+            <div class="cell f-b p-1 pl-0 pr-1 w-100">
+              <span class="w-35 d-b float-left cursor" (click)="sortBy('company')">Client &nbsp; <i *ngIf="sort.company?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.company?.desc" class="fa fa-caret-down"></i></span>
+              <span class="w-20 d-b float-left text-right cursor" (click)="sortBy('gstNo')">GST No &nbsp; <i *ngIf="sort.gstNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.gstNo?.desc" class="fa fa-caret-down"></i></span>
+              <span class="w-20 d-b float-left text-right cursor" (click)="sortBy('panNo')">Pan No &nbsp; <i *ngIf="sort.panNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.panNo?.desc" class="fa fa-caret-down"></i></span>
+              <span class="w-15 d-b float-left text-right"></span>
+            </div>
+          </div>
+        </div>
+        <div infiniteScroll class="tableBodyScroll">
+          <div class="col-12 pr-0 pb-1" *ngFor="let client of clients;let bi=index;">
+            <div class="row">
+              <div class="cell p-1 pl-0 pr-1 w-100 bg-light">
+                <span class="w-35 d-b float-left f-b">{{client.company}}</span>
+                <span class="w-20 d-b float-left text-right" *ngIf="client.gstFile">
+                  <a [href]="client.gstFile" target="_blank">{{client.gstNo || '-'}}</a></span>
+                <span class="w-20 d-b float-left text-right" *ngIf="!client.gstFile">{{client.gstNo || '-'}}</span>
+                <span class="w-20 d-b float-left text-right" *ngIf="client.panFile">{{client.panNo || '-'}}</span>
+                <span class="w-20 d-b float-left text-right" *ngIf="!client.panFile">{{client.panNo || '-'}}</span>
+                <span class="w-5 d-b float-left text-right"></span>
+              </div>
+            </div>
+            <div *ngFor="let booking of client.bookings;let i=index;">
+              <div class="row  border-bottom">
+                <div class="cell p-1 pl-0 pr-1 w-100">
+                  <span class="w-25 d-b float-left f-b text-right"><a href="/#/bookings/view/{{booking.bookingId}}" target="_blank">#{{i+1}}. {{booking.refNo || booking.rbrefNo}} </a> <small *ngIf="booking.rbrefNo"> (Resource Booking)</small></span>
+                  <span class="w-10 d-b float-left text-right"> {{booking.status}}</span>
+                  <span class="w-20 d-b float-left text-right"><small>StartOn : </small> {{booking.started | date : 'MMM dd, yyyy'}}</span>
+                  <span class="w-20 d-b float-left text-right"><small *ngIf="!booking.ended"> &nbsp; </small>
+                    <small *ngIf="booking.ended">ExitOn : </small> {{booking.ended | date : 'MMM dd, yyyy'}}
+                  </span>
+                  <span class="w-10 d-b float-right text-left pr-4">
+                    <button class="btn btn-sm btn-icon btn-outline-primary" (click)="ledgerAdded(booking)" *ngIf="!booking.itLedgerAdded" ngbTooltip="Add Booking to Accounts Ledger"><i class="fa fa-check"></i></button>
+                    <button class="btn btn-sm btn-icon btn-outline-danger" (click)="ledgerSettled(booking)" *ngIf="booking.status=='Settled' && !booking.itLedgerSettled" ngbTooltip="Settle Booking in Accounts Ledger"><i class="fa fa-sign-out"></i></button>
+                    <button class="btn btn-sm btn-icon btn-outline-info" (click)="showExitStatement(booking)" *ngIf="booking.status=='Settled' && booking.security" ngbTooltip="Exit Refund Statement"><i class="fa fa-dollar"></i></button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="clear"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #exitRefundModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Exit Refund Statement</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- <p class="text-center p-2 f-b">No Sec</p> -->
+    <table class="table table-sm table-hover table-strip">
+      <thead>
+        <tr>
+          <th>Particulars</th>
+          <th class="text-right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Security Deposit</td>
+          <td class="text-right">{{booking.security | inr}}</td>
+        </tr>
+        <tr>
+          <td>Refund To Tenant</td>
+          <td class="text-right">{{booking.refund | inr}}</td>
+        </tr>
+        <tr>
+          <td>Transfer to Tenant Ledger</td>
+          <td class="text-right">{{(booking.security - booking.refund) | inr}}</td>
+        </tr>
+        <tr *ngIf="booking.refundDate">
+          <td>Refunded Date</td>
+          <td class="text-right">{{booking.refundDate | date : 'MMM dd, yyyy'}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

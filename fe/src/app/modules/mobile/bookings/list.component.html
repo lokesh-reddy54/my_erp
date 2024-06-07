@@ -1,0 +1,48 @@
+<div class="">
+  <div class="breadcrumb row">
+    <h1 class="mb-2 d-ib col-md-2 float-left">Bookings</h1>
+    <div class="clear"></div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="clear"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);margin-top: -10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1" routerLink="/client/booking/{{item.id}}">
+            <a href="" class="w-55 w-sm-100">
+              <div class="f-b">{{item.office?.floor}}, {{item.office?.building?.name}}, {{item.office?.building?.address}}</div>
+              <span class="m-0 text-secondary text-smal">{{item.refNo}}</span>
+              <span class="ml-2 text-secondary">Cabins - {{item.cabins}}, Desks - {{item.desks}}</span>
+              <span class="mr-20 text-secondary text-smal pull-right d-ib">Rent: <span class="m-0 text-primary">{{item.contract?.rent | inr}}</span></span>
+            </a>
+            <!-- <div class="m-0 text-muted text-small w-20 w-sm-100">
+              <div class="text-primary"><i class="i-Building"></i> {{item.offices}}</div>
+              <span class="text-secondary">Cabins - {{item.cabins}}, Desks - {{item.desks}}</span>
+            </div> -->
+            <div class="m-0 text-muted text-small w-30 w-sm-100 d-b">
+              <div class="w-50 float-left">
+                <div class="d-b text-primary"> <span class="text-secondary">R :</span> {{item.reserved | date : 'MMM dd, yyyy'}}</div>
+                <span class="d-b text-info"> <span class="text-secondary">M :</span> {{item.started | date : 'MMM dd, yyyy'}}</span>
+              </div>
+              <div class="m-0 text-muted text-small w-40 item-actions  mr-1 ml-5 float-right">
+                <div class="badge" [ngClass]="{'badge-dark':item.status=='Reserved','badge-info':item.status=='Booked','badge-success':item.status=='Active','badge-warning':item.status=='Cancelled','badge-secondary':item.status=='Exiting','badge-light':item.status=='Exited','badge-light':item.status=='Settled'}">{{item.status}}</div>
+                <button class="btn btn-icon btn-primary" ngbTooltip="View Detailed Booking" routerLink="/client/booking/{{item.id}}">
+                  <i class="i-Magnifi-Glass1 text-bold"></i>
+                </button>
+                <button class="btn btn-icon btn-dark" ngbTooltip="View Credits" routerLink="/client/credits/{{item.id}}">
+                  <i class="i-Dollar-Sign text-bold"></i>
+                </button>
+                <button class="btn btn-icon btn-info" ngbTooltip="View Employees" routerLink="/client/employees/{{item.id}}">
+                  <i class="i-Business-Mens text-bold"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,164 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left mr-5 f-b w-25 mt-1">GST Compliance Invoices List</h5>
+      <input type="text" placeholder="Search by Vendor name or Project" [formControl]="search" class="form-control form-control-rounde pull-left w-20 ml-5">
+      <input class="form-control pull-left w-15 ml-5" autocomplete="off" placeholder="Invoice Date : Start - End Date" name="dp" id="daterangepicker">
+      <div class="float-right ml-5 w-25">
+        <ng-select class="float-right mini w-100" multiple="true" [items]="['Pending','Verified','MisMatched']" [hideSelected]="true" placeholder="Filter by Payment Statuses" [(ngModel)]="invoicesFilters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <div class="row p-1">
+      <div class="col-md-6 pl-4">
+        <!-- <strong class="float-left mr-10 d-ib">Total : ({{totalPayouts}})</strong> -->
+        <!-- <span class="float-left mr-10 d-ib f-b" *ngFor="let status of statuses">{{status.status}} : (<strong>{{status.count}}</strong>)</span> -->
+      </div>
+    </div>
+    <div class="clear"></div>
+    <!-- <div class="separator-breadcrumb border-top mb-10 mt-10"></div> -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <loading [loading]="loading"></loading>
+          <!-- <data-list #invoicesList [dataUrl]="'internal/purchases/listPurchaseOrderInvoices'" [filter]="invoicesFilters" [config]="invoicesConfig" (onAction)="action($event)"></data-list> -->
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-20" (click)="sortColBy('pp.title')">Project &nbsp; <i *ngIf="sort['pp.title']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['pp.title']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-20" (click)="sortColBy('v.name')">Vendor &nbsp; <i *ngIf="sort['v.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['v.name']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10" (click)="sortColBy('p.refNo')">RefNo &nbsp; <i *ngIf="sort['p.refNo']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['p.refNo']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10" (click)="sortColBy('i.invoiceNo')">InvoiceNo &nbsp; <i *ngIf="sort['i.invoiceNo']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['i.invoiceNo']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center" (click)="sortColBy('p.date')">Date &nbsp; <i *ngIf="sort['p.date']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['p.date']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-right" (click)="sortColBy('i.amount')">Amount &nbsp; <i *ngIf="sort['i.amount']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['i.amount']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center" (click)="sortColBy('gstVerificationStatus')">Status &nbsp; <i *ngIf="sort.gstVerificationStatus?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.gstVerificationStatus?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll" infiniteScroll (onScroll)="loadMore()">
+              <tr *ngFor="let item of items;">
+                <td class="w-20">{{item.project || '-'}}</td>
+                <td class="w-20">{{item.vendor || '-'}}</td>
+                <td class="w-10">{{item.refNo || '-'}}</td>
+                <td class="w-10">{{item.invoiceNo || '-'}}</td>
+                <td class="w-10 text-center">{{item.date | date : 'MMM dd, yyyy'}}</td>
+                <td class="w-10 text-right">{{item.amount | inr}}</td>
+                <td class="w-10 text-center">{{item.gstVerificationStatus}}</td>
+                <td class="w-10 text-center">
+                  <button class="btn btn-sm btn-icon btn-primary" (click)="viewPO(item)" ngbTooltip="View PO"><i class="fa fa-search"></i></button>
+                  <button class="btn btn-sm btn-icon btn-primary" *ngIf="item.gstVerificationStatus=='Verified'" (click)="editGSTSlabs(item, true)" ngbTooltip="View GST Slabs"><i class="fa fa-flash"></i></button>
+                  <button class="btn btn-sm btn-icon btn-primary" *ngIf="item.gstVerificationStatus!='Verified'" (click)="editGSTSlabs(item)" ngbTooltip="Edit GST Slabs"><i class="fa fa-pencil"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #gstModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">PurchaseOrder Invoice GST Slabs </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <loading [loading]="loading"></loading>
+    <div class="row mb-2">
+      <div class="col-md-3 text-right">
+        <label class="mb-0 d-b f-b">Taxable Amount</label>
+        {{taxInvoice.taxableAmount | inr}}
+      </div>
+      <div class="col-md-3 text-right">
+        <label class="mb-0 d-b f-b">GST Amount</label>
+        {{taxInvoice.gst | inr}}
+      </div>
+      <div class="col-md-3 text-right">
+        <label class="mb-0 d-b f-b">Invoice Amount</label>
+        {{taxInvoice.amount | inr}}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <table class="tableBodyScroll table table-striped table-hover table-sm">
+          <thead>
+            <tr>
+              <th class="w-15 text-center">GST Slab</th>
+              <th class="w-20 text-center">IGST</th>
+              <th class="w-15 text-center">CGST</th>
+              <th class="w-15 text-center">SGST</th>
+              <th class="w-20 text-center">Total</th>
+              <th class="w-10 text-center"></th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll">
+            <tr *ngFor="let slab of taxInvoice.verificationSlabs;">
+              <td class="w-15 text-center">{{slab.slab}}%</td>
+              <td class="w-20 text-center">{{slab.igst | inr}}</td>
+              <td class="w-15 text-center">{{slab.cgst | inr}}</td>
+              <td class="w-15 text-center">{{slab.sgst | inr}}</td>
+              <td class="w-20 text-center">{{slab.gst | inr}}</td>
+              <td class="w-10 text-center" *ngIf="!taxInvoice.viewOnly">
+                <button class="btn btn-danger btn-sm btn-icon float-right" ngbTooltip="Delete" (click)="removeGstSlab(slab);"><i class="fa fa-times"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-center p-2" *ngIf="!taxInvoice.verificationSlabs.length">No GST slabs are added yet.</p>
+      </div>
+      <div class="col-md-12 row mt-2" *ngIf="!taxInvoice.viewOnly">
+        <div class="col-md-2 text-center">
+          <ng-select [items]="['0','5','12','14','18','28']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Slab" [(ngModel)]="slab.slab">
+          </ng-select>
+        </div>
+        <div class="col-md-2 text-center"><input type="number" placeholder="IGST" class="form-control" [(ngModel)]="slab.igst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+        <div class="col-md-2 text-center"><input type="number" placeholder="CGST" class="form-control" [(ngModel)]="slab.cgst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+        <div class="col-md-2 text-center"><input type="number" placeholder="SGST" class="form-control" [(ngModel)]="slab.sgst" (ngModelChange)="updateSlabGST()" [ngModelOptions]="{standalone:true}" /></div>
+        <div class="col-md-2 text-center">{{slab.gst | inr}}</div>
+        <div class="col-md-2 text-center pr-0">
+          <!-- <input type="number" placeholder="TDS" class="form-control float-left w-70" [(ngModel)]="slab.tds" /> -->
+          <button class="btn btn-primary btn-sm btn-icon float-right" ngbTooltip="Add" (click)="addGstSlab(slab);" [disabled]="!slab.gst&&slab.slab!='0'"><i class="fa fa-plus"></i></button>
+        </div>
+      </div>
+      <div class="col-md-6 mt-2">
+        <label class="mb-0 d-b">Tax Invoice GSTR-2 File</label>
+        <a class="f-b badge badge-secondary fs-10" *ngIf="taxInvoice?.gstFile" [href]="taxInvoice?.gstFile?.file" target="_blank" ngbTooltip="Click to View">View Uploaded GSTR-2 File &nbsp;&nbsp;&nbsp;
+          <i *ngIf="!taxInvoice.viewOnly" class="fa fa-times cursor" ngbTooltip="Delete TaxInvoice PDF" (click)="taxInvoice.gstFile = null;$event.preventDefault();$event.stopPropogation();"></i>
+        </a>
+        <span class="input-group" *ngIf="!taxInvoice?.gstFile">
+          <div class="custom-file" *ngIf="!gstFile">
+            <input class="custom-file-input" id="taxInvoiceId" (change)="gstFileChange($event)" type="file">
+            <label class="custom-file-label" for="taxInvoiceId">Choose file</label>
+          </div>
+          <div class="custom-file" *ngIf="gstFile">
+            <span class="float-left">{{gstFile?.name}}</span>
+            <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="gstFile=null;"></i>
+            <div class="mb-1">
+              <div *ngIf="gstFileError">
+                {{ gstFileError.message }}
+              </div>
+              <div *ngIf="gstUploadResponse.status === 'error'">
+                {{ gstUploadResponse.message }}
+              </div>
+              <div *ngIf="gstUploadResponse.status === 'progress'">
+                <div role="progressbar" [style.width.%]="gstUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                  {{gstUploadResponse.message}}%
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="input-group-append">
+            <span class="input-group-text cursor" (click)="uploadTaxInvoiceGSTFile()">Upload</span>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="float-right btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="!taxInvoice.viewOnly" class="btn btn-sm btn-info btn-ico float-right mr-1" (click)="saveGst()" [disabled]="!taxInvoice.verificationSlabs.length || !taxInvoice?.gstFile"><i class="fa fa-check"></i> Save GST
+    </button>
+  </div>
+</ng-template>

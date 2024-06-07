@@ -1,0 +1,461 @@
+<div class="row">
+  <div class=" col-5">
+    <div class="breadcrumb">
+      <h1 class="pull-left">External Systems</h1>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-70 pl-2">System Type</th>
+                <th class="w-30 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll" style="max-height: 325px;">
+              <tr *ngFor="let system of externalSystemTypes;">
+                <td class="w-70 pl-2">
+                  <span>{{system.name}}</span>
+                </td>
+                <td class="w-30 text-center">
+                  <button class="btn btn-icon btn-primary" ngbTooltip="View All {{system.type}}" (click)="
+                 selectSystem(system.type)"><i class="i-Blinklist"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" *ngIf="selectedSystemType=='OutBoundMail'">
+    <div class="breadcrumb">
+      <h1 class="pull-left">OutBound Mails</h1>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openOutboundMailModal()">
+        <i class="fa fa-plus"></i> OutBound Mail
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #outboundMailsList [(items)]="items" [config]="outboundMailConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" *ngIf="selectedSystemType=='InBoundMail'">
+    <div class="breadcrumb">
+      <h1 class="pull-left">InBound Mails</h1>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openInboundMailModal()">
+        <i class="fa fa-plus"></i> InBound Mail
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #inboundMailsList [items]="items" [config]="inboundMailConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" *ngIf="selectedSystemType=='PaymentGateway'">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Payment Gateways</h1>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openPaymentGatewayModal()">
+        <i class="fa fa-plus"></i> Payment Gateway
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #paymentGatwaysList [items]="items" [config]="paymentGatewayConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" *ngIf="selectedSystemType=='PayoutGateway'">
+    <div class="breadcrumb">
+      <h1 class="pull-left">PayOuts</h1>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openPayOutGatewayModal()">
+        <i class="fa fa-plus"></i> PayOut
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #payOutGatwaysList [items]="items" [config]="payoutGatewayConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" *ngIf="selectedSystemType=='SMSGateway'">
+    <div class="breadcrumb">
+      <h1 class="pull-left">SMS Gateways</h1>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openSMSGatewayModal()">
+        <i class="fa fa-plus"></i> SMS Gateway
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #smsGatwaysList [items]="items" [config]="smsGatewayConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" *ngIf="selectedSystemType=='PushNotification'">
+    <div class="breadcrumb">
+      <h1 class="pull-left">PushNotification APIs</h1>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openPushNotificationsModal()">
+        <i class="fa fa-plus"></i> PushNotification
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #pushNotificationsList [items]="items" [config]="pushNotificationsConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-7" *ngIf="selectedSystemType=='WhatsApp'">
+    <div class="breadcrumb">
+      <h1 class="pull-left">WhatsApp Messaging</h1>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openWhatsAppModal()">
+        <i class="fa fa-plus"></i> WhatsApp
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #whatsappList [items]="items" [config]="whatsappConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #outboundMailModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{selectedItem.id ? 'Edit OutBound Mail' : 'New OutBound Mail'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="outboundMailForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="selectedItem.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Host</label>
+          <input type="text" class="form-control" id="host" formControlName="host" placeholder="Host SMTP" [(ngModel)]="selectedItem.config.host">
+        </div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">Port</label>
+          <input type="text" class="form-control" id="port" formControlName="port" placeholder="Port" [(ngModel)]="selectedItem.config.port">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.config.secure" [ngModelOptions]="{standalone: true}">
+            <span>Secure</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-7 form-group mb-1">
+          <label for="firstName">Sender Name</label>
+          <input type="text" class="form-control" id="senderName" formControlName="senderName" placeholder="Enter SenderName" [(ngModel)]="selectedItem.config.senderName">
+        </div>
+        <div class="col-md-7 form-group mb-1">
+          <label for="firstName">Sender Email</label>
+          <input type="text" class="form-control" id="senderEmail" formControlName="senderEmail" placeholder="Enter Sender Email" [(ngModel)]="selectedItem.config.senderEmail">
+        </div>
+        <div class="col-md-5 form-group mb-1">
+          <label for="firstName">Auth Password</label>
+          <input type="password" class="form-control" id="password" formControlName="password" placeholder="Enter Password" [(ngModel)]="selectedItem.config.password">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||outboundMailForm.invalid" (click)="saveExternalSystem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #inboundMailModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{selectedItem.id ? 'Edit InBound Mail' : 'New InBound Mail'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="inboundMailForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="selectedItem.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Host</label>
+          <input type="text" class="form-control" id="host" formControlName="host" placeholder="IMAP Host " [(ngModel)]="selectedItem.config.host">
+        </div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">Port</label>
+          <input type="text" class="form-control" id="port" formControlName="port" placeholder="SMTP Port" [(ngModel)]="selectedItem.config.port">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.config.tls" [ngModelOptions]="{standalone: true}">
+            <span>TLS</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-5 form-group mb-1 p-1">
+          <label for="firstName">Auth Email</label>
+          <input type="text" class="form-control" id="user" formControlName="user" placeholder="Email" [(ngModel)]="selectedItem.config.user">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="firstName">Auth Password</label>
+          <input type="password" class="form-control" id="password" formControlName="password" placeholder="Password" [(ngModel)]="selectedItem.config.password">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4 p-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.config.markSeen" [ngModelOptions]="{standalone: true}">
+            <span>Mark as Seen</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||inboundMailForm.invalid" (click)="saveExternalSystem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #paymentGatewayModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{selectedItem.id ? 'Edit Payment Gateway' : 'New Payment Gateway'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="paymentGatewayForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="selectedItem.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Service</label>
+          <ng-select [items]="['CashFree','RazorPay']" [hideSelected]="true" id="service" formControlName="service" placeholder="PG Service" [(ngModel)]="selectedItem.service">
+          </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">PG Charges (<small>in percentage</small>)</label>
+          <input type="text" class="form-control" id="pgCharge" formControlName="pgCharge" placeholder="PG Charges" [(ngModel)]="selectedItem.config.pgCharge">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">API Key</label>
+          <input type="text" class="form-control" id="apikey" formControlName="apikey" placeholder="API Key" [(ngModel)]="selectedItem.config.key">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">API Secret</label>
+          <input type="text" class="form-control" id="secret" formControlName="secret" placeholder="API Secret" [(ngModel)]="selectedItem.config.secret">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||paymentGatewayForm.invalid" (click)="saveExternalSystem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #payOutGatewayModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{selectedItem.id ? 'Edit Payout' : 'New Payout'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="payOutGatewayForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="selectedItem.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">API Key</label>
+          <input type="text" class="form-control" id="apikey" formControlName="apikey" placeholder="API Key" [(ngModel)]="selectedItem.config.key">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">API Secret</label>
+          <input type="text" class="form-control" id="secret" formControlName="secret" placeholder="API Secret" [(ngModel)]="selectedItem.config.secret">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||payOutGatewayForm.invalid" (click)="saveExternalSystem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #pushNotificationsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{selectedItem.id ? 'Edit PushNotification' : 'New PushNotification'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="payOutGatewayForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="selectedItem.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">API Key</label>
+          <input type="text" class="form-control" id="apikey" formControlName="apikey" placeholder="API Key" [(ngModel)]="selectedItem.config.key">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Auth Token</label>
+          <input type="text" class="form-control" id="secret" formControlName="secret" placeholder="API Secret" [(ngModel)]="selectedItem.config.secret">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||payOutGatewayForm.invalid" (click)="saveExternalSystem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #whatsappModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{selectedItem.id ? 'Edit WhatsApp' : 'New WhatsApp'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="payOutGatewayForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="selectedItem.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">API Key</label>
+          <input type="text" class="form-control" id="apikey" formControlName="apikey" placeholder="API Key" [(ngModel)]="selectedItem.config.key">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Auth Token</label>
+          <input type="text" class="form-control" id="secret" formControlName="secret" placeholder="API Secret" [(ngModel)]="selectedItem.config.secret">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||payOutGatewayForm.invalid" (click)="saveExternalSystem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #smsGatewayModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{selectedItem.id ? 'Edit SMS Gateway' : 'New SMS Gateway'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="smsGatewayForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="selectedItem.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="selectedItem.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||smsGatewayForm.invalid" (click)="saveExternalSystem()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

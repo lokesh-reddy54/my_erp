@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title></title>
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+  <style type="text/css">
+  body {
+    font-family: Nunito, sans-serif;
+    letter-spacing: .3px;
+    line-height: 1.6;
+    font-size: .813rem;
+    font-weight: 400;
+    color: #47404f;
+  }
+
+  .h4,
+  h4 {
+    font-size: 1.21625rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 0;
+  }
+
+  .h5,
+  h5 {
+    font-size: 1.01625rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px 1px rgba(0, 0, 0, .06), 0 1px 4px rgba(0, 0, 0, .08);
+    border: 0;
+  }
+
+  .card {
+    position: relative;
+    display: block;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+  }
+
+  .card-body {
+    flex: 1 1 auto;
+    padding: 1.25rem;
+  }
+
+  .row {
+    display: block;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+  }
+
+  .col-md-12 {
+    flex: 0 0 100%;
+    width: 100%;
+  }
+
+  .invoice-summary {
+    width: 220px;
+    text-align: right;
+  }
+
+  .float-right {
+    float: right !important;
+  }
+
+  .invoice-summary h5,
+  .invoice-summary p {
+    display: block;
+    justify-content: flex-end;
+  }
+
+  .account-summary p {
+    display: block;
+    justify-content: flex-start;
+  }
+
+  .invoice-summary h5 span,
+  .invoice-summary p span {
+    width: 120px;
+  }
+
+  .account-summary p span {
+    width: 120px;
+  }
+
+
+
+  dl,
+  ol,
+  p,
+  ul {
+    margin-top: 0;
+    margin-bottom: 0rem;
+  }
+
+  p {
+    margin-bottom: 0.3rem !important;
+  }
+
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  .table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .bg-gray-300 {
+    background-color: #dee2e6 !important;
+  }
+
+  .table td,
+  .table th {
+    padding: .3rem;
+    vertical-align: center;
+    text-align: left;
+    border-top: 1px solid #dee2e6;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="card-body">
+      <div class="row mb-4">
+        <div class="col-12">
+          Dear ${clientName},<br><br>
+          <p>Below are the invoices raised for your booking with reference number ${refNo} done with ${companyName} during financial quarter of ${quarter}. </p>
+          <br>
+          <p>Please send your TDS Form 16A for amount of Rs. ${tdsDue} to ${accountsEmail}</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <table class="table table-hover mb-4">
+            <thead class="bg-gray-300">
+              <tr>
+                <th>ID</th>
+                <th>Item Description</th>
+                <th>Invoice No</th>
+                <th>Date</th>
+                <th style="text-align:right">Taxable Amount</th>
+                <th style="text-align:right">TDS Deducted</th>
+                <th style="text-align:right">TDS Paid</th>
+                <th style="text-align:right">TDS Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <#list items as item>
+                <tr>
+                  <td>${item?counter}</td>
+                  <td>${item['name']}</td>
+                  <td>${item['invoiceNo']}</td>
+                  <td>${item['date']}</td>
+                  <td style="text-align:right">Rs.${item['taxableAmount']}</td>
+                  <td style="text-align:right">Rs.${item['tds']}</td>
+                  <td style="text-align:right">Rs.${item['tdsPaid']}</td>
+                  <td style="text-align:right">Rs.${item['tdsDue']}</td>
+                </tr>
+              </#list>
+            </tbody>
+          </table>
+        </div>
+        <div style="clear:both;"></div>
+        <div class="col-md-12 mb-4">
+          <div class="invoice-summary float-right">
+            <h5 class="font-weight-bold">Total TDS Due: <span> Rs.${tdsDue} </span></h5>
+          </div>
+        </div>
+      </div>
+      <div style="clear:both;" class="mb-4"></div>
+      <p>
+        <center>You can reach us for any of your assistance on <strong>${supportPhone} </strong> and write us at <strong>${supportEmail}</strong>.</center>
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,133 @@
+<div class="dashboards">
+  <div class="breadcrumb">
+    <h1>OverAll Dashboard</h1>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="row">
+    <div class="col-12 row pr-0">
+      <div class="col-md-4 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Library"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0"> Bookings</p>
+              <p class="text-primary text-24 line-height-1 mb-2">{{activeBookings}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-4" style="height:32px;" (click)="viewBooking()" *ngIf="activeBookings==1">View</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0" *ngIf="totalDue>0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Money"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Dues</p>
+              <p class="text-primary text-24 line-height-1 mb-2">{{totalDue|inr}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-0" style="height:32px;" (click)="payNow()">Pay Now</a>
+            <a class="mt-2 d-b" style="position: absolute;bottom: 15px;right: 25px;" (click)="viewInvoices()">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0" *ngIf="totalDue==0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Money"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Total Paid</p>
+              <p class="text-primary text-24 line-height-1 mb-2">{{totalPaid|inr}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-2" style="height:32px;" (click)="viewInvoices()">All Payments</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Business-Mens"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Employees</p>
+              <p class="text-primary text-24 line-height-1 mb-2">10</p>
+            </div>
+            <a class="btn btn-outline-primary mt-4" style="height:32px;" (click)="payNow()">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Support"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0"> Open Tickets</p>
+              <p class="text-primary text-24 line-height-1 mb-2">{{openedTickets}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-0" style="height:32px;" (click)="raiseTicket()">Raise Ticket</a>
+            <a class="mt-2 d-b" style="position: absolute;bottom: 15px;right: 25px;" href="/#/client/tickets">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center pb-0 pt-1">
+            <i class="i-Add-Window pt-2"></i>
+            <div class="content pl-10 pr-10">
+              <p class="text-muted mb-0">Upcoming Resource Bookings</p>
+              <p class="text-primary text-24 line-height-1 mb-2">1</p>
+            </div>
+            <a class="btn btn-outline-primary mt-2" style="height:32px;" (click)="raiseTicket()">Book Now</a>
+            <a class="mt-2 d-b" style="position: absolute;bottom: 15px;right: 25px;" href="/#/client/resource-bookings">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center pt-1">
+            <i class="i-Dollar-Sign pt-2"></i>
+            <div class="content">
+              <p class="text-muted mb-0">Available Credits</p>
+              <p class="text-primary text-24 line-height-1 mb-2">10</p>
+            </div>
+            <a class="btn btn-outline-primary mt-4" style="height:32px;" href="/#/client/credits">View All</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card mb-4 o-hidden">
+        <h5 class="m-2 f-b border-bottom mb-2 pb-2">My Bookings (1) </h5>
+        <img alt="" class="card-img-top" src="./assets/images/photo-wide-2.jpg">
+        <div class="card-body">
+          <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Illum, cumque!</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body p-1">
+          <h5 class="m-2 f-b">Pending Invoices ({{pendingInvoices.length}})</h5>
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-50">Invoice</th>
+                <th class="w-25 text-center">Status</th>
+                <th class="w-25 text-right">Due</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="300">
+              <tr *ngFor="let item of pendingInvoices;">
+                <td class="w-50 ">{{item.name}} for {{item.date | date : 'MMM yy'}} </td>
+                <td class="w-25 text-center">{{item.status}}</td>
+                <td class="w-25 text-right">{{item.due | inr}}</td>
+              </tr>
+              <tr>
+                <td class="w-75 text-right">Total Due</td>
+                <td class="w-25 text-right">{{totalDue | inr}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

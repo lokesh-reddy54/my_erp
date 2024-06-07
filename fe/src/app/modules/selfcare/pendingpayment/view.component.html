@@ -1,0 +1,155 @@
+<div class="row">
+  <div class="col-md-9 col-12 m-auto">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Booking Pending Payment</h1>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="card  mb-1 d-b m-auto mt-4" *ngIf="!booking">
+      <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+    </div>
+    <div class="card user-profile o-hidden mb-1 d-b" *ngIf="booking">
+      <div class="float-right w-60 text-right pr-3 pt-1">
+        <p class="text-info  text-14 m-0 float-right">MoveIn : <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong></p>
+        <p class="text-secondary text-14 m-0 pr-2 float-right">Booked : <strong>{{booking.reserved | date :'MMM dd, yyyy'}}</strong></p>
+      </div>
+      <div class="card-body pt-1">
+        <loading [loading]="loading"></loading>
+        <h4 class=" border-bottom pb-2">Booking Information</h4>
+        <div class="row">
+          <div class="col-md-5 col-12 mb-2">
+            <p class="m-0 text-14">{{booking.client.company}} </p>
+            <p class="m-0 text-12">{{booking.refNo}} </p>
+          </div>
+          <div class="col-md-3 col-12 mb-2">
+            <p class="m-0 text-14">{{booking.client.name}} </p>
+            <p class="m-0 text-12">{{booking.client.phone}} </p>
+          </div>
+          <div class="col-md-2 col-12 mb-2">
+            <p class="text-muted mb-0">Status : </p>
+            <span class="badge" [ngClass]="{'badge-info':booking.status=='Booked','badge-success':booking.status=='Active','badge-warning':booking.status=='Cancelled','badge-secondary':booking.status=='Exiting','badge-light':booking.status=='Exited'}">{{booking.status}}</span>
+          </div>
+          <div class="col-md-2 col-12 mb-2">
+            <p class="text-muted mb-0">Contract Type : </p>
+            <span class="">{{booking.contract.type}}</span>
+          </div>
+          <div class="col-md-8 col-12 mb-2">
+            <p class="text-muted mb-0">Office : </p>
+            <span class="text-bold">{{booking.offices}}, {{booking.location}}</span>
+          </div>
+          <div class="col-md-2 p-1 col-6 mb-2">
+            <p class="text-muted mb-0">Total Desks : </p>
+            <span class="">{{booking.desks}}</span>
+          </div>
+          <div class="col-md-2 p-1 col-6 mb-2">
+            <p class="text-muted mb-0">Monthly Charge : </p>
+            <span class="">{{booking.contract.rent | inr}}</span>
+          </div>
+        </div>
+        <div *ngIf="booking.invoices.length==0">
+          <h3 class="text-success text-center">No pending invoices to pay any ..!</h3>
+        </div>
+        <div class="list-horizontal tableBodyScroll" *ngIf="booking.invoices.length">
+          <h4 class=" border-bottom pb-2">Pending Invoices to Pay</h4>
+          <div *ngFor="let item of booking.invoices;let i=index" class="list-item">
+            <div class="card mb-2 d-flex flex-row">
+              <div class="flex-grow-1 d-flex">
+                <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+                  <div class="m-0 text-muted text-small text-center w-5 w-sm-100">
+                    <div class="text-primary">{{item.date | date : 'MMM'}}</div>
+                    <span class="text-secondary">{{item.date | date : 'yyyy'}}</span>
+                  </div>
+                  <a href="" class="w-25 w-sm-100">
+                    <div class="item-title">{{item.name}}</div>
+                    <span class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf?.file" target="_blank">{{item.refNo}}</a></span>
+                  </a>
+                  <div class="m-0 text-muted text-small w-15 w-sm-100">
+                    <div class="d-b text-primary"> <span class="text-secondary w-10 pull-left">I </span> <span class="d-b text-right pull-left pr-3"> : {{item.date | date : 'MMM dd, yyyy'}}</span></div>
+                    <div class="clear"></div>
+                    <div class="d-b text-info"> <span class="text-secondary w-10 pull-left">D </span> <span class="d-b text-right pull-left pr-3"> : {{item.dueDate | date : 'MMM dd, yyyy'}}</span></div>
+                  </div>
+                  <div class="m-0 text-muted text-small w-15 w-sm-100">
+                    <div class="text-primary"><span class="text-secondary d-ib w-40">Charge </span> : {{item.taxableAmount | inr }}</div>
+                    <span class="text-info"><span class="text-secondary d-ib w-40">GST </span> : {{item.gst | inr}}</span>
+                  </div>
+                  <div class="m-0 text-muted text-small w-15 w-sm-100">
+                    <div class="text-primary"><span class="text-secondary d-ib w-30">TDS </span> : {{item.tds | inr }}</div>
+                    <span class="text-info"><span class="text-secondary d-ib w-30">Total </span> : {{item.amount | inr}}</span>
+                  </div>
+                  <div class="m-0 text-muted text-small w-15 w-sm-100">
+                    <div class="text-primary"><span class="text-secondary d-ib w-30">Paid </span> : {{item.paid | inr }}</div>
+                    <span class="text-info"><span class="text-secondary d-ib w-30">Due </span> : <span>{{item.due | inr}}</span></span>
+                  </div>
+                  <div class="m-0 w-10 w-sm-100 d-lg-block text-center mr-1 ml-5">
+                    <div class="badge badge-success" *ngIf="item.status=='Paid'">PAID</div>
+                    <div class="badge badge-warning" *ngIf="item.status=='Cancelled'">CANCELLED</div>
+                    <div class="badge badge-info" *ngIf="item.status=='Pending'">PENDING</div>
+                    <div class="badge badge-warning" *ngIf="item.status=='Due'">DUE</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="w-20 m-auto" *ngIf="!showOptions">
+            <button class="btn btn-info m-3 btn-ico pull-right" (click)="showOptions=true;">
+              <i class="fa fa-check"></i> Pay {{booking.due | inr}} Now
+            </button>
+          </div>
+          <div class="row mt-4" *ngIf="showOptions">
+            <div class="col-md-6 col-12">
+              <h5 class="text-center">Pay by Bank Transfer </h5>
+              <p class="text-muted f-b"> Login to your bank account and transfer the due amount to our account mentioned below using IMPS, NEFT or RTGS. </p>
+              <div class="row">
+                <div class="col-12 col-md-5 form-group mb-1">Account Holder Name </div>
+                <div class="col-12 col-md-7 form-group mb-1">: {{booking.company.accountName}}</div>
+              </div>
+              <div class="row">
+                <div class="col-12 col-md-5 form-group mb-1">Account Number </div>
+                <div class="col-12 col-md-7 form-group mb-1">: {{booking.company.accountNumber}}</div>
+              </div>
+              <div class="row">
+                <div class="col-12 col-md-5 form-group mb-1">IFSC Code </div>
+                <div class="col-12 col-md-7 form-group mb-1">: {{booking.company.ifscCode}}</div>
+              </div>
+              <div class="row">
+                <div class="col-12 col-md-5 form-group mb-1">Bank & Branch </div>
+                <div class="col-12 col-md-7 form-group mb-1">: {{booking.company.bankName}}, {{booking.company.branchName}}</div>
+              </div>
+              <div class="text-center" *ngIf="urnSubmitted">
+                <h4 class="text-success">URN Submitted Successfully .. !</h4>
+              </div>
+              <form [formGroup]="paymentForm" *ngIf="!urnSubmitted">
+                <div class="row">
+                  <div class="col-12 col-md-6 form-group mb-1">
+                    <label for="firstName">Amount</label>
+                    <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter paid amount" [(ngModel)]="urn.amount">
+                  </div>
+                  <div class="col-12 col-md-6 form-group mb-1">
+                    <label for="roles">Payment Date</label>
+                    <input placeholder="Select payment date " class="form-control" name="date" ngbDatepicker #dp="ngbDatepicker" placement="top" [(ngModel)]="urn.date" formControlName="date" (focus)="dp.toggle()" (dateSelect)="dp.close()" />
+                  </div>
+                  <div class="col-12 form-group mb-1">
+                    <label for="roles">Payment Reference (UTR) Number</label>
+                    <input placeholder="Enter UTR number" class="form-control" name="utr" [(ngModel)]="urn.urn" formControlName="utr" />
+                  </div>
+                  <div class="col-12 form-group mb-1">
+                    <button class="btn btn-info m-3 btn-ico pull-right" [disabled]="!paymentForm.valid||booking.due<=0" (click)="saveUrnPayment()">
+                      <i class="fa fa-check"></i> Submit URN Payment
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="col-md-6 col-12">
+              <h5 class="text-center">Pay Online by Credit / Debit Card </h5>
+              <p class="text-muted f-b">By paying online with Payment Gateway, PG charges of {{pgRate}}% of total amount is charged additionally.</p>
+              <button class="btn btn-info m-3 btn-ico pull-right" (click)="payNow()">
+                <i class="fa fa-check"></i> Pay {{booking.onlinePayment | inr}} Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

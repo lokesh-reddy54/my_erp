@@ -1,0 +1,111 @@
+<div class="row">
+  <div class="col-md-11 col-12 m-auto">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Vendor SKU Approval</h1>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="card  mb-1 d-b m-auto mt-4" *ngIf="!data">
+      <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+    </div>
+    <div class="card user-profile o-hidden mb-1 d-b" *ngIf="data">
+      <div class="card-body pt-1">
+        <loading [loading]="loading"></loading>
+        <h5 class="f-b">Vendor '{{data.vendor?.name}}' Information</h5>
+        <div class="row ">
+          <div class="col-md-3 col-6 mb-2">
+            <p class="text-black f-b mb-0">Contact Name : </p>
+            <span class="">{{data.vendor?.contact?.name}}</span>
+          </div>
+          <div class="col-md-3 col-6 mb-2">
+            <p class="text-black f-b mb-0">Email : </p>
+            <span class="">{{data.vendor?.contact?.email}}</span>
+          </div>
+          <div class="col-md-2 col-6 mb-2">
+            <p class="text-black f-b mb-0">Phone : </p>
+            <span class="">{{data.vendor?.contact?.phone}}</span>
+          </div>
+          <div class="col-md-4 col-6 mb-2">
+            <p class="text-black f-b mb-0">Address : </p>
+            <span class="">{{data.vendor?.address}}</span>
+          </div>
+        </div>
+        <h5 class="f-b border-bottom mb-4">SKUes Details <small>(Please accept or reject below SKU items for your future purchase orders)</small> </h5>
+        <div *ngFor="let item of data.skus;" class="mb-4 pb-4">
+          <div class="row mt-1 pl-2">
+            <div class="col-md-3">
+              <p class="text-black f-b mb-0">SKU Item : </p>
+              <span class="fs-16">{{item.sku?.name}}</span>
+            </div>
+            <div class="col-md-2">
+              <p class="text-black f-b mb-0">SKU Category : </p>
+              <span class="">{{item.sku?.category?.name}}</span>
+            </div>
+            <div class="col-md-3">
+              <p class="text-black f-b mb-0">SKU Type : </p>
+              <span class="">{{item.sku?.type?.name}}</span>
+            </div>
+            <div class="col-md-4">
+              <p *ngIf="item.status=='Accepted'">You have <strong class="text-success">ACCEPTED</strong> to provide this SKU item with below pricings</p>
+              <p *ngIf="item.status=='Rejected'">You have <strong class="text-danger">REJECTED</strong> to provide this SKU item with below pricings.<br>
+                <span class="f-b">Rejected Reason : </span> {{item.rejectedMessage}}</p>
+              <button class="btn btn-primary btn-sm float-right f-b btn-sm" (click)="acceptSku(item)" *ngIf="item.status=='Draft'"><i class="fa fa-check"></i> Accept SKU Pricing</button>
+              <button class="btn btn-danger btn-sm float-right mr-2 btn-sm" (click)="openRejectMessage(item)" *ngIf="item.status=='Draft'"><i class="fa fa-ban"></i> Reject Pricing</button>
+            </div>
+          </div>
+          <!-- <h5 class="mt-2">Pricings with Payment Terms</h5> -->
+          <div class="row mt-1 border-bottom bg-light text-white">
+            <div class="col-md-8 text-center f-b">Payment Terms</div>
+            <div class="col-4 text-center f-b d-none d-md-block">Pricings</div>
+          </div>
+          <div class="row mt-1 pl-2 border-bottom pb-2" *ngFor="let term of item.sku?.paymentTerms">
+            <div class="col-md-8">
+              <div class="w-100 border-bottom mb-1">
+                <label class="mb-0">Name : </label> <strong> {{term.paymentTerm.name}}</strong> {{term.paymentTerm.tagName}}
+              </div>
+              <span class="d-ib" *ngIf="term.paymentTerm.onAdvance">Advance Payment of <strong>{{term.paymentTerm.onAdvance}}%</strong></span>
+              <span class="d-ib" *ngIf="term.paymentTerm.onDelivery">OnDelivery Payment of <strong>{{term.paymentTerm.onDelivery}}%</strong></span>
+              <span class="d-ib" *ngIf="term.paymentTerm.inProgress">InProgress Payment of <strong>{{term.paymentTerm.inProgress}}%</strong></span>
+              <span class="d-ib" *ngIf="term.paymentTerm.onFinish">OnFinish Payment of <strong>{{term.paymentTerm.onFinish}}%</strong></span>
+              <span class="d-ib" *ngIf="term.paymentTerm.afterFinish">AfterFinish Payment of <strong>{{term.paymentTerm.afterFinish}}%</strong></span>
+            </div>
+            <div class="col-md-4">
+              <div class="row border-bottom mb-1 bg-light">
+                <div class="col-4 text-center f-b">Min Quantity</div>
+                <div class="col-4 text-center f-b">Max Quantity</div>
+                <div class="col-4 text-center f-b">Unit Price</div>
+              </div>
+              <div class="row" *ngFor="let pricing of term.pricings">
+                <div class="col-4 text-center">{{pricing.minQty}}</div>
+                <div class="col-4 text-center">{{pricing.maxQty}}</div>
+                <div class="col-4 text-center">{{pricing.price | inr}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #rejectedModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{data.vendorRejectedComments ? 'View' : 'Enter'}} Rejected Message </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="rejectedForm">
+      <div class="row">
+        <div class="col-12">
+          <textarea class="form-control" [(ngModel)]="vendorRejectedComments" placeholder="Enter your comments to reject SKU pricings" formControlName="comments"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-danger ladda-button btn-ico" [ladda]="loading" [disabled]="loading||rejectedForm.invalid" (click)="rejectSKUPricing()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Rejection </button>
+  </div>
+</ng-template>

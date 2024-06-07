@@ -1,0 +1,1059 @@
+<div class="card user-profile o-hidden mb-1 d-b" style="height: calc(100vh - 90px);">
+  <div class="card-body pt-1">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="float-left pt-2 w-40">
+          <h4>Project - <small>{{project.title}}
+              <help-notes [context]="'Purchases:ProjectStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="ml-5"></help-notes>
+              <help-notes [context]="'Purchases:ProjectStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-5"></help-notes>
+            </small></h4>
+        </div>
+        <ngb-tabset class="nav-right" [activeId]="">
+          <ngb-tab title="Dashboard">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <loading [loading]="loading"></loading>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="ol-12 mb-2">
+                    <p class="text-black f-b mb-0">Building : </p>
+                    <span class="">{{project.office?.name}} {{project.building?.name}}, {{project.building?.location}}</span>
+                  </div>
+                  <div class="ol-12 mb-2">
+                    <p class="text-black f-b mb-0">Client : </p>
+                    <span class="">{{project.booking?.client?.company || '-'}}</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="mb-2">
+                    <p class="text-black f-b mb-0">Status : </p>
+                    <span class="badge badge-info" *ngIf="project.status=='Draft'">Draft</span>
+                    <span class="badge badge-success" *ngIf="project.status=='InProgress'">InProgress</span>
+                    <span class="badge badge-light" *ngIf="project.status=='Closed'">Closed</span>
+                    <span class="badge badge-light" *ngIf="project.status=='OnHold'">OnHold</span>
+                    <span class="badge badge-light" *ngIf="project.status=='Deferred'">Deferred</span>
+                  </div>
+                  <div class="mb-2">
+                    <p class="text-black f-b mb-0">Purpose : </p>
+                    <span class="">{{project.purpose}}, {{project.subPurpose}}</span>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <div class="mb-2">
+                    <p class="text-black f-b mb-0">Proposed By : </p>
+                    <span class="">{{project.proposedBy || '-'}} <small>on <strong>{{project.date | date : 'MMM dd, yyyy'}}</strong></small></span>
+                  </div>
+                  <div class="mb-2">
+                    <p class="text-black f-b mb-0">Estimated Budget : </p>
+                    <span class="">{{project.estimatedBudget | inr}}</span>
+                  </div>
+                </div>
+                <div class="col-md-1 pl-0 pr-1">
+                  <div class="ol-12 mb-2">
+                    <p class="text-black f-b mb-0">Budget : </p>
+                    <span class="">{{project.budgetAmount | inr}}</span>
+                  </div>
+                  <div class="ol-12 mb-2">
+                    <p class="text-black f-b mb-0">Paid : </p>
+                    <span class="">{{project.paidAmount | inr}}</span>
+                  </div>
+                </div>
+                <div class="col-md-1 pl-1 pr-0">
+                  <div class="ol-12 mb-2">
+                    <p class="text-black f-b mb-0">To Pay : </p>
+                    <span class="">{{(project.budgetAmount - project.paidAmount) | inr}}</span>
+                  </div>
+                  <div class="ol-12 mb-2">
+                    <p class="text-black f-b mb-0">Dues : </p>
+                    <span class="">{{project.dueAmount | inr}}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-4">
+                <div class="col-md-4">
+                  <h5>Inprogress PurchaseOrders ({{project.currentPos?.length}})</h5>
+                  <hr class="mb-1 mt-1 ">
+                  <div class="text-center f-b mt-2 pt-2 " *ngIf="!project.currentPos?.length">No purchase orders are in progress</div>
+                  <table class="table table-sm table-stripped table-hover tableBodyScroll" *ngIf="project.currentPos?.length">
+                    <thead>
+                      <tr>
+                        <th>Vendor</th>
+                        <th class="w-30 text-right fs-12">(Paid / Budget)</th>
+                      </tr>
+                    </thead>
+                    <tbody class="tableBodyScroll" infiniteScroll>
+                      <tr *ngFor="let po of project.currentPos;">
+                        <td class="w-70">{{po.vendor.name}}</td>
+                        <td class="w-30 text-right fs-10">{{po.paidAmount | inr}} / {{po.amount | inr}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-4">
+                  <h5>Upcoming Milestones ({{upcomingAmount |inr}})</h5>
+                  <hr class="mb-1 mt-1 ">
+                  <div class="text-center f-b mt-2 pt-2" *ngIf="!project.upcomingMilestones?.length">No upcoming Milestones</div>
+                  <table class="table table-sm table-stripped table-hover tableBodyScroll" *ngIf="project.upcomingMilestones?.length">
+                    <thead>
+                      <tr>
+                        <th>Vendor</th>
+                        <th class="w-30 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody class="tableBodyScroll" infiniteScroll>
+                      <tr *ngFor="let po of project.upcomingMilestones;">
+                        <td class="w-70">{{po.purchaseOrder.vendor?.name}}</td>
+                        <td class="w-30 text-right">{{po.amount | inr}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-4">
+                  <h5>Due Milestones ({{dueAmount |inr}})</h5>
+                  <hr class="mb-1 mt-1 ">
+                  <div class="text-center f-b mt-2 pt-2" *ngIf="!project.dueMilestones?.length">No Milestones are due</div>
+                  <table class="table table-sm table-stripped table-hover tableBodyScroll" *ngIf="project.dueMilestones?.length">
+                    <thead>
+                      <tr>
+                        <th>Vendor</th>
+                        <th class="w-30 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody class="tableBodyScroll" infiniteScroll>
+                      <tr *ngFor="let po of project.dueMilestones;">
+                        <td class="w-70">{{po.purchaseOrder.vendor?.name}}</td>
+                        <td class="w-30 text-right">{{po.amount | inr}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Work Orders">
+            <ng-template ngbTabContent>
+              <loading [loading]="loading"></loading>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <div class="row">
+                <div class="col-md-3">
+                  <input type="text" placeholder="Search by vendor" [formControl]="workOrderSearchControl" class="form-control form-control-rounde">
+                </div>
+                <div class="col-md-4 pl-1">
+                  <ng-select class="w-90 float-left" [items]="['Raised','Approved','Deleted','PORaised','Rejected']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="workOrdersFilters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetWorkOrdersList()"></ng-select>
+                  <span class="w-10 float-left">
+                    <help-notes [context]="'Purchases:WOStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+                    <help-notes [context]="'Purchases:WOStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+                  </span>
+                </div>
+                <div class="col-md-3 pt-2 p-0">
+                  <span class="badge fs-14 mr-2 cursor">Total - {{totalWorkOrdersCount}} </span>
+                  <span class="badge fs-12 mr-2 cursor badge-outline-primary" *ngFor="let status of wosByStatuses;" (click)="workOrdersFilters.statuses=[status.status];resetWorkOrdersList();">{{status?.status}} ({{status?.count}})</span>
+                </div>
+                <div class="col-md-2 pt-2">
+                  <button class="btn btn-outline-primar btn-sm btn-primary btn-rounde btn-ico pull-right" (click)="openWorkOrderModal()"><i class="fa fa-plus"></i> WorkOrder </button>
+                </div>
+              </div>
+              <div class="row mt-1">
+                <!-- <data-list #workOrdersList [filter]="workOrdersFilters" [dataUrl]="'internal/purchases/listWorkOrders'" [config]="workOrdersConfig" (onAction)="action($event)"></data-list> -->
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-30" (click)="workOrdersSortColBy('vendor.name')">Vendor &nbsp; <i *ngIf="workOrdersSort['vendor.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="workOrdersSort['vendor.name']?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-15">RefNo</th>
+                      <th class="w-10">ProposedBy</th>
+                      <th class="w-10" (click)="workOrdersSortColBy('date')">ProposedOn &nbsp; <i *ngIf="workOrdersSort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="workOrdersSort.date?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-right" (click)="workOrdersSortColBy('budget')">Budget &nbsp; <i *ngIf="workOrdersSort.budget?.asc" class="fa fa-caret-up"></i><i *ngIf="workOrdersSort.budget?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-15" (click)="workOrdersSortColBy('status')">Status &nbsp; <i *ngIf="workOrdersSort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="workOrdersSort.status?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <p class="p-4 text-center" *ngIf="!workOrders.length">No WorkOrders are added yet .</p>
+                  <tbody class="tableBodyScroll" infiniteScroll (onScroll)="loadMoreWorkOrders()">
+                    <tr *ngFor="let wo of workOrders;">
+                      <td class="w-30">{{wo.vendor?.name}}</td>
+                      <td class="w-15">{{wo.refNo}}</td>
+                      <td class="w-10">{{wo.proposedBy}}</td>
+                      <td class="w-10">{{wo.proposedOn | date : 'MMM dd, yyyy'}}</td>
+                      <td class="w-10 text-right">{{wo.budget | inr}}</td>
+                      <td class="w-15">
+                        <ng-select class="mini" [items]="['Raised','Approved','PORaised','Closed','Deleted']" [hideSelected]="true" [(ngModel)]="wo.status" [ngModelOptions]="{standalone: true}" (ngModelChange)="updateWOStatus(wo)" placeholder="Status"></ng-select>
+                      </td>
+                      <td class="w-10 text-center">
+                        <button class="btn btn-sm btn-icon btn-primary" (click)="viewWO(wo)" ngbTooltip="View"><i class="fa fa-search"></i></button>
+                        <button class="btn btn-sm btn-icon btn-info" *ngIf="!workOrdersFilters.isOpex && !wo.projectId" (click)="openProjectAssignModal(wo)" ngbTooltip="Assign to Project"><i class="fa fa-check"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Purchase Orders">
+            <ng-template ngbTabContent>
+              <loading [loading]="loading"></loading>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <div class="row">
+                <div class="col-md-3">
+                  <input type="text" placeholder="Search by vendor" [formControl]="purchaseOrderSearchControl" class="form-control form-control-rounde">
+                </div>
+                <div class="col-md-5 pl-1">
+                  <ng-select class="w-90 float-left" [items]="['Raised','Started','Closed','Deleted']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="purchaseOrdersFilters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetPurchaseOrdersList()"></ng-select>
+                  <span class="w-10 float-left">
+                    <help-notes [context]="'Purchases:POStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+                    <help-notes [context]="'Purchases:POStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+                  </span>
+                </div>
+                <div class="col-md-4 pt-2">
+                  <span class="badge fs-14 mr-2 cursor">Total - {{totalPurchaseOrdersCount}} </span>
+                  <span class="badge fs-12 mr-2 cursor badge-outline-primary" *ngFor="let status of posByStatuses;" (click)="purchaseOrdersFilters.statuses=[status.status];resetPurchaseOrdersList();">{{status?.status}} ({{status?.count}})</span>
+                </div>
+              </div>
+              <div class="row mt-1">
+                <!--  <data-list #purchaseOrdersList [filter]="purchaseOrdersFilters" [dataUrl]="'internal/purchases/listPurchaseOrders'" [config]="purchaseOrdersConfig" (onAction)="action($event)"></data-list> -->
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-30" (click)="purchaseOrdersSortColBy('vendor.name')">Vendor &nbsp; <i *ngIf="purchaseOrdersSort['vendor.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="purchaseOrdersSort['vendor.name']?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10">RefNo</th>
+                      <th class="w-10">ApprovedBy</th>
+                      <th class="w-10" (click)="purchaseOrdersSortColBy('date')">RaisedOn &nbsp; <i *ngIf="purchaseOrdersSort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="purchaseOrdersSort.date?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-right" (click)="purchaseOrdersSortColBy('amount')">Budget &nbsp; <i *ngIf="purchaseOrdersSort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="purchaseOrdersSort.amount?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-right" (click)="purchaseOrdersSortColBy('paidAmount')">Paid &nbsp; <i *ngIf="purchaseOrdersSort.paidAmount?.asc" class="fa fa-caret-up"></i><i *ngIf="purchaseOrdersSort.paidAmount?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10" (click)="purchaseOrdersSortColBy('status')">Status &nbsp; <i *ngIf="purchaseOrdersSort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="purchaseOrdersSort.status?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <p class="p-4 text-center" *ngIf="!purchaseOrders.length">No POs are added yet .</p>
+                  <tbody class="tableBodyScroll" infiniteScroll (onScroll)="loadMorePurchaseOrders()">
+                    <tr *ngFor="let po of purchaseOrders;">
+                      <td class="w-30">{{po.vendor?.name}}</td>
+                      <td class="w-10">{{po.refNo}}</td>
+                      <td class="w-10">{{po.approvedBy}}</td>
+                      <td class="w-10">{{po.date | date : 'MMM dd, yyyy'}}</td>
+                      <td class="w-10 text-right">{{po.amount | inr}}</td>
+                      <td class="w-10 text-right">{{po.paidAmount | inr}}</td>
+                      <td class="w-10">
+                        <ng-select class="mini" [items]="['Raised','Started','Closed','Deleted']" [hideSelected]="true" [(ngModel)]="po.status" [ngModelOptions]="{standalone: true}" (ngModelChange)="updatePOStatus(po)" placeholder="Status"></ng-select>
+                      </td>
+                      <td class="w-10 text-center">
+                        <!--          <button class="btn btn-sm btn-icon btn-info" (click)="markOpex(po)" ngbTooltip="Mark as Opex"><i class="i-Dollar-Sign"></i></button> -->
+                        <button class="btn btn-sm btn-icon btn-primary" (click)="viewPO(po)" ngbTooltip="View"><i class="fa fa-search"></i></button>
+                        <button class="btn btn-sm btn-icon btn-primary" (click)="repeatPO(po)" ngbTooltip="Repeat PO"><i class="fa fa-clone"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Bills" id="bills">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <div class="row">
+                <div class="col-md-3">
+                  <input type="text" placeholder="Search by vendor" [formControl]="billsSearchControl" class="form-control form-control-rounde">
+                </div>
+                <div class="col-md-3 pl-1 pr-0 pl-1">
+                  <ng-select class="w-100 float-left" [items]="['Raised','Approved','Paid']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="billsFilters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetBillsList()"></ng-select>
+                </div>
+                <div class="col-md-3 pt-2 pr-0 pl-0">
+                  <span class="float-left" style="height: 40px;">
+                    <help-notes [context]="'Purchases:CapexBillsStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+                    <help-notes [context]="'Purchases:CapexBillsStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right ml-5"></help-notes>
+                  </span>
+                  <span class="badge fs-14 mr-2 cursor">Total - {{totalBillsCount}} </span>
+                  <span class="badge fs-12 mr-2 cursor badge-outline-primary" *ngFor="let status of billsByStatuses;" (click)="billsFilters.statuses=[status.status];resetBillsList();">{{status?.status}} ({{status?.count}})</span>
+                </div>
+                <!--    <div class="col-md-3 pt-2">
+                  <button class="btn btn-outline-primar btn-sm btn-primary btn-rounde btn-ico pull-right" (click)="openBillModal(false)"><i class="fa fa-plus"></i> Bill to Pay </button>
+                  <button class="btn btn-outline-primar btn-sm btn-primary btn-rounde btn-ico pull-right mr-1" (click)="openBillModal(true)"><i class="fa fa-plus"></i> Register Bill </button>
+                </div> -->
+              </div>
+              <div class="row mt-1">
+                <!--  <data-list #purchaseOrdersList [filter]="billsFilters" [dataUrl]="'internal/purchases/listBills'" [config]="purchaseOrdersConfig" (onAction)="action($event)"></data-list> -->
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-20" (click)="billsSortColBy('vendor.name')">Vendor &nbsp; <i *ngIf="billsSort['vendor.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="billsSort['vendor.name']?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-center">RefNo</th>
+                      <th class="w-10 text-center">ApprovedBy</th>
+                      <th class="w-10 text-right" (click)="billsSortColBy('date')">RaisedOn &nbsp; <i *ngIf="billsSort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="billsSort.date?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-right" (click)="billsSortColBy('amount')">Amount &nbsp; <i *ngIf="billsSort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="billsSort.amount?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-right" (click)="billsSortColBy('milestone.paidOn')">PaidOn &nbsp; <i *ngIf="billsSort.paidOn?.asc" class="fa fa-caret-up"></i><i *ngIf="billsSort.paidOn?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-right" (click)="billsSortColBy('milestone.actualDate')">DueDate &nbsp; <i *ngIf="billsSort.actualDate?.asc" class="fa fa-caret-up"></i><i *ngIf="billsSort.actualDate?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-center" (click)="billsSortColBy('status')">Status &nbsp; <i *ngIf="billsSort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="billsSort.status?.desc" class="fa fa-caret-down"></i></th>
+                      <th class="w-10 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <p class="p-4 text-center" *ngIf="!bills.length">No bills are added yet .</p>
+                  <tbody class="tableBodyScroll" infiniteScroll (onScroll)="loadMoreBills()">
+                    <tr *ngFor="let po of bills;">
+                      <td class="w-20">{{po.vendor?.name}}</td>
+                      <td class="w-10">{{po.refNo}}</td>
+                      <td class="w-10">{{po.milestone?.approvedBy || '-'}}</td>
+                      <td class="w-10 text-right">{{po.date | date : 'MMM dd, yyyy'}}</td>
+                      <td class="w-10 text-right">{{po.amount | inr}}</td>
+                      <td class="w-10 text-right">{{po.milestone?.paidOn ? (po.milestone?.paidOn | date : 'MMM dd, yyyy') : '-'}}</td>
+                      <td class="w-10 text-right">{{po.milestone?.actualDate ? (po.milestone?.actualDate | date : 'MMM dd, yyyy') : '-'}}</td>
+                      <td class="w-10 text-center">{{po.status}}</td>
+                      <td class="w-10 text-center">
+                        <button class="btn btn-sm btn-icon btn-primary" *ngIf="po.status=='Raised'" (click)="approveBill(po)" ngbTooltip="Approve Bill"><i class="fa fa-check"></i></button>
+                        <button class="btn btn-sm btn-icon btn-info" *ngIf="po.status=='Draft'" (click)="editBill(po)" ngbTooltip="Edit Bill"><i class="fa fa-pencil"></i></button>
+                        <!--   <span *ngIf="po.status!='Draft'">
+                          <button class="btn btn-sm btn-icon btn-info" *checkAccess="'admin:users'" (click)="editBill(po)" ngbTooltip="Edit Bill"><i class="fa fa-pencil"></i></button>
+                        </span> -->
+                        <button class="btn btn-sm btn-icon btn-info" (click)="viewBillItems(po)" ngbTooltip="View Bill Items"><i class="fa fa-list"></i></button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Deliverable Assets">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <div class="mt-1">
+                <label class="checkbox checkbox-success float-right d-b">
+                  <input type="checkbox" [(ngModel)]="purchaseItemsFilters.notDelivered" [ngModelOptions]="{standalone: true}">
+                  <span>Show UnDelivered Only</span>
+                  <span class="checkmark"></span>
+                </label>
+                <div class="clear"></div>
+                <data-list #purchaseItemsList [filter]="purchaseItemsFilters" [dataUrl]="'internal/purchases/listPurchaseItems'" [config]="purchaseItemsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Financials">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <h4 class="mt-4 text-center">Work in progress ... </h4>
+            </ng-template>
+          </ngb-tab>
+        </ngb-tabset>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #itemDeliveryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{purchaseItem.sku.name}} <small>Deliveries</small> </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p *ngIf="!delivery" class="text-center m-2 mt--10 text-success f-b">All material is delivered for this purchase item.</p>
+    <div class="row" *ngIf="delivery">
+      <div class="col-md-5">
+        <input class="form-control" type="number" [(ngModel)]="delivery.quantity" placeholder="Enter Quantity Received" />
+      </div>
+      <div class="col-md-3">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="delivery.releasePayment" [ngModelOptions]="{standalone: true}" (ngModelChange)="listPurchaseOrderMilestones()">
+          <span>Release Payment</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+      <div class="col-md-4">
+        <button class="btn btn-primary ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!delivery.quantity" (click)="savePurchaseItemDelivery()"><i class="fa fa-check" *ngIf="!loading"></i> Add Delivery</button>
+      </div>
+      <div class="col-md-12 pt-1" *ngIf="delivery.releasePayment">
+        <span *ngIf="!mileStones[0]">
+          <strong>No milestone payment pending to release payment</strong>
+        </span>
+        <span *ngIf="mileStones[0]">
+          <strong>Releasing Payment </strong> : {{mileStones[0].amount | inr}} for {{mileStones[0].name}} term
+        </span>
+      </div>
+    </div>
+    <div class="mt-1">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-30 text-center">Quantity</th>
+            <th class="w-35">Received By</th>
+            <th class="w-35 text-center">Delivered Date</th>
+          </tr>
+        </thead>
+        <tbody class="tableBodyScroll" style="max-height: 325px;">
+          <tr *ngFor="let item of purchaseItem.deliveries;">
+            <td class="w-30 text-center">{{item.quantity}}</td>
+            <td class="w-35 ">{{item.receivedBy}}</td>
+            <td class="w-35 text-center">{{item.deliveredOn | date : 'MMM dd,yyyy hh:mm a'}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="!purchaseItem.deliveries.length" class="text-center m-4">No deliveries received yet for this PurchaseItem</p>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #workOrderModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title" *ngIf="workOrder.id">Edit WorkOrder</h4>
+    <h4 class="modal-title" id="modal-basic-title" *ngIf="!workOrder.id">New {{isOpex == 1 ? 'OpEx' : 'CapEx'}} WorkOrder {{type ? ' - ' : ''}} {{type}} <i class="fa fa-refresh ml-20 cursor" (click)="isOpex=null;type=null;"></i></h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mt-4" *ngIf="!type || isOpex==null">
+      <div class="col-3 text-center"></div>
+      <div class="col-3 text-center">
+        <label class="">WorkOrder of</label>
+        <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="isOpex">
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="0"> CapEx
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="1"> OpEx
+          </label>
+        </div>
+      </div>
+      <div class="col-3 text-center">
+        <label class="">WorkOrder for</label>
+        <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="type">
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Material"> Material
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Services"> Services
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-4" *ngIf="type && isOpex!=null && !woType">
+      <div class="col-12 text-center">
+        <button class="btn btn-large btn-info w-20 m-2" (click)="woType='PreAgreedPO'">PreAgreed PO</button>
+        <div class="fs-16 f-b">or</div>
+        <button class="btn btn-large btn-info w-20 m-2" (click)="woType='BOQ'">New BoQ</button>
+      </div>
+    </div>
+    <div class="row" *ngIf="woType=='PreAgreedPO'">
+      <div class="form-group col-md-4" *ngIf="!selectedVendor">
+        <label for="firstName">Select Vendor</label>
+        <tag-input [formControl]="vendorControl" theme='primary' [(ngModel)]="selectedVendors" secondaryPlaceholder="Type Vendor name to search" (onTextChange)="onVendorSearch($event)" (onAdd)="vendorSelected($event)" maxItems="1" [onlyFromAutocomplete]="true">
+          <tag-input-dropdown [autocompleteItems]="autocompleteVendors" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+            <ng-template let-item="item" let-index="index">
+              {{item.name}}, {{item.address}} - {{item.description}}
+            </ng-template>
+          </tag-input-dropdown>
+        </tag-input>
+      </div>
+      <div class="form-group col-md-4" *ngIf="selectedVendor">
+        <strong>{{selectedVendor?.name}}</strong>
+        <button class="btn btn-sm btn-icon btn-danger float-right" (click)="selectedVendors=[];selectedItems=[];selectedSkus=[];selectedVendor=null;selectedPaymentTerm=null;"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="form-group col-md-8" *ngIf="selectedVendor">
+        <ng-select class="w-90 float-left" [items]="vendorPaymentTerms" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Vendor Payment term" [(ngModel)]="selectedPaymentTerm" bindLabel="name" [ngModelOptions]="{standalone: true}"></ng-select>
+        <button class="btn btn-sm btn-icon btn-info float-right" ngbTooltip="New PaymentTerm" (click)="openVendorPaymentTerm({})"><i class="fa fa-plus"></i></button>
+      </div>
+    </div>
+    <div class="row mb-10 p-2" *ngIf="selectedItems.length && woType=='PreAgreedPO'">
+      <strong class="pl-4 w-100 d-b border-bottom">Selected SKU Items</strong>
+      <div class="row col-12 border-bottom ml-0 mb-1">
+        <div class="f-b col-7">SKU</div>
+        <div class="f-b col-2 pl-0 pr-0 text-center">Quantity</div>
+        <div class="f-b col-2 pr-0 pl-0 text-right">Price</div>
+      </div>
+      <div class="row col-12 ml-0 border-bottom p-1" *ngFor="let item of selectedItems;">
+        <div class="col-7">{{item.skuName}}</div>
+        <div class="col-2 pl-0 pr-0 text-center">{{item.quantity}}</div>
+        <div class="col-2 pr-0 pl-0 text-right">{{item.price | inr}}</div>
+        <div class="col-1 pr-0 pl-0 text-center">
+          <i class="fa fa-times d-b text-danger pull-right cursor" style="font-size: 1rem !important;" ngbTooltip="Remove Item" (click)="removeSelectedItem(item)"></i></div>
+      </div>
+    </div>
+    <div class="row mb-10 p-2" *ngIf="selectedItems.length&&woType=='BOQ'">
+      <strong class="pl-4  w-100 d-b border-bottom">Selected SKU Items</strong>
+      <div class="row col-12 border-bottom ml-0 mb-1">
+        <div class="f-b col-2">SKU</div>
+        <div class="f-b col-3">Vendor</div>
+        <div class="f-b col-4">PaymentTerm</div>
+        <div class="f-b col-1 pl-0 pr-0 text-center">Quantity</div>
+        <div class="f-b col-2 pr-0 pl-0 text-center">Price</div>
+      </div>
+      <div class="row col-12 ml-0 border-bottom p-1" *ngFor="let item of selectedItems;">
+        <div class="col-2">{{item.skuName}}</div>
+        <div class="col-3">{{item.vendor}}</div>
+        <div class="col-4 pl-0 pr-0">{{item.paymentTerm}} <small>{{item.paymentTermTag}}</small></div>
+        <div class="col-1 pl-0 pr-0 text-center">{{item.quantity}}</div>
+        <div class="col-2 pr-0 pl-0 text-center">{{item.price | inr}}
+          <i class="fa fa-times d-b cursor text-danger pull-right" style="font-size: 1rem !important;" ngbTooltip="Remove Item" (click)="removeSelectedItem(item)"></i></div>
+      </div>
+    </div>
+    <form [formGroup]="workOrderForm">
+      <div class="row" *ngIf="woType">
+        <div class="form-group col-md-7" *ngIf="(woType=='BOQ' || selectedPaymentTerm) && !selectedSkus[0]?.id">
+          <label for="firstName">Select SKU</label>
+          <tag-input [formControl]="skuControl" theme='primary' [(ngModel)]="selectedSkus" secondaryPlaceholder="Type SKU name to search" (onTextChange)="onSKuSearch($event)" maxItems="1" [onlyFromAutocomplete]="true" (onAdd)="skuSelected()">
+            <tag-input-dropdown [autocompleteItems]="autocompleteSkus" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'sku'" [identifyBy]="skuId">
+              <ng-template let-item="item" let-index="index">
+                {{item.sku}}, {{item.type}}, {{item.category}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="col-md-5 row" *ngIf="!selectedSkus.length && selectedItems.length">
+          <div class="col-md-4">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="deliverToStore" (ngModelChange)="listStores()" [ngModelOptions]="{standalone: true}">
+              <span>Store Delivery</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-8" *ngIf="deliverToStore">
+            <ng-select [items]="stores" [hideSelected]="true" bindLabel="name" placeholder="Select Store to Delivery" [(ngModel)]="selectedStore" [ngModelOptions]="{standalone: true}"></ng-select>
+          </div>
+        </div>
+        <div class="col-md-2 mt-2" *ngIf="showNewVendorSku && !lookingNewVendorSku">
+          <button class="btn btn-sm btn-ico btn-info" ngbTooltip="Search across SKUs" (click)="lookingNewVendorSku=true;"><i class="fa fa-search"></i> Search SKUs</button>
+        </div>
+        <div class="col-md-1" *ngIf="lookingNewVendorSku">
+          <button class="btn btn-sm btn-icon btn-danger float-right" ngbTooltip="Cancel " (click)="lookingNewVendorSku=false;showNewVendorSku=false;"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+      <div class="row" *ngIf="woType=='PreAgreedPO' && selectedSkus.length">
+        <div class="col-3">
+          <label class="f-b">SKU Category</label>
+          <div>{{selectedSkus[0]?.category}}</div>
+        </div>
+        <div class="col-4">
+          <label class="f-b">SKU Type</label>
+          <div>{{selectedSkus[0]?.type}}</div>
+        </div>
+        <div class="col-md-1-5 p-0">
+          <label class="f-b">Quantity</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].quantity" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-2">
+          <label class="f-b">Price</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].price" placeholder="Item Price" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-md-1-5 mt-4 pt-2">
+          <button class="btn btn-sm btn-ico btn-outline-info float-right" (click)="addItem()" [disabled]="!(selectedSkus[0].quantity&&selectedSkus[0].price)" ngbTooltip="Add Item">
+            <i class="fa fa-plus"></i> Add</button>
+        </div>
+      </div>
+      <div *ngIf="woType=='BOQ'">
+        <div class="form-group row" *ngIf="selectedSkus.length" [ngClass]="selectedSkus[0]?.id?'col-md-12':'col-md-8'">
+          <div class="col-3 pl-0 pr-0">
+            <label class="f-b">SKU Category</label>
+            <div>{{selectedSkus[0]?.category}}</div>
+          </div>
+          <div class="col-3 pl-0 pr-0">
+            <label class="f-b">SKU Type</label>
+            <div>{{selectedSkus[0]?.type}}</div>
+          </div>
+          <div class="col-4 pl-0 pr-0">
+            <label class="f-b">SKU Item</label>
+            <div>{{selectedSkus[0]?.sku}}</div>
+          </div>
+          <div class="col-2 p-0">
+            <label class="f-b">Quantity</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].quantity" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchVendorSkus()">
+          </div>
+        </div>
+      </div>
+      <div class="row" *ngIf="vendors.length && selectedSkus.length">
+        <div class="row col-12 border-bottom ml-0 mb-1">
+          <div class="col-3">Vendor Name</div>
+          <div class="col-5">Payment Term</div>
+          <div class="col-2 pl-0">Quantity Range</div>
+          <div class="col-2">Price</div>
+        </div>
+        <div class="row col-12 ml-0 border-bottom" *ngFor="let vendor of vendors;">
+          <div class="col-3 p-1">{{vendor.vendorName}}</div>
+          <div class="col-9 p-1">
+            <div class="row col-12 p-0 mb-1" *ngFor="let paymentTerm of vendor.paymentTerms;">
+              <div class="col-7 p-0 pr-3">{{paymentTerm.name}} <small>{{paymentTerm.tagName}}</small></div>
+              <div class="col-5 p-0">
+                <div class="col-12 row p-0" *ngFor="let pricing of paymentTerm.pricings;" [ngClass]="pricing.inRange?'selected-light':''" (click)="selectVendorPrice(paymentTerm, pricing)">
+                  <div class="col-7 text-center">{{pricing.minQty}} - {{pricing.maxQty}}</div>
+                  <div class="col-5 text-center">{{pricing.price | inr}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!selectedItems.length" (click)="raiseWorkOrders()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #vendorPaymentTermModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendorPaymentTerm.id ? 'Edit' : 'New'}} Payment Term</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="vendorPaymentTermForm">
+      <div class="row pl-2 pr-2">
+        <div class="col-md-8 form-group pl-1 pr-1 mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="vendorPaymentTerm.name">
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorPaymentTerm.active" [ngModelOptions]="{standalone: true}">
+            <span>Save for future Orders</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="phone">On Advance Payment %</label>
+          <input class="form-control" type="number" id="onAdvance" placeholder="Enter On Advance % of payment" formControlName="onAdvance" [(ngModel)]="vendorPaymentTerm.onAdvance" (ngModelChange)="checkPaymentTermValidity()">
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="phone">On Delivery Payment %</label>
+          <input class="form-control" type="number" id="onDelivery" placeholder="Enter On Delivery % of payment" formControlName="onDelivery" [(ngModel)]="vendorPaymentTerm.onDelivery" (ngModelChange)="checkPaymentTermValidity()">
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="phone">On Finish Payment %</label>
+          <input class="form-control" type="number" id="onFinish" placeholder="Enter On Finish % of payment" formControlName="onFinish" [(ngModel)]="vendorPaymentTerm.onFinish" (ngModelChange)="checkPaymentTermValidity()">
+        </div>
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="phone">In Progress Payment %</label>
+          <input class="form-control" type="number" id="inProgress" placeholder="Enter In Progress % of payment" formControlName="inProgress" [(ngModel)]="vendorPaymentTerm.inProgress" (ngModelChange)="checkPaymentTermValidity()">
+          <div *ngIf="inProgressStages.length">
+            <table class="table table-sm">
+              <thead>
+                <th>Payment %</th>
+                <th>WorkDone %</th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let stage of inProgressStages">
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.payment" [ngModelOptions]="{standalone:true}" /></td>
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.workProgress" [ngModelOptions]="{standalone:true}" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="phone">After Finish Payment %</label>
+          <input class="form-control" type="number" id="afterFinish" placeholder="Enter After Finish % of payment" formControlName="afterFinish" [(ngModel)]="vendorPaymentTerm.afterFinish" (ngModelChange)="checkPaymentTermValidity()">
+          <div *ngIf="afterFinishStages.length">
+            <table class="table table-sm">
+              <thead>
+                <th>Payment %</th>
+                <th>Days After</th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let stage of afterFinishStages">
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.payment" [ngModelOptions]="{standalone:true}" /></td>
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.days" [ngModelOptions]="{standalone:true}" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||vendorPaymentTermForm.invalid||!validPaymentTerm" (click)="saveVendorPaymentTerm()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #repeatPOModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Repeat Purchase Order</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="form-group col-md-4" *ngIf="!selectedVendor">
+        <label for="firstName">Select Vendor</label>
+        <tag-input [formControl]="vendorControl" theme='primary' [(ngModel)]="selectedVendors" secondaryPlaceholder="Type Vendor name to search" (onTextChange)="onVendorSearch($event)" (onAdd)="vendorSelected($event)" maxItems="1" [onlyFromAutocomplete]="true">
+          <tag-input-dropdown [autocompleteItems]="autocompleteVendors" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+            <ng-template let-item="item" let-index="index">
+              {{item.name}}, {{item.address}}
+            </ng-template>
+          </tag-input-dropdown>
+        </tag-input>
+      </div>
+      <div class="form-group col-md-4" *ngIf="selectedVendor">
+        <strong>{{selectedVendor?.name}}</strong>
+        <button class="btn btn-sm btn-icon btn-danger float-right" (click)="selectedVendors=[];selectedSkus=[];selectedVendor=null;selectedPaymentTerm=null;"><i class="fa fa-times"></i></button>
+      </div>
+      <div class="form-group col-md-8" *ngIf="selectedVendor">
+        <ng-select class="w-90 float-left" [items]="vendorPaymentTerms" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Vendor Payment term" [(ngModel)]="selectedPaymentTerm" bindLabel="name" [ngModelOptions]="{standalone: true}"></ng-select>
+        <button class="btn btn-sm btn-icon btn-info float-right" ngbTooltip="New PaymentTerm" (click)="openVendorPaymentTerm({})"><i class="fa fa-plus"></i></button>
+      </div>
+    </div>
+    <div class="row mb-10 p-2" *ngIf="selectedItems.length">
+      <strong class="pl-4 w-100 d-b border-bottom">PO SKU Items</strong>
+      <div class="row col-12 border-bottom ml-0 mb-1">
+        <div class="f-b col-8">SKU</div>
+        <div class="f-b col-1 pl-0 pr-0 text-center">Quantity</div>
+        <div class="f-b col-2 pr-0 pl-0 text-center">Price</div>
+      </div>
+      <div class="row col-12 ml-0 border-bottom p-1" *ngFor="let item of selectedItems;">
+        <div class="col-8">
+          <div>{{item.skuName}}</div>
+        </div>
+        <div class="col-md-1 p-0">
+          <input type="number" class="form-control" [(ngModel)]="item.quantity" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-2">
+          <input type="number" class="form-control" [(ngModel)]="item.price" placeholder="Item Price" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-1 pr-0 pl-0 mt-2 text-center">
+          <i class="fa fa-times d-b text-danger cursor" style="font-size: 1rem !important;" ngbTooltip="Remove Item" (click)="removeSelectedItem(item)"></i>
+        </div>
+      </div>
+      <!--  <div class="row col-12 ml-0 border-bottom p-1" *ngFor="let item of selectedItems;">
+        <div class="col-7">{{item.skuName}}</div>
+        <div class="col-2 pl-0 pr-0 text-center">{{item.quantity}}</div>
+        <div class="col-2 pr-0 pl-0 text-right">{{item.price | inr}}</div>
+        <div class="col-1 pr-0 pl-0 text-center">
+          <i class="fa fa-times d-b text-danger pull-right cursor" style="font-size: 1rem !important;" ngbTooltip="Remove Item" (click)="removeSelectedItem(item)"></i></div>
+      </div> -->
+    </div>
+    <form [formGroup]="workOrderForm">
+      <div class="row">
+        <div class="form-group col-md-8" *ngIf="(woType=='BOQ' || selectedPaymentTerm) && !selectedSkus[0]?.id">
+          <label for="firstName">Select SKU</label>
+          <tag-input [formControl]="skuControl" theme='primary' [(ngModel)]="selectedSkus" secondaryPlaceholder="Type SKU name to search" (onTextChange)="onSkuSearch($event)" maxItems="1" [onlyFromAutocomplete]="true" (onAdd)="skuSelected()">
+            <tag-input-dropdown [autocompleteItems]="autocompleteSkus" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'sku'" [identifyBy]="skuId">
+              <ng-template let-item="item" let-index="index">
+                {{item.sku}}, {{item.type}}, {{item.category}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+      </div>
+      <div class="row" *ngIf="selectedSkus.length">
+        <div class="col-3">
+          <label class="f-b">SKU Category</label>
+          <div>{{selectedSkus[0]?.category}}</div>
+        </div>
+        <div class="col-4">
+          <label class="f-b">SKU Type</label>
+          <div>{{selectedSkus[0]?.type}}</div>
+        </div>
+        <div class="col-md-1-5 p-0">
+          <label class="f-b">Quantity</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].quantity" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-2">
+          <label class="f-b">Price</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].price" placeholder="Item Price" [ngModelOptions]="{standalone: true}">
+        </div>
+        <div class="col-md-1-5 mt-4 pt-2">
+          <button class="btn btn-sm btn-ico btn-outline-info float-right" (click)="addItem()" [disabled]="!(selectedSkus[0].quantity&&selectedSkus[0].price)" ngbTooltip="Add Item">
+            <i class="fa fa-plus"></i> Add</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!selectedItems.length" (click)="raiseWorkOrders()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #billModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{bill.isPaid ? 'Register Bill' : 'Raise New Bill'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="billForm">
+      <div class="row" *ngIf="!bill.id">
+        <div class="col-md-4 form-group mb-1">
+          <label for="roles">Sku Category</label>
+          <ng-select [items]="skuCategories" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Sku Category" [(ngModel)]="skuCategory" [ngModelOptions]="{standalone: true}" (ngModelChange)="onSkuCategorySelected();">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="skuCategory?.id">
+          <label for="roles">Sku Type</label>
+          <ng-select [items]="skuTypes" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Sku Type" [(ngModel)]="skuType" (ngModelChange)="skuItem=null;onSkuTypeSelected();" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group mb-1" *ngIf="skuType?.id">
+          <label for="roles">Sku Item</label>
+          <ng-select [items]="skuItems" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Sku Item" [(ngModel)]="skuItem" [ngModelOptions]="{standalone: true}" (ngModelChange)="onSkuTypeSelected();">
+          </ng-select>
+        </div>
+      </div>
+      <div class="row" *ngIf="bill.skuTypeId || skuType || bill.id">
+        <div class="col-md-4 form-group mb-1">
+          <label for="roles">Service Vendor</label>
+          <ng-select [items]="vendors" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Service Vendor" [(ngModel)]="selectedVendor" formControlName="vendorId" (ngModelChange)="onServiceVendorSelected()">
+          </ng-select>
+        </div>
+        <div class="col-md-1 form-group mb-1 mt-4 pt-1" *ngIf="!bill.id">
+          <button class="btn btn-icon btn-outline-primary btn-sm" (click)="selectedVendor=null;newVendorForm=true;" *ngIf="!newVendorForm" ngbTooltip="Add New Vendor"><i class="fa fa-plus"></i></button>
+        </div>
+      </div>
+      <form [formGroup]="vendorForm" *ngIf="newVendorForm">
+        <div class="row">
+          <div class="col-md-6 form-group mb-1">
+            <label for="firstName">Vendor Name</label>
+            <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Vendor name" [(ngModel)]="vendor.name">
+          </div>
+          <div class="col-md-6 form-group mb-1">
+            <label for="roles">Address</label>
+            <textarea class="form-control" id="address" formControlName="address" placeholder="Enter Vendor address" [(ngModel)]="vendor.address"></textarea>
+          </div>
+          <div class="col-md-3 form-group mb-1">
+            <label for="roles">Type</label>
+            <ng-select [items]="['Company','Individual']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Vendor Type" [(ngModel)]="vendor.type" formControlName="type">
+            </ng-select>
+          </div>
+          <div class="col-md-3 form-group mb-1">
+            <label for="roles">Payment</label>
+            <ng-select [items]="['BankTransfer','CardPayment','Cheque','Cash']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Payment Mode" [(ngModel)]="vendor.paymentMode" formControlName="paymentMode" (ngModelChange)="onVendorPaymentModeChanged()">
+            </ng-select>
+          </div>
+          <div class="col-md-2 form-group mb-1 mt-4 pt-1">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="vendor.hasContact" [disabled]="vendor.paymentMode == 'BankTransfer'" [ngModelOptions]="{standalone: true}">
+              <span>Has Contact</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-3 form-group mb-1 mt-4">
+            <button class="btn btn-sm btn-outline-primary btn-ico" (click)="saveVendor()" [disabled]="vendorForm.invalid"><i class="fa fa-check"></i> Save Vendor</button>
+            <button class="btn btn-sm btn-outline-danger btn-icon" ngbTooltip="Cancel" (click)="newVendorForm=false;vendor={};"><i class="fa fa-times"></i></button>
+          </div>
+          <div class=" col-md-12 row" *ngIf="vendor && vendor.paymentMode=='BankTransfer'">
+            <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+              <label>Bank Account Number</label>
+              <input type="text" name="bankAccountNumber" class="form-control" placeholder="Enter Bank Account Number" [(ngModel)]="vendor.bankAccountNumber" formControlName="bankAccountNumber">
+            </div>
+            <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="vendor.paymentMode=='BankTransfer'">
+              <label>Bank IFSC Code</label>
+              <input type="text" name="bankIfscCode" class="form-control" placeholder="Enter Bank IFSC Code" [(ngModel)]="vendor.bankIfscCode" formControlName="bankIfscCode">
+            </div>
+            <div class="col-md-4 form-group mb-1 pl-2 pr-2" *ngIf="vendor.paymentMode=='BankTransfer'">
+              <label>Account Holder Name</label>
+              <input type="text" name="accountHolderName" class="form-control" placeholder="Enter Bank Name" [(ngModel)]="vendor.accountHolderName" formControlName="accountHolderName">
+            </div>
+          </div>
+          <div class=" col-md-12 row" *ngIf="vendor && vendor.hasContact ">
+            <div class="col-md-4 form-group mb-4">
+              <label>Contact Name</label>
+              <input type="text" name="contactName" class="form-control" placeholder="Enter Contact Name" [(ngModel)]="vendor.contactName" formControlName="contactName">
+            </div>
+            <div class="col-md-4 form-group mb-4">
+              <label>Contact Email</label>
+              <input type="text" name="contactEmail" class="form-control" placeholder="Enter Contact Email" [(ngModel)]="vendor.contactEmail" formControlName="contactEmail">
+            </div>
+            <div class="col-md-4 form-group mb-4">
+              <label>Contact Phone</label>
+              <input type="number" name="contactPhone" class="form-control" placeholder="Enter Contact Phone" [(ngModel)]="vendor.contactPhone" formControlName="contactPhone">
+            </div>
+          </div>
+        </div>
+      </form>
+      <div class="row" *ngIf="(bill.vendorId && !newVendorForm) || bill.id">
+        <div class="col-md-2 pr-1 form-group mb-1">
+          <label for="roles">Bill Date</label>
+          <input class="form-control" placeholder="Bill Date" [(ngModel)]="bill.billDate" formControlName="billDate" name="dp" ngbDatepicker #dp="ngbDatepicker" (dateSelect)="dp.close()" (focus)="dp.toggle()">
+        </div>
+        <div class="col-md-2 pr-1 pl-1 form-group mb-1" *ngIf="!bill.isPaid">
+          <label for="roles">Due Date</label>
+          <input class="form-control" placeholder="Due Date" [(ngModel)]="bill.dueDate" formControlName="dueDate" name="dpe" ngbDatepicker #dpe="ngbDatepicker" (dateSelect)="dpe.close()" (focus)="dpe.toggle()">
+        </div>
+        <div class="col-md-1-5 pr-1 pl-1 form-group mb-1">
+          <label for="roles">Bill Amount </label>
+          <input type="number" class="form-control" placeholder="Enter Bill Amount" [(ngModel)]="bill.amount" formControlName="amount">
+        </div>
+        <div class="col-md-1-5 pr-1 pl-1 form-group mb-1">
+          <label for="roles">TDS Amount </label>
+          <input type="number" class="form-control" placeholder="Enter TDS Amount" [(ngModel)]="bill.tds" formControlName="tds">
+        </div>
+        <div class="col-md-5 pl-1 col-12 mb-1">
+          <p class="text-muted mb-0">Bill Image </p>
+          <a class="f-b badge badge-success fs-12" *ngIf="bill.image?.file" [href]="bill.image?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+          <span class="input-group" *ngIf="!bill.image?.file">
+            <div class="custom-file" *ngIf="!billImageFile">
+              <input class="custom-file-input" id="billImageId" (change)="billImageFileChange($event)" type="file">
+              <label class="custom-file-label" for="billImageId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="billImageFile">
+              <span class="float-left">{{billImageFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="billImageFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="billImageFileError">
+                  {{ billImageFileError.message }}
+                </div>
+                <div *ngIf="billImageUploadResponse.status === 'error'">
+                  {{ billImageUploadResponse.message }}
+                </div>
+                <div *ngIf="billImageUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="billImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{billImageUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadOpexBillImage()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-12 row mt-1 mb-1" *ngIf="selectedVendor?.paymentMode=='BankTransfer' && selectedVendor?.bankAccounts && selectedVendor?.bankAccounts.length && !bill?.isPaid">
+          <div class="col-md-2 form-group mb-1">
+            <label class="d-b">Payment Mode</label>
+            <span class="f-b">BankTransfer</span>
+          </div>
+          <div class="col-md-3 form-group mb-1">
+            <label class="d-b">Account Number</label>
+            {{selectedVendor?.bankAccounts[0].accountNumber}}
+          </div>
+          <div class="col-md-3 form-group mb-1">
+            <label class="d-b">IFSC Code</label>
+            {{selectedVendor?.bankAccounts[0].ifscCode}}
+          </div>
+          <div class="col-md-4 form-group mb-1">
+            <label class="d-b">Account Holder Name</label>
+            {{selectedVendor?.bankAccounts[0].benificiaryName}}
+          </div>
+        </div>
+        <div class="col-md-12 row form-group mb-1">
+          <div class="col-md-3 form-group mb-1" *ngIf="bill.isPaid">
+            <label for="roles">Paid Date</label>
+            <input class="form-control" placeholder="Bill Date" [(ngModel)]="bill.paidOn" name="dp" ngbDatepicker #dp="ngbDatepicker" (dateSelect)="dp.close()" (focus)="dp.toggle()" formControlName="paidDate">
+          </div>
+          <div class="col-md-9 form-group mb-1">
+            <label for="roles">Payment Remarks</label>
+            <textarea class="form-control" placeholder="Enter bill payment remarks if any " [(ngModel)]="bill.name" [ngModelOptions]="{standalone:true}"></textarea>
+          </div>
+        </div>
+      </div>
+      <form [formGroup]="payoutForm" class="mt-1" *ngIf="bill.isPaid && bill.paidOn">
+        <div class="row">
+          <div class="col-md-12 form-group mb-1 row">
+            <label for="roles" class="i-b col-md-3 ">Select Payment Mode </label>
+            <label class="radio radio-primary col-md-3">
+              <input type="radio" name="paymentMode" [value]="'BankTransfer'" (ngModelChange)="paymentModeChanged()" [(ngModel)]="payout.paymentMode" formControlName="paymentMode">
+              <span>Manual Bank Transfer</span>
+              <span class="checkmark"></span>
+            </label>
+            <label class="radio radio-primary col-md-2">
+              <input type="radio" name="paymentMode" [value]="'Online'" (ngModelChange)="paymentModeChanged()" [(ngModel)]="payout.paymentMode" formControlName="paymentMode">
+              <span>Online / Card Payment</span>
+              <span class="checkmark"></span>
+            </label>
+            <label class="radio radio-primary col-md-2">
+              <input type="radio" name="paymentMode" [value]="'Cheque'" [(ngModel)]="payout.paymentMode" formControlName="paymentMode" (ngModelChange)="paymentModeChanged()">
+              <span>Cheque Payment</span>
+              <span class="checkmark"></span>
+            </label>
+            <label class="radio radio-primary col-md-2">
+              <input type="radio" name="paymentMode" [value]="'Cash'" (ngModelChange)="paymentModeChanged()" [(ngModel)]="payout.paymentMode" formControlName="paymentMode">
+              <span>Cash Payment</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+          <div class="col-md-3 form-group mb-1" *ngIf="payout.paymentMode=='Cheque'">
+            <label for="roles">Issued Date</label>
+            <input placeholder="Select Encashed Date" class="form-control" name="dpi" ngbDatepicker #dpi="ngbDatepicker" [(ngModel)]="payout.issuedOn" formControlName="issuedOn" placement="top" (dateSelect)="dpi.close()" (focus)="dpi.toggle()" />
+          </div>
+          <div class="col-md-7 form-group mb-1" *ngIf="payout.paymentMode=='Cheque'">
+            <label for="roles">Cheque No</label>
+            <input type="text" class="form-control" placeholder="Enter Cheque Number" [(ngModel)]="payout.chequeNo" formControlName="chequeNo" />
+          </div>
+          <div class="col-md-7 form-group mb-1" *ngIf="payout.paymentMode=='Online'||payout.paymentMode=='BankTransfer'||payout.paymentMode=='Cheque'">
+            <label for="roles">Bank Unique Reference No (URN)</label>
+            <input type="text" class="form-control" placeholder="Enter Bank Transfer Reference Number" [(ngModel)]="payout.utr" formControlName="utr" />
+          </div>
+        </div>
+      </form>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||billForm.invalid||(bill.paidOn?.day && payoutForm.invalid)" (click)="saveBill()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #billItemsModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Bill Items</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mb-10 p-2" *ngIf="selectedItems.length">
+      <strong class="pl-4 w-100 d-b border-bottom">Selected SKU Items</strong>
+      <div class="row col-12 border-bottom ml-0 mb-1">
+        <div class="f-b col-7">SKU</div>
+        <div class="f-b col-2 pl-0 pr-0 text-center">Quantity</div>
+        <div class="f-b col-2 pr-0 pl-0 text-right">Price</div>
+      </div>
+      <div class="row col-12 ml-0 border-bottom p-1" *ngFor="let item of selectedItems;">
+        <div class="col-7">{{item.sku ? item.sku.name + ", " + item.sku.type.name + ", " + item.sku.category.name : item.skuName}}</div>
+        <div class="col-2 pl-0 pr-0 text-center">{{item.quantity || item.units}}</div>
+        <div class="col-2 pr-0 pl-0 text-right">{{(item.price || item.unitPrice) | inr}}</div>
+        <div class="col-1 pr-0 pl-0 text-center">
+          <i class="fa fa-times d-b text-danger pull-right cursor" style="font-size: 1rem !important;" ngbTooltip="Remove Item" *ngIf="bill.status!='Paid'" (click)="removeBillItem(item)"></i></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-md-7">
+        <label for="firstName">Select SKU</label>
+        <tag-input [formControl]="skuControl" theme='primary' [(ngModel)]="selectedSkus" secondaryPlaceholder="Type SKU name to search" (onTextChange)="onSKuSearch($event)" maxItems="1" [onlyFromAutocomplete]="true" (onAdd)="skuSelected()">
+          <tag-input-dropdown [autocompleteItems]="autocompleteSkus" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'sku'" [identifyBy]="skuId">
+            <ng-template let-item="item" let-index="index">
+              {{item.sku}}, {{item.type}}, {{item.category}}
+            </ng-template>
+          </tag-input-dropdown>
+        </tag-input>
+      </div>
+      <div class="col-md-2 mt-2" *ngIf="showNewVendorSku && !lookingNewVendorSku">
+        <button class="btn btn-sm btn-ico btn-info" ngbTooltip="Search across SKUs" (click)="lookingNewVendorSku=true;"><i class="fa fa-search"></i> Search SKUs</button>
+      </div>
+      <div class="col-md-1" *ngIf="lookingNewVendorSku">
+        <button class="btn btn-sm btn-icon btn-danger float-right" ngbTooltip="Cancel " (click)="lookingNewVendorSku=false;showNewVendorSku=false;"><i class="fa fa-times"></i></button>
+      </div>
+    </div>
+    <div class="row" *ngIf="selectedSkus.length">
+      <div class="col-3">
+        <label class="f-b">SKU Category</label>
+        <div>{{selectedSkus[0]?.category}}</div>
+      </div>
+      <div class="col-4">
+        <label class="f-b">SKU Type</label>
+        <div>{{selectedSkus[0]?.type}}</div>
+      </div>
+      <div class="col-md-1-5 p-0">
+        <label class="f-b">Quantity</label>
+        <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].quantity" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}">
+      </div>
+      <div class="col-2">
+        <label class="f-b">Price</label>
+        <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].price" placeholder="Item Price" [ngModelOptions]="{standalone: true}">
+      </div>
+      <div class="col-md-1-5 mt-4 pt-2">
+        <button class="btn btn-sm btn-ico btn-outline-info float-right" (click)="addBillItem()" [disabled]="!(selectedSkus[0].quantity&&selectedSkus[0].price)" ngbTooltip="Add Item">
+          <i class="fa fa-plus"></i> Add</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

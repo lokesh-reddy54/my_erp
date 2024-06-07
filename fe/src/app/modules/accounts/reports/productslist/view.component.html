@@ -1,0 +1,40 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Revenue Products List</h4>
+    <!-- <input type="text" placeholder="Search by building or location" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2 mt--10"> -->
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:ProductsList'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);width: 80%;margin: auto;">
+        <table class="revenueTable table table-stripe table-hover table-sm">
+          <thead>
+            <tr class="bg-primary text-white">
+              <th class="text-right w-25">Revenue Category</th>
+              <th class="text-right w-25">Revenue Type</th>
+              <th class="text-right w-10">HSN Code</th>
+              <th class="text-right w-10">SGST</th>
+              <th class="text-right w-10">CGST</th>
+              <th class="text-right w-10">TDS</th>
+              <th class="text-right w-10"></th>
+            </tr>
+          </thead>
+          <tbody class="revenueTable">
+            <tr class="cursor" *ngFor="let row of data;">
+              <td class="text-right w-25">{{row.category}}</td>
+              <td class="text-right w-25">{{row.type}}</td>
+              <td class="text-right w-10">{{row.sacCode}}</td>
+              <td class="text-right w-10">{{row.sgst}}%</td>
+              <td class="text-right w-10">{{row.cgst}}%</td>
+              <td class="text-right w-10">{{row.tds}}%</td>
+              <td class="text-right w-10"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

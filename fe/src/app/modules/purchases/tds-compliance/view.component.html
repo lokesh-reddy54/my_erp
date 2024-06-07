@@ -1,0 +1,161 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb mb-1">
+      <h5 class="pull-left mr-5 f-b w-25">TDS Compliance
+      </h5>
+      <input type="text" placeholder="Search by Vendor name" [formControl]="search" class="form-control form-control-rounde pull-left w-25 ml-5">
+      <input class="form-control pull-left w-20 ml-5" autocomplete="off" placeholder="Compliance Term" name="dp" id="daterangepicker">
+      <button class="btn btn-sm btn-icon btn-outline-danger" ngbTooltip="Clear Dates Selection" *ngIf="filters.endDate" (click)="initDatePicker()"><i class="fa fa-times"></i></button>
+      <div class="float-right ml-5 w-20">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="filters.notPaid" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList();">
+          <span class="d-ib mt--10">Pending TDS Payments Only</span>
+          <span class="checkmark"></span>
+        </label>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <!-- <div class="separator-breadcrumb border-top mb-10 mt-10"></div> -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <loading [loading]="loading"></loading>
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-20" (click)="sortColBy('v.name')">Vendor &nbsp; <i *ngIf="sort['v.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['v.name']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center" (click)="sortColBy('invoicesCount')">Invoices Count &nbsp; <i *ngIf="sort['invoicesCount']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['invoicesCount']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-right" (click)="sortColBy('i.taxableAmount')">Taxable Amount &nbsp; <i *ngIf="sort['i.taxableAmount']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['i.taxableAmount']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-right" (click)="sortColBy('i.tds')">TDS Deducted &nbsp; <i *ngIf="sort['i.tds']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['i.tds']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center" (click)="sortColBy('status')">Status &nbsp; <i *ngIf="sort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.status?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-right" (click)="sortColBy('tp.amount')">TDS Paid &nbsp; <i *ngIf="sort['tp.amount']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['tp.amount']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center" (click)="sortColBy('tp.date')">PaidOn &nbsp; <i *ngIf="sort['tp.date']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['tp.date']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center" (click)="sortColBy('p.date')">Due Date &nbsp; <i *ngIf="sort['p.date']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['p.date']?.desc" class="fa fa-caret-down"></i></th>
+                <th class="w-10 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll" infiniteScroll (onScroll)="loadMore()">
+              <tr *ngFor="let item of items;">
+                <td class="w-20">{{item.vendor || '-'}}</td>
+                <td class="w-10 text-center">{{item.invoices}}</td>
+                <td class="w-10 text-right">{{item.taxableAmount | inr}}</td>
+                <td class="w-10 text-right">{{item.tds | inr}}</td>
+                <td class="w-10 text-center" *ngIf="item.paymentId"><span class="bg-success pl-1 pr-1">Paid</span></td>
+                <td class="w-10 text-center" *ngIf="!item.paymentId"><span class="bg-warning pl-1 pr-1">Pending</span></td>
+                <td class="w-10 text-right">{{item.amount | inr}}</td>
+                <td class="w-10 text-center">{{item.date ? (item.date | date : 'MMM dd, yyyy') : '-'}}</td>
+                <td class="w-10 text-center">{{item.dueDate | date : 'MMM dd, yyyy'}}</td>
+                <td class="w-10 text-center">
+                  <button class="btn btn-sm btn-icon btn-primary" (click)="viewInvoices(item)" ngbTooltip="View Invoices"><i class="fa fa-search"></i></button>
+                  <a class="btn btn-sm btn-icon btn-primary" *ngIf="item.paymentId" [href]="item?.file" target="_blank" ngbTooltip="TDS File"><i class="fa fa-file-pdf-o"></i></a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #invoicesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Vendor Monthly TDS Invoices ( {{filters.dateFrom | date : 'MMM dd, yyyy'}} - {{filters.dateTo | date : 'MMM dd, yyyy'}} )</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 border-bottom pb-1">
+        <table class="tableBodyScroll table table-striped table-hover table-sm">
+          <thead>
+            <tr>
+              <th class="w-25">Project</th>
+              <th class="w-15 text-center">PO RefNo</th>
+              <th class="w-15 text-center">Invoice No</th>
+              <th class="w-15 text-center">Date</th>
+              <th class="w-15 text-right">Taxable Amount</th>
+              <th class="w-15 text-right">TDS</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll">
+            <tr *ngFor="let invoice of invoices;">
+              <td class="w-25">{{invoice.project}}</td>
+              <td class="w-15 text-center">{{invoice.refNo}}</td>
+              <td class="w-15 text-center">{{invoice.invoiceNo}}</td>
+              <td class="w-15 text-center">{{invoice.invoiceDate | date : 'MMM dd, yyyy'}}</td>
+              <td class="w-15 text-right">{{invoice.taxableAmount | inr}}</td>
+              <td class="w-15 text-right">{{invoice.tds | inr}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-center p-2" *ngIf="!invoices.length">No Invoices are raised for this vendor.</p>
+      </div>
+      <div class="col-md-2  text-center mt-2 mb-1">
+        <label class="d-b">Invoices Count</label>
+        <p>{{selectedItem.invoices}}</p>
+      </div>
+      <div class="col-md-2 text-center mt-2 mb-1">
+        <label for="firstName">Invoices TDS</label>
+        <p>{{invoicesTds | inr}}</p>
+      </div>
+      <div class="col-md-2  mt-2 mb-1" *ngIf="selectedItem.paymentId">
+        <label for="firstName">TDS Paid</label>
+        <p>{{selectedItem.amount | inr}}</p>
+      </div>
+      <div class="col-md-2  mt-2 mb-1" *ngIf="selectedItem.paymentId">
+        <label for="firstName"> Paid On</label>
+        <p>{{selectedItem.date | date : 'MMM dd, yyyy'}}</p>
+      </div>
+      <div class="col-md-2  mt-2 mb-1" *ngIf="selectedItem.paymentId">
+        <label for="firstName">TDS File</label>
+        <a class="f-b badge badge-secondary fs-10" *ngIf="selectedItem?.file" [href]="selectedItem?.file" target="_blank" ngbTooltip="Click to View">View Uploaded TDS File </a>
+      </div>
+      <div class="col-md-2  mt-2 mb-1" *ngIf="!selectedItem.paymentId">
+        <label for="firstName">TDS Paid</label>
+        <input type="number" class="form-control" [ngModelOptions]="{standalone:true}" [(ngModel)]="tdsPayment.amount" placeholder="TDS Amount">
+      </div>
+      <div *ngIf="!selectedItem.paymentId" class=" mt-2" [ngClass]="{'col-md-6':!tdsPayment?.tdsFile, 'col-md-4': tdsPayment?.tdsFile}">
+        <label class="d-b">TDS Form</label>
+        <a class="f-b badge badge-secondary fs-10" *ngIf="tdsPayment?.tdsFile" [href]="tdsPayment?.tdsFile?.file" target="_blank" ngbTooltip="Click to View">View Uploaded TDS File &nbsp;&nbsp;&nbsp;
+          <i *ngIf="!tdsPayment.viewOnly" class="fa fa-times cursor" ngbTooltip="Delete TDS File" (click)="tdsPayment.tdsFile = null;$event.preventDefault();$event.stopPropogation();"></i>
+        </a>
+        <span class="input-group" *ngIf="!tdsPayment?.tdsFile">
+          <div class="custom-file" *ngIf="!tdsFile">
+            <input class="custom-file-input" id="tdsPaymentId" (change)="tdsFileChange($event)" type="file">
+            <label class="custom-file-label" for="tdsPaymentId">Choose file</label>
+          </div>
+          <div class="custom-file" *ngIf="tdsFile">
+            <span class="float-left">{{tdsFile?.name}}</span>
+            <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="tdsFile=null;"></i>
+            <div class="mb-1">
+              <div *ngIf="tdsFileError">
+                {{ tdsFileError.message }}
+              </div>
+              <div *ngIf="tdsUploadResponse.status === 'error'">
+                {{ tdsUploadResponse.message }}
+              </div>
+              <div *ngIf="tdsUploadResponse.status === 'progress'">
+                <div role="progressbar" [style.width.%]="tdsUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                  {{tdsUploadResponse.message}}%
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="input-group-append">
+            <span class="input-group-text cursor" (click)="uploadTdsFile()">Upload</span>
+          </div>
+        </span>
+      </div>
+      <div class="col-md-2  mt-2 mb-1" *ngIf="tdsPayment?.tdsFile">
+        <label for="firstName">Paid On</label>
+        <input type="text" class="form-control" [ngModelOptions]="{standalone:true}" ngbDatepicker #dp="ngbDatepicker" (focus)="dp.toggle()" (dateSelect)="dp.close()" [(ngModel)]="tdsPayment.date" placeholder="Paid Date">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="tdsPayment.tdsFile" class="btn btn-primary ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!tdsPayment.amount||!tdsPayment?.date" (click)="saveTdsPayment()"><i class="fa fa-check" *ngIf="!loading"></i> Submit</button>
+  </div>
+</ng-template>

@@ -1,0 +1,170 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Notifications</h1>
+    <input type="text" placeholder="Search notification by name, phone, email" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2">
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openNotificationModal()">
+      <i class="fa fa-plus"></i> Notification
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/admin/listNotifications'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #notificationModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{notification.id ? 'Edit Notification' : 'New Notification'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{notification|json}} -->
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Subject</label>
+          <input type="text" class="form-control" id="subject" formControlName="subject" placeholder="Enter notification subject" [(ngModel)]="notification.subject">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <editor class="w-100" name="body" placeholder="Your notification content here "></editor>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="notification.publish" [ngModelOptions]="{standalone: true}">
+            <span>Publish Now</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1" *ngIf="notification.publish">
+          <label class="d-b">Notification For</label>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="notification.type" [ngModelOptions]="{standalone: true}">
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="Internal"> Internal Team
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="Booking"> Booking
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="Client"> Client
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 form-group mb-1" *ngIf="notification.publish && notification.type=='Booking'">
+          <label class="d-b">Select Booking Status <small>(notifications will be sent to only those booking clients)</small> </label>
+          <div class="btn-group btn-group-toggle">
+            <label class="btn  btn-sm btn-secondary" ngbButtonLabel>
+              <input type="checkbox" ngbButton [ngModelOptions]="{standalone:true}" [(ngModel)]="notification.new">New
+            </label>
+            <label class="btn  btn-sm btn-secondary" ngbButtonLabel>
+              <input type="checkbox" ngbButton [ngModelOptions]="{standalone:true}" [(ngModel)]="notification.booked"> Booked
+            </label>
+            <label class="btn  btn-sm btn-secondary" ngbButtonLabel>
+              <input type="checkbox" ngbButton [ngModelOptions]="{standalone:true}" [(ngModel)]="notification.active"> Active
+            </label>
+            <label class="btn  btn-sm btn-secondary" ngbButtonLabel>
+              <input type="checkbox" ngbButton [ngModelOptions]="{standalone:true}" [(ngModel)]="notification.exiting"> Exiting
+            </label>
+            <label class="btn  btn-sm btn-secondary" ngbButtonLabel>
+              <input type="checkbox" ngbButton [ngModelOptions]="{standalone:true}" [(ngModel)]="notification.exited"> Exited
+            </label>
+            <label class="btn  btn-sm btn-secondary" ngbButtonLabel>
+              <input type="checkbox" ngbButton [ngModelOptions]="{standalone:true}" [(ngModel)]="notification.tdsHolded"> TDS Holded
+            </label>
+            <label class="btn  btn-sm btn-secondary" ngbButtonLabel>
+              <input type="checkbox" ngbButton [ngModelOptions]="{standalone:true}" [(ngModel)]="notification.settled"> Settled
+            </label>
+          </div>
+        </div>
+        <div class="col-12 row p-2 ml-0 mr-0" *ngIf="notification.type=='Booking'">
+          <div class="form-group p-0 col-md-2 mb-1">
+            <label for="roles">Select Country</label>
+            <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group p-0 col-md-2 mb-1" *ngIf="selectedCountry?.id">
+            <label for="roles">Select City</label>
+            <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group p-0 col-md-3 mb-1" *ngIf="selectedCountry?.id&&selectedCity?.id">
+            <label for="roles">Select Location</label>
+            <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLocationSelected()">
+            </ng-select>
+          </div>
+          <div class="form-group p-0 col-md-3 mb-1" *ngIf="selectedCountry?.id&&selectedCity?.id&&selectedLocation?.id">
+            <label for="roles">Select Building</label>
+            <ng-select [items]="buildings" [hideSelected]="true" [multiple]="true" bindLabel="name" placeholder="Select Building" [(ngModel)]="selectedBuildings" [ngModelOptions]="{standalone: true}" (ngModelChange)="onBuildingSelected()">
+            </ng-select>
+          </div>
+          <div class="form-group p-0 col-md-2 mb-1" *ngIf="selectedCountry?.id&&selectedCity?.id&&selectedLocation?.id&&selectedBuildings.length==1">
+            <label for="roles">Select Floor</label>
+            <ng-select [items]="offices" [hideSelected]="true" bindLabel="name" placeholder="Select Floor" [(ngModel)]="selectedOffice" [ngModelOptions]="{standalone: true}">
+            </ng-select>
+          </div>
+        </div>
+        <div class="form-group col-md-12 mb-1 mt-2" *ngIf="notification.type=='Client'">
+          <tag-input [formControl]="to" theme='primary' [(ngModel)]="notification.clients" addOnBlur="true" addOnPaste="true" secondaryPlaceholder="Enter Client Name or Email here" placeholder="Can add multiple Clients" (onTextChange)="onTextChange($event)" [editable]='true'>
+            <tag-input-dropdown [autocompleteItems]="autocompleteEmails" [showDropdownIfEmpty]="true" [appendToBody]="false" [identifyBy]="'email'" [displayBy]="'name'">
+              <ng-template let-item="item" let-index="index">
+                {{ item.name }} [{{item.email}}]
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="form-group col-md-12 mb-1 mt-2" *ngIf="notification.type=='Internal'">
+          <tag-input [formControl]="to" theme='primary' [(ngModel)]="notification.users" addOnBlur="true" addOnPaste="true" secondaryPlaceholder="Enter Employee Name or Email here" placeholder="Can add multiple Employees" (onTextChange)="searchUsers($event)" [editable]='true'>
+            <tag-input-dropdown [autocompleteItems]="autocompleteEmails" [showDropdownIfEmpty]="true" [appendToBody]="false" [identifyBy]="'email'" [displayBy]="'name'">
+              <ng-template let-item="item" let-index="index">
+                {{ item.name }} [{{item.email}}]
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="!notification.publish" class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+    <button *ngIf="notification.publish" class="btn btn-success ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="publish()"><i class="fa fa-check" *ngIf="!loading"></i> Publish Now</button>
+  </div>
+</ng-template>
+<ng-template #viewNotificationModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">View Notification - <small>sent on {{notification.date | date:'MMM dd, yyyy hh:mm a'}} <small>by</small> {{notification.by}}</small></h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Subject : </label>
+        {{notification.subject}}
+      </div>
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Body : </label>
+        <div [innerHTML]="notification.body|safeHtml"></div>
+      </div>
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Receipients : </label>
+        <span *ngFor="let receiver of notification.notificationReceivers" class="float-left">
+          {{receiver.name}} [{{receiver.email}}] &nbsp; ,
+        </span>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

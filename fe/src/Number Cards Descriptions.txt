@@ -1,0 +1,116 @@
+Number Cards Descriptions
+
+--------------------------
+
+1. Credit Entries
+
+	Non Revenue : Count of the CreditEntries which are not from any revenue source
+
+	Not Attributed: Count of the creditEntries which are to be attributed
+
+	Pending PG Credit : Count of the Credit Entries which are occured from PaymentGateways which are to be attributed
+
+	Last Bank Credit : it is the date on which the latest credit entries from bank are imported into the ERP
+
+	Last PG Credit : It is the date on which the latest credit entry happend through the payment gateway
+
+2. Debit Entries
+
+	Suspense : Count of the suspense debit entries to be addressed 
+
+	Non Expense : Count of the Debit Entries which are not actual debits ( intrabank transfers)
+
+	Not Attributed : Count of the debit entries which are to be attributed
+
+	Pending PG Errors: Count of the transaction which have errors in processing the payments
+
+	Last Bank Debit : It is the date on which latest debit entries imported in to the ERP
+
+	Last PG Debit : It is the date on which lastest debit happened through the payment gateway
+
+3. Pending Expense Bills 
+
+	Bills in Bills Queue : Count of the bills in the bill queue to be mapped
+
+	Building Bills : Count of the bills in Building bills which are to be addressed
+
+	Building Recurring Bills : Count of the building  recurring bills which are in raised status and actions to be taken
+
+	HO Bills : Count of the HO bills which are in raised status and actions to be taken
+
+	HO Recurring Bills : Count of the HO recurring bills which are in Raised status and actions to be taken
+
+	Project Bills : Count of the projects bills which are in raised status and actions to be taken
+
+4. Pending Payouts
+
+	Due Amount : Sum of the amount which is to be paid by the company to vendors till today
+
+	Due Vendor Count : Count of the vendors to whom the company has to pay
+
+5. Account Receivables
+	
+	Total AR amount : Sum of the amount which is to be collected from the clients tilldate
+
+	Clients Count : Sum of the clients who has to pay to the company
+
+6. POS GSTs Posting
+
+	GST Posted POS : Count of the POS for which the GST posting is completed
+
+	GST Posted Pending POS : Count of the POS for which GST Posting to be done which are having tax invoices
+
+	GST Verified POS : Count of the POS whose GST is verified in the Governament Portal and GST Submission fils is uploaded
+
+	GST Verification Pending POS : Count of the POS whose GST verification is to be done on the Governament POrtal
+
+7. Bills GST Postings
+
+	GST Posted Bills : Count of the bills whose GST posting is done
+
+	GST Posted Pending Bills : Count of the Bills for which GST posting is to be done which are having tax invoices
+
+	GST Verified Bills : Count of the Bills whose GST is verified in the Governament Portal and GST Submission files is uploaded in ERP
+
+	GST Verification Pending Bills : Count of the Bills whose GST verification is to be done in the Governament Portal
+
+8. TDS Due by Quarter
+
+	Jul - Sep : Sum of the TDS amount which are to be collected from the clients for the Jul - Sep/ 2nd Quarter
+
+	Apr - Jun :  Sum of the TDS amount which are to be collected from the clients for the Apr - Jun/ 1st Quarter
+
+	Jan - Mar :  Sum of the TDS amount which are to be collected from the clients for the Jan - Mar/ 4th Quarter
+
+	Oct - Dec :  Sum of the TDS amount which are to be collected from the clients for the Oct - Dec/ 3rd Quarter
+
+9. Pending TDS Due Clients Count 
+
+	Jul - Sep : Count of the clients from whom we need to collect the TDS form  for the Jul - Sep/ 2nd Quarter
+
+	Apr - Jun : Count of the clients from whom we need to collect the TDS form  for the Apr - Jun/ 1st Quarter
+
+	Jan - Mar : Count of the clients from whom we need to collect the TDS form  for the Jan - Mar/ 4th Quarter
+
+	Oct - Dec : Count of the clients from whom we need to collect the TDS form  for the Oct - Dec/ 3rd Quarter
+
+10. Paid TDS Clients Count
+	
+	Jul - Sep : Count of the clients who has submitted the TDS form  for the Jul - Sep/ 2nd Quarter
+
+	Apr - Jun : Count of the clients who has submitted the TDS form  for the Apr - Jun/ 1st Quarter
+
+	Jan - Mar : Count of the clients who has submitted the TDS form  for the Jan - Mar/ 4th Quarter
+
+	Oct - Dec : Count of the clients who has submitted the TDS form  for the Oct - Dec/ 3rd Quarter
+
+11. Miscellaneous 
+
+	Cliens with TDS Due more than 25% SD : Count of the clients whose TDS Due Crossed 25% of the SD amount 
+
+	Last TDS Notification Triggered : It is the date on which TDS Notification is sent to the Clients for collecting the TDS form
+
+	
+
+
+

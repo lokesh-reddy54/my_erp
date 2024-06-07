@@ -1,0 +1,867 @@
+<div class="dashboards">
+  <div class="breadcrumb">
+    <h1>WorkBenches</h1>
+  </div>
+  <div class="separator-breadcrumb border-top mb-2"></div>
+  <loading [loading]="loading"></loading>
+  <div class="row">
+    <!-- ICON BG -->
+    <div class="col-md-7 pr-1">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Bookings </h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Pending Contracts ({{contractPendingBookings.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of contractPendingBookings">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!contractPendingBookings.length">No Pending Contracts for approvals</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Upcomings Contracts ({{futureContracts.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of futureContracts">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.futureContract.status=='Draft','badge-primary':booking.futureContract.status=='Approved','badge-success':booking.futureContract.status=='Confirmed'}">{{booking.futureContract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1"><strong class="fs-14 text-dark">{{booking.futureContract.kind}}</strong> on <strong>{{booking.futureContract.effectiveDate | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.futureContract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.futureContract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!futureContracts.length">No Upcoming Contracts</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Pending Exit Process ({{exits.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of exits">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-warning':booking.status=='Exiting','badge-danger':booking.status=='Exited'}">{{booking.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1" *ngIf="booking.status=='Exiting'">Exiting on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong> </p>
+                    <p class="m-0 text-small text-dark mb-1" *ngIf="booking.status=='Exited'">Exited on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong>,
+                      <span *ngIf="booking.exitRequest"> FCPStatus : <strong>{{booking.exitRequest?.fcpStatus}}</strong> </span></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!exits.length">No Pending Exits for ExitProcess</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+    <div class="col-md-5 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Building Wise Invoices & AR</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Receivables">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body p-1">
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-40">Building</th>
+                      <th class="w-30 text-right">Exiting Clients</th>
+                      <th class="w-30 text-right">New Clients</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="190">
+                    <tr *ngFor="let item of overAllAr;">
+                      <td class="w-40 ">{{item.building}} </td>
+                      <td class="w-30 text-right">{{item.activeDue | inr}}</td>
+                      <td class="w-30 text-right">{{item.inActiveDue | inr}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="float-left mb-1 ml-1"><a href="/#/accounts/reports/ar">View Detailed Report</a></div>
+                <div class="float-right mb-1 mr-1">Total Due : <strong>{{totalDue | inr}}</strong></div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Month Invoices">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body p-1">
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-25">Building</th>
+                      <th class="w-25 text-right">SD</th>
+                      <th class="w-25 text-right">Rents</th>
+                      <th class="w-25 text-right">Others</th>
+                      <!-- <th class="w-15 text-right">Total</th> -->
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="190">
+                    <tr *ngFor="let item of monthlyInvoices;">
+                      <td class="w-25 ">{{item.building}} </td>
+                      <td class="w-25 text-right">{{item.sd | inr}}</td>
+                      <td class="w-25 text-right">{{item.rents | inr}}</td>
+                      <td class="w-25 text-right">{{item.others | inr}}</td>
+                      <!-- <td class="w-15 text-right">{{item.total | inr}}</td> -->
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="float-right mb-1 mr-1">Total Invoiced : <strong>{{totalInvoiced | inr}}</strong></div>
+                <div class="float-left mb-1 ml-1"><a href="/#/accounts/reports/revenue">View Detailed Report</a></div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-md-12 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">New Bookings & Contracts</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="New Bookings ({{workbenches.deskBookings?.reserved?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches?.deskBookings?.reserved">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.reserved.length">No new bookings</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Sales Approval ({{workbenches.deskBookings?.pendingSalesApproval?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.deskBookings?.pendingSalesApproval">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.pendingSalesApproval?.length">No Bookings waiting for Sales Approval</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Accounts Approval ({{workbenches.deskBookings?.pendingAccountsApproval?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.deskBookings?.pendingAccountsApproval">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.pendingAccountsApproval?.length">No Bookings waiting for Accounts Approval</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Agreement Signs ({{workbenches.deskBookings?.pendingSignedAgreements?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.deskBookings?.pendingSignedAgreements">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-light':booking.contract.status=='Draft','badge-info':booking.contract.status=='Approved','badge-success':booking.contract.status=='Confirmed'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.pendingSignedAgreements?.length">No Bookings waiting for Accounts Approval</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="To Active ({{workbenches.deskBookings?.pendingActives?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.deskBookings?.pendingActives">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge fs-10" [ngClass]="{'badge-info':booking.contract.status=='Draft','badge-success':booking.contract.status=='Approved'}">{{booking.contract.status}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+                      <strong>{{booking.contract.rent | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.deskBookings?.pendingActives?.length">No Bookings waiting to get Active</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Contract Renewals ({{workbenches.renewals?.list?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.renewals?.list">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.company}} - <small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">New Rent <strong>{{booking.newRent | inr}}</strong> effective from <strong>{{booking.newEffectiveDate | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.moveIns?.missedMoveIns?.length">No Bookings for Contract Renewals</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Resource Bookings</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Payment Pending Resource Bookings ({{workbenches.resourceBookings?.pending?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches?.resourceBookings?.pending">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge badge-info fs-10">{{booking.resource.name}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">From : <strong>{{booking.started | date : 'MMM dd, yyyy hh:mm a'}}</strong> to <strong> {{booking.started | date : 'hh:mm a'}} </strong> for <strong>{{booking.amount | inr}}</strong> </p>
+                  </div>
+                  <!-- <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div> -->
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.resourceBookings?.pending.length">No payment pending resource bookings</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Paid Resource Bookings ({{workbenches.resourceBookings?.paid?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.resourceBookings?.paid">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -
+                        <small class="badge badge-info fs-10">{{booking.resource.name}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">From : <strong>{{booking.started | date : 'MMM dd, yyyy hh:mm a'}}</strong> to <strong> {{booking.started | date : 'hh:mm a'}} </strong> for <strong>{{booking.amount | inr}}</strong> </p>
+                  </div>
+                  <!-- <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div> -->
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.resourceBookings?.paid?.length">No Resource Bookings are done</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+    <div class="col-md-6 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">MoveIns</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Missed MoveIns ({{workbenches.moveIns?.missedMoveIns?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.moveIns?.missedMoveIns">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} - <small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">MoveIn on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.moveIns?.missedMoveIns?.length">No Booking MoveIn is missed</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Upcoming MoveIns ({{workbenches.moveIns?.futureMoveIns?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches?.moveIns?.futureMoveIns">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -<small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">MoveIn on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+              </div>
+              <div class="m-auto text-center" *ngIf="!workbenches.moveIns?.futureMoveIns.length">No bookings for MoveIns</div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12 col-md-12 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Exits</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Upcoming Exits ({{workbenches.exits?.upcomingExits?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches?.exits?.upcomingExits">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} -<small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Exit on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.exits?.upcomingExits.length">No bookings for Exits</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Missed Exits ({{workbenches.exits?.missedExits?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.exits?.missedExits">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} - <small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Exit on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.exits?.missedExits?.length">No Booking MoveIn is missed</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Pending Approval Exits ({{workbenches.exits?.pendingApprovals?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.exits?.pendingApprovals">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} - <small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Exited on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong>, refund of {{booking.exitRequest.refund | inr}} is pending for Approval</p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.exits?.pendingApprovals?.length">No Exits refunds are pending for Approval</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Pending Acceptance Exits ({{workbenches.exits?.pendingAcceptance?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.exits?.pendingAcceptance">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} - <small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Exited on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong>, refund of {{booking.exitRequest.refund | inr}} is waiting for Client Acceptance</p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.exits?.pendingAcceptance?.length">No Exits refunds are waiitng for Client Acceptance</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Pending Refunds Exits ({{workbenches.exits?.pendingRefunds?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let booking of workbenches.exits?.pendingRefunds">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{booking.id}}">{{booking.client.company || booking.client.name}} - <small class="fs-10">{{booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Exited on <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong>, refund of {{booking.exitRequest.refund | inr}} is pending.</p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/bookings/view/{{booking.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.exits?.pendingRefunds?.length">No Exits refunds are waiitng for Client Acceptance</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-lg-12 col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="pl-20 ml-20 mb-0 border-bottom">Current Month Payments</h4>
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-50">Client</th>
+                <th class="w-15">Office</th>
+                <th class="w-15 text-right">Amount</th>
+                <th class="w-20 text-center d-xs-none">Date</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="250" *ngIf="workbenches.payins?.list.length">
+              <tr *ngFor="let item of workbenches?.payins?.list;">
+                <td class="w-50 ">{{item.booking.client.company || item.booking.client.name}} </td>
+                <td class="w-15 ">{{item.booking.offices}} </td>
+                <td class="w-15 text-right">{{item.amount | inr}}</td>
+                <td class="w-20 text-right  d-xs-none">{{item.date | date:'MMM dd, yyyy hh:mm a'}}</td>
+              </tr>
+              <tr>
+                <td class="w-50 "></td>
+                <td class="w-15 text-right">Total</td>
+                <td class="w-15 text-right">{{workbenches?.payins?.amount | inr}}</td>
+                <td class=" d-xs-none"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="m-auto text-center mb-2 mt-2" *ngIf="!workbenches.payins?.list.length">No Payments are done in this month yet.</div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-7 pl-0 pr-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Support Tickets</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="New Tickets ({{workbenches.support?.new?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.new">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View Ticket</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.new.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="UnAttened ({{workbenches.support?.unattended?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.unattended">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View Ticket</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.unattended.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="To Resolve ({{workbenches.support?.yetToResolve?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.yetToResolve">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View Ticket</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.yetToResolve?.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="To Close ({{workbenches.support?.yetToClosed?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.yetToClosed">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View Ticket</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.yetToClosed?.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="SLA Violated ({{workbenches.support?.slaViolated?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let ticket of workbenches?.support?.slaViolated">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/support/view/{{ticket.id}}">{{ticket.booking.client.company || ticket.client.name}} -
+                        <small class="badge badge-info fs-10">{{ticket.booking.offices}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{ticket.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - <strong> {{ticket.category}} </strong> , <strong>{{ticket.context}}</strong> </p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/support/view/{{ticket.id}}">View Ticket</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.support?.slaViolated?.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+    <div class="col-md-5 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Payouts</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="CapEx Payouts ({{workbenches.payouts?.capexPayouts?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let payout of workbenches.payouts?.capexPayouts">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{payout.purchaseOrder?.id}}">{{payout.purchaseOrder?.vendor.name}} - <small class="fs-10">{{payout.purchaseOrder?.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Amount : <strong>{{payout.amount | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{payout.purchaseOrder?.id}}">View PO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.payouts?.capexPayouts?.length">No CapEx payouts are pending</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="OpEx Payouts ({{workbenches.payouts?.opexPayouts?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let payout of workbenches.payouts?.opexPayouts">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0">{{payout.opexBill.serviceProvider.name}} - <small class="fs-10">{{payout.opexBill.billDueDate | date : 'MMM dd, yyyy'}}</small></h5>
+                    <p class="m-0 text-small text-muted mb-1">Amount : <strong>{{payout.amount | inr}}</strong></p>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.payouts?.opexPayouts?.length">No CapEx payouts are pending</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Tenant Refunds ({{workbenches.payouts?.refunds?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let refund of workbenches.payouts?.refunds">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/bookings/view/{{refund.exitRequest.booking.id}}">{{refund.exitRequest.booking.client.company}} - <small class="fs-10">{{refund.exitRequest.booking.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Amount : <strong>{{refund.amount | inr}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{refund.id}}">View Booking</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.payouts?.refunds?.length">No Refunds payouts are pending</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-7 pl-0 pr-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Purchase Orders</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <!-- <ngb-tab title="POs to Start ({{workbenches.purchaseOrders?.pendingStarted?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let po of workbenches?.purchaseOrders?.pendingStarted">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{po.id}}">{{po.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{po.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{po.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - Building : <strong> {{po.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{po.id}}">View PO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingStarted.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab> -->
+        <ngb-tab title="Pending Proforma Invoices ({{workbenches.purchaseOrders?.pendingProformaInvoice?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let po of workbenches?.purchaseOrders?.pendingProformaInvoice">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{po.id}}">{{po.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{po.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Raised on : <strong>{{po.date | date : 'MMM dd, yyyy hh:mm a'}}</strong> - Building : <strong> {{po.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{po.id}}">View PO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingProformaInvoice.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="YetTo Release  ({{workbenches.purchaseOrders?.pendingMilestonesRelease?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches?.purchaseOrders?.pendingMilestonesRelease">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">{{item.purchaseOrder.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{item.purchaseOrder.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Milestone : <strong>{{item.name}}</strong>, Amount : <strong>{{item.amount | inr}}</strong> - Building : <strong> {{item.purchaseOrder.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">View PO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingMilestonesRelease.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="YetTo Approve  ({{workbenches.purchaseOrders?.pendingMilestonesApprovals?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches?.purchaseOrders?.pendingMilestonesApprovals">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">{{item.purchaseOrder.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{item.purchaseOrder.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Milestone : <strong>{{item.name}}</strong>, Amount : <strong>{{item.amount | inr}}</strong> - Building : <strong> {{item.purchaseOrder.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">View PO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingMilestonesApprovals.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="YetTo Paid ({{workbenches.purchaseOrders?.pendingMilestonesPayments?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches?.purchaseOrders?.pendingMilestonesPayments">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">{{item.purchaseOrder.vendor.name}} -
+                        <small class="badge badge-info fs-10">{{item.purchaseOrder.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Milestone : <strong>{{item.name}}</strong>, Amount : <strong>{{item.amount | inr}}</strong> - Building : <strong> {{item.purchaseOrder.building.name}} </strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/purchaseorder/{{item.purchaseOrder.id}}">View PO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.purchaseOrders?.pendingMilestonesPayments.length">No items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+    <div class="col-md-5 pl-0">
+      <h4 class="pl-20 ml-20 mb-0 border-bottom">Work Orders</h4>
+      <ngb-tabset class="nav-center nav-no-bg">
+        <ngb-tab title="Drafted WOs ({{workbenches.workOrders?.draft?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches.workOrders?.draft">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/workorder/{{item.id}}">{{item.vendor.name}} - <small class="fs-10">{{item.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Budget : <strong>{{item.budget | inr}}</strong>, Proposed on : <strong>{{item.proposedOn | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/workorder/{{item.id}}">View WO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.workOrders?.draft.length">No Items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Approvals ({{workbenches.workOrders?.pendingApproval?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches.workOrders?.pendingApproval">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/workorder/{{item.id}}">{{item.vendor.name}} - <small class="fs-10">{{item.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Budget : <strong>{{item.budget | inr}}</strong>, Proposed on : <strong>{{item.proposedOn | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/workorder/{{item.id}}">View WO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.workOrders?.pendingApproval.length">No Items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+        <ngb-tab title="Vendor Confirmations ({{workbenches.workOrders?.pendingVendorConfirmation?.length}})">
+          <ng-template ngbTabContent>
+            <hr class="mb-1 p-0" style="margin-top: -35px">
+            <div class="card">
+              <div class="card-body tableBodyScroll" infiniteScroll [autoHeightAdjust]="250">
+                <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 border-bottom" *ngFor="let item of workbenches.workOrders?.pendingVendorConfirmation">
+                  <div class="flex-grow-1">
+                    <h5 class="mb-0"><a href="#/purchases/workorder/{{item.id}}">{{item.vendor.name}} - <small class="fs-10">{{item.refNo}}</small>
+                      </a></h5>
+                    <p class="m-0 text-small text-muted mb-1">Budget : <strong>{{item.budget | inr}}</strong>, Proposed on : <strong>{{item.proposedOn | date : 'MMM dd, yyyy'}}</strong></p>
+                  </div>
+                  <div>
+                    <a class="btn btn-outline-primary mt-3 mb-3 m-sm-0 btn-rounded btn-sm" href="#/purchases/workorder/{{item.id}}">View WO</a>
+                  </div>
+                </div>
+                <div class="m-auto text-center" *ngIf="!workbenches.workOrders?.pendingVendorConfirmation.length">No Items</div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+</div>

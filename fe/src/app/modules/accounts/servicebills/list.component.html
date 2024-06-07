@@ -1,0 +1,18 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Provider Bills</h1>
+    <input type="text" placeholder="Search Provider Bill by provider name, service or office" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-1">
+    <button class="btn btn-outline-primary btn-ico ladda-button pull-right" [ladda]="loading" (click)="raiseBills()">
+      <i class="fa fa-refresh" *ngIf="!loading"></i> Update Provider Bills
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/accounts/listServiceBills'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>

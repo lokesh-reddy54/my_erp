@@ -1,0 +1,150 @@
+<div class="row">
+  <div class="col-6">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Facilities</h1>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="facilitySetSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openFacilityModal()">
+        <i class="fa fa-plus"></i> Facilty
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #facilityList [filter]="facilityFilters" [dataUrl]="'internal/admin/listFacilities'" [config]="facilityConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Facility Sets</h1>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="locationSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openFacilitySetModal()">
+        <i class="fa fa-plus"></i> Facility Set
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #facilitySetList [filter]="setFilters" [dataUrl]="'internal/admin/listFacilitySets'" [config]="facilitySetConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #facilityModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{facility.id ? 'Edit Facility' : 'New Facility'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="facility.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="facility.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="saveFacility()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #facilitySetModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{facilitySet.id ? 'Edit FacilitySet' : 'New FacilitySet'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form" (validSubmit)="saveFacilitySet()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="facilitySet.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="facilitySet.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="saveFacilitySet()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #assignFacilitySetModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Facilities Assignment of '{{selectedFacilitySet.name}}'</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-6 form-group mb-1">
+        <div class="table-responsive">
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th>UnAssigned Facilities</th>
+                <th class="w-10 text-center">Assign</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll" style="max-height: 350px;">
+              <tr *ngFor="let facility of unassignedFacilities;">
+                <td>{{facility.name}}</td>
+                <td class=" w-10 text-center">
+                  <button ngbTooltip="Assign Facility" class="btn btn-icon btn-info" (click)="assign(facility)"><i class="i-Blinklist"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-6 form-group mb-1">
+        <table class="tableBodyScroll table table-striped table-hover table-sm">
+          <thead>
+            <tr>
+              <th>Assigned Facilities</th>
+              <th class="w-10 text-center">UnAssign</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll" style="max-height: 350px;">
+            <tr *ngFor="let facility of assignedFacilities;">
+              <td>{{facility.name}}</td>
+              <td class=" w-10 text-center">
+                <button class="btn btn-icon btn-danger" ngbTooltip="Remove Facility" (click)="unassign(facility)"><i class="i-Close"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

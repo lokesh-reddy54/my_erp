@@ -1,0 +1,1112 @@
+<div class="dashboards">
+  <loading [loading]="loading"></loading>
+  <div class="row">
+    <div class="col-12 p-2 mb-2 border-bottom pb-2" style="margin-top: -15px;">
+      <!-- <h4 class="mb-0"><small>{{greetingText}}</small> <strong> {{user.name}}</strong> .. !</h4> -->
+      <strong *ngIf="selectedBuilding">{{selectedBuilding.name}}, {{selectedBuilding?.location?.name}} &nbsp; <i class="fa fa-times" (click)="clearBuilding()"></i></strong>
+      <span class="float-right d-ib">Viewing as <strong>{{userRole.name}}</strong></span>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.deskBookings">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b">Desk Bookings</div>
+          <table class="table table-sm  fs-16">
+            <tbody>
+              <tr *ngIf="userRoleType=='admin' || userRoleType=='businessOps' || userRoleType=='buildingOps' || userRoleType=='sales'" (click)="openBookings('New Bookings', workbenches.deskBookings.new)">
+                <td>New Bookings</td>
+                <td class="f-b text-right">{{workbenches?.deskBookings?.new?.length}}</td>
+              </tr>
+              <tr *ngIf="userRoleType=='admin' || userRoleType=='businessOps'" (click)="openBookings('Pending Document Upload', workbenches.deskBookings.pendingSignedAgreements)">
+                <td>Pending Document Upload</td>
+                <td class="f-b text-right">{{workbenches?.deskBookings?.pendingSignedAgreements?.length}}</td>
+              </tr>
+              <tr *ngIf="userRoleType=='admin' || userRoleType=='businessOps' || userRoleType=='sales'" (click)="openBookings('Pending Sales Approval', workbenches.deskBookings.pendingSalesApproval,{pendingSalesApproval:true})">
+                <td>Pending Sales Approval</td>
+                <td class="f-b text-right">{{workbenches?.deskBookings?.pendingSalesApproval?.length}}</td>
+              </tr>
+              <tr *ngIf="userRoleType=='admin' || userRoleType=='businessOps' || userRoleType=='accounts'" (click)="openBookings('Pending Accounts Approval', workbenches.deskBookings.pendingAccountsApproval,{pendingAccountsApproval:true})">
+                <td>Pending Accounts Approval</td>
+                <td class="f-b text-right">{{workbenches?.deskBookings?.pendingAccountsApproval?.length}}</td>
+              </tr>
+              <tr *ngIf="userRoleType=='admin' || userRoleType=='businessOps'" (click)="openBookings('Pending Active', workbenches.deskBookings.pendingActives)">
+                <td>Pending Active</td>
+                <td class="f-b text-right">{{workbenches?.deskBookings?.pendingActives?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 pl-0 p-2" *ngIf="workbenches?.resourceBookings && (userRoleType=='admin' || userRoleType == 'businessOps')">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title border-bottom mb-2 f-b">Resource Bookings</div>
+          <span class="w-50 d-ib fs-16" (click)="openResourceBookings('Paid Resource Bookings', workbenches.resourceBookings.paid)">Paid Bookings : <strong>{{workbenches?.resourceBookings?.paid?.length}}</strong></span>
+          <span class="w-50 d-ib text-right fs-16" (click)="openResourceBookings('Yet to Pay Bookings', workbenches.resourceBookings.pending)">Yet to Pay: <strong>{{workbenches?.resourceBookings?.pending?.length}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 pl-0 p-2" *ngIf="workbenches?.moveIns">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title border-bottom mb-2 f-b">Move Ins</div>
+          <span class="w-70 d-ib fs-16" (click)="openMoveIns('Today to Next 7 Days', workbenches.moveIns.futureMoveIns)">Today to Next 7 Days MoveIns: <strong>{{workbenches?.moveIns?.futureMoveIns?.length}}</strong></span>
+          <span class="w-30 d-ib text-right text-danger fs-16 f-b" (click)="openMoveIns('Missed MoveIns', workbenches.moveIns.missedMoveIns)">Missed: <strong>{{workbenches?.moveIns?.missedMoveIns?.length}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.exits">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b">Exits</div>
+          <table class="table table-sm  fs-16">
+            <tbody>
+              <tr *ngIf="userRoleType == 'admin' || userRoleType == 'businessOps' || userRoleType == 'buildingOps'" (click)="openExits('Today to Next 7 Days Exits', workbenches?.exits?.upcomingExits)">
+                <td>Today to Next 7 Days</td>
+                <td class="f-b text-right">{{workbenches?.exits?.upcomingExits?.length}}</td>
+              </tr>
+              <tr *ngIf="userRoleType == 'admin' || userRoleType == 'businessOps'" (click)="openExits('Pending Approvals', workbenches?.exits?.pendingApprovals,{pendingApprovals:true})">
+                <td>Pending Approvals</td>
+                <td class="f-b text-right">{{workbenches?.exits?.pendingApprovals?.length}}</td>
+              </tr>
+              <tr *ngIf="userRoleType == 'admin' || userRoleType == 'businessOps'" (click)="openExits('Pending Client Acceptances', workbenches?.exits?.pendingAcceptance,{pendingAcceptance:true})">
+                <td>Pending Client Acceptances</td>
+                <td class="f-b text-right">{{workbenches?.exits?.pendingAcceptance?.length}}</td>
+              </tr>
+              <tr *ngIf="userRoleType == 'admin' || userRoleType == 'businessOps'" (click)="openExits('Missed Exits', workbenches?.exits?.missedExits)" class="text-danger f-b">
+                <td>Missed Exits</td>
+                <td class="f-b text-right">{{workbenches?.exits?.missedExits?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 pl-0 p-2" *ngIf="workbenches?.renewals">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title border-bottom mb-2 f-b">Renewals</div>
+          <span class="w-100 d-ib fs-16" (click)="openRenewals('Tenants for Contract Renewals',workbenches?.renewals?.list)">Tenants Count : <strong>{{workbenches?.renewals?.list?.length}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 pl-0 p-2" *ngIf="workbenches?.payins">
+      <div class="card mb-0">
+        <div class="card-body p-3" (click)="openPayins('Pending Pay Ins', workbenches?.payins.list)">
+          <div class="card-title border-bottom mb-2 f-b">Pending Pay Ins</div>
+          <span class="w-40 d-ib fs-16">Tenants : <strong>{{workbenches?.payins?.count}}</strong></span>
+          <span class="w-60 d-ib text-right text-danger fs-16 f-b"> Amount : <strong>{{workbenches?.payins?.amount | inr}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 p-2" *ngIf="workbenches?.payouts?.capexPayouts && (userRoleType=='admin' || userRoleType == 'projects' || userRoleType == 'accounts')">
+      <div class="card mb-0">
+        <div class="card-body p-3" (click)="openCapexPayouts('Vendor Pending Payouts',workbenches?.payouts.capexPayouts)">
+          <div class="card-title border-bottom mb-2 f-b">Payouts - CapEx</div>
+          <span class="w-30 d-ib fs-16">Vendors: <strong>{{workbenches?.payouts?.capexPayoutsVendorsCount}}</strong></span>
+          <span class="w-70 d-ib fs-16 text-right">Amount: <strong>{{workbenches?.payouts?.capexPayoutsTotalAmount | inr}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 p-2" *ngIf="workbenches?.payouts?.opexPayouts && (userRoleType=='admin' || userRoleType == 'accounts' || userRoleType == 'buildingOps')">
+      <div class="card mb-0">
+        <div class="card-body p-3" (click)="openOpexPayouts('OpEx Pending Payouts',workbenches?.payouts.opexPayouts)">
+          <div class="card-title border-bottom mb-2 f-b">Payouts - OpEx</div>
+          <span class="w-40 d-ib fs-16">Providers: <strong>{{workbenches?.payouts?.opexPayoutsVendorsCount}}</strong></span>
+          <span class="w-60 d-ib fs-16 text-right">Amount: <strong>{{workbenches?.payouts?.opexPayoutsTotalAmount | inr}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 p-2" *ngIf="workbenches?.payouts?.refunds && (userRoleType=='admin'  || userRoleType == 'accounts' || userRoleType == 'businessOps')">
+      <div class="card mb-0">
+        <div class="card-body p-3" (click)="openExitPayouts('Exit Refund Pending Payouts',workbenches?.payouts.refunds)">
+          <div class="card-title border-bottom mb-2 f-b">Payouts - Refunds</div>
+          <span class="w-30 d-ib fs-16">Tenants: <strong>{{workbenches?.payouts?.refundsTenantsCount}}</strong></span>
+          <span class="w-70 d-ib fs-16 text-right">Amount: <strong>{{workbenches?.payouts?.refundsTotalAmount | inr}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 pl-0 p-2" *ngIf="workbenches?.visits">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title border-bottom mb-2 f-b">Visits</div>
+          <span class="w-50 d-ib fs-16" (click)="openVisits('Todays Visits',workbenches?.visits?.todaysVisits)">Todays Visits : <strong>{{workbenches?.visits?.todaysVisits?.length}}</strong></span>
+          <span class="w-50 d-ib fs-16 text-right" (click)="openVisits('Future Visits',workbenches?.visits?.futureVisits)">Future Visits : <strong>{{workbenches?.visits?.futureVisits?.length}}</strong></span>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.workOrders">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b">Work Orders</div>
+          <table class="table table-sm  fs-16">
+            <tbody>
+              <tr (click)="openWorkOrders('Drafted WorkOrders',workbenches?.workOrders.draft)">
+                <td>In Draft </td>
+                <td class="f-b text-right">{{workbenches?.workOrders?.draft?.length}}</td>
+              </tr>
+              <tr (click)="openWorkOrders('Pending Manager Approval WorkOrders',workbenches.workOrders.pendingApproval)">
+                <td>Pending Manager Approval</td>
+                <td class="f-b text-right">{{workbenches?.workOrders?.pendingApproval?.length}}</td>
+              </tr>
+              <tr (click)="openWorkOrders('Pending Vendor Confirmation WorkOrders',workbenches.workOrders.pendingVendorConfirmation)">
+                <td>Pending Vendor Confirmation</td>
+                <td class="f-b text-right">{{workbenches?.workOrders?.pendingVendorConfirmation?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.purchaseOrders">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b">Purchase Orders</div>
+          <table class="table table-sm  fs-16">
+            <tbody>
+              <tr (click)="openPurchaseOrders('Pending POs to Start',workbenches.purchaseOrders.pendingStarted,{startPo: true})">
+                <td>Pending POs to Start </td>
+                <td class="f-b text-right">{{workbenches?.purchaseOrders?.pendingStarted?.length}}</td>
+              </tr>
+              <tr (click)="openPurchaseOrders('Pending Proforma Invoice',workbenches.purchaseOrders.pendingProformaInvoice)">
+                <td>Pending Proforma Invoice</td>
+                <td class="f-b text-right">{{workbenches?.purchaseOrders?.pendingProformaInvoice?.length}}</td>
+              </tr>
+              <tr (click)="openMilestones('Pending Payment Release',workbenches.purchaseOrders.pendingMilestonesRelease,{releaseMilestone: true})">
+                <td>Pending Payment Release</td>
+                <td class="f-b text-right">{{workbenches?.purchaseOrders?.pendingMilestonesRelease?.length}}</td>
+              </tr>
+              <tr (click)="openMilestones('Pending Milestone Approval',workbenches.purchaseOrders.pendingMilestonesApprovals,{approveMilestone: true})">
+                <td>Pending Milestone Approval</td>
+                <td class="f-b text-right">{{workbenches?.purchaseOrders?.pendingMilestonesApprovals?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.bills">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b float-left">Bills Queue</div>
+          <div class="card-title mb-1 f-b float-right text-info" (click)="newBill()"><i class="fa fa-plus"></i> Bill</div>
+          <table class="table table-sm fs-16">
+            <tbody>
+              <tr *ngIf="userRoleType == 'admin' || userRoleType == 'buildingOps' || userRoleType == 'projects'" (click)="openBills('Queued Bills', workbenches?.bills?.unmapped)" class="">
+                <td>UnMapped Bills</td>
+                <td class="f-b text-right">{{workbenches?.bills?.unmapped?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.support">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b">Support Tickets</div>
+          <table class="table table-sm  fs-16">
+            <tbody>
+              <tr (click)="openTickets('New Tickets',workbenches.support.new,{new:true})">
+                <td>New </td>
+                <td class="f-b text-right">{{workbenches?.support?.new?.length}}</td>
+              </tr>
+              <tr (click)="openTickets('Yet to Attend Tickets',workbenches.support.unattended,{unattended:true})">
+                <td>Yet to Attend</td>
+                <td class="f-b text-right">{{workbenches?.support?.unattended?.length}}</td>
+              </tr>
+              <tr (click)="openTickets('Yet to be Resolved Tickets',workbenches.support.yetToResolve,{yetToResolve:true})">
+                <td>Yet to be Resolved</td>
+                <td class="f-b text-right">{{workbenches?.support?.yetToResolve?.length}}</td>
+              </tr>
+              <tr (click)="openTickets('Yet to be Closed Tickets',workbenches.support.yetToClosed, {yetToClosed:true})">
+                <td>Yet to be Closed</td>
+                <td class="f-b text-right">{{workbenches?.support?.yetToClosed?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.support">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b">SLA Violated Tickets</div>
+          <table class="table table-sm  fs-16">
+            <tbody>
+              <tr (click)="openTickets('Violated Attended Tickets',workbenches.support.slaAttendedViolated,{slaViolated:true, unattended:true})">
+                <td>Violated Attended </td>
+                <td class="f-b text-right">{{workbenches?.support?.slaAttendedViolated?.length}}</td>
+              </tr>
+              <tr (click)="openTickets('Violated Resolved Tickets',workbenches.support.slaResolvedViolated, {slaViolated:true, yetToResolve: true})">
+                <td>Violated Resolved</td>
+                <td class="f-b text-right">{{workbenches?.support?.slaResolvedViolated?.length}}</td>
+              </tr>
+              <tr (click)="openTickets('Violated Closed Tickets',workbenches.support.slaClosedViolated, {slaViolated:true, yetToClosed: true})">
+                <td>Violated Closed</td>
+                <td class="f-b text-right">{{workbenches?.support?.slaClosedViolated?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-sm-12 p-2" *ngIf="workbenches?.clients || workbenches?.vendors || workbenches?.providers || workbenches?.ownerContacts || workbenches?.buildingAmcs || workbenches?.buildingContract">
+      <div class="card mb-0">
+        <div class="card-body p-3">
+          <div class="card-title mb-1 f-b">Directories</div>
+          <table class="table table-sm  fs-16">
+            <tbody>
+              <tr *ngIf="workbenches?.clients" (click)="openTenants('Tenants',workbenches.clients,{})">
+                <td>Tenants </td>
+                <td class="f-b text-right">{{workbenches?.clients?.length}}</td>
+              </tr>
+              <tr *ngIf="workbenches?.vendors" (click)="openVendors('Vendors',workbenches.vendors, {})">
+                <td>Vendors</td>
+                <td class="f-b text-right">{{workbenches?.vendors?.length}}</td>
+              </tr>
+              <tr *ngIf="workbenches?.providers" (click)="openProviders('Service Providers',workbenches.providers,{})">
+                <td>Service Providers</td>
+                <td class="f-b text-right">{{workbenches?.providers?.length}}</td>
+              </tr>
+              <tr *ngIf="workbenches?.ownerContacts" (click)="openOwnerContacts('Owner Contacts',workbenches.ownerContacts,{})">
+                <td>Owner Contacts</td>
+                <td class="f-b text-right">{{workbenches?.ownerContacts?.length}}</td>
+              </tr>
+              <tr *ngIf="workbenches?.buildingAmcs" (click)="openBuildingAMCs('Building AMCs',workbenches.buildingAmcs,{})">
+                <td>Building AMCs</td>
+                <td class="f-b text-right">{{workbenches?.buildingAmcs?.length}}</td>
+              </tr>
+              <tr *ngIf="workbenches?.buildingContracts" (click)="openBuildingContracts('Building Contract Terms',workbenches.buildingContracts,{})">
+                <td>Building Owner Contract</td>
+                <td class="f-b text-right">{{workbenches?.buildingContracts?.length}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #billModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Take Bill Picture</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile p-0 m-0" style="position: relative;">
+    <div id="camera" [ngClass]="{'hide':!camera}" style="width: 100%;height: 100%;">
+      <video #video id="video" autoplay style="width: 100%;height: 100%;object-fit: fill;"></video>
+      <button id="snap" class="btn btn-lg btn-rounded btn-primary btn-icon" (click)="captureBill()" style="position: absolute;bottom: 5px;left: 41%;padding: 1.8rem !important;"><i class="fa fa-camera" style="margin-left: -14px;font-size: 1.6rem !important;line-height:  0.2rem !important;position: absolute;"></i></button>
+    </div>
+    <div id="preview" [ngClass]="{'hide':camera}" style="width: 100%;height: 100%;">
+      <img [src]="dataUrl" style="width: 100%;height: 100%;" />
+      <button id="snap" class="btn btn-lg btn-rounded btn-success btn-icon" (click)="uploadBill()" style="position: absolute;bottom: 5px;left: 31%;padding: 1.8rem !important;"><i class="fa fa-check" style="margin-left: -12px;font-size: 1.6rem !important;line-height:  0.2rem !important;position: absolute;"></i></button>
+      <button id="snap" class="btn btn-lg btn-rounded btn-danger btn-icon" (click)="camera=true;loading=false;" style="position: absolute;bottom: 5px;left: 55%;padding: 1.8rem !important;"><i class="fa fa-times" style="margin-left: -10px;font-size: 1.6rem !important;line-height:  0.2rem !important;position: absolute;"></i></button>
+    </div>
+    <canvas #canvas class="hide" id="canvas" width="640" height="480"></canvas>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #billDataModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Bill</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile" style="position: relative;">
+    <div class="row mt-4 pt-4" *ngIf="!bill?.imageId">
+      <div class="col-md-12 pr-0 pl-1 form-group mb-1 text-center">
+        <button class="btn btn-ico btn-lg btn-outline-primary" (click)="takePicture()"><i class="fa fa-camera"></i> Take Picture</button>
+      </div>
+      <div class="col-md-12 pr-0 pl-1 form-group mb-1 text-center  mt-4 pt-2">
+        <strong class="fs-14">OR</strong>
+      </div>
+      <div class="col-md-12 pr-0 pl-1 form-group mb-1  mt-4 pt-2">
+        <!-- <p class="text-muted mb-2 pl-4">Upload Bill Image </p> -->
+        <a class="f-b badge badge-success fs-12" *ngIf="bill?.image?.file" [href]="bill?.image?.file" target="_blank" ngbTooltip="Click to View">Uploaded & Verified</a>
+        <span class="input-group" *ngIf="!bill?.image?.file">
+          <div class="custom-file" *ngIf="!imageFile">
+            <input class="custom-file-input" id="imageId" (change)="imageFileChange($event)" type="file">
+            <label class="custom-file-label" for="imageId">Upload Bill Image</label>
+          </div>
+          <div class="custom-file" *ngIf="imageFile">
+            <span class="float-left">{{imageFile?.name}}</span>
+            <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="imageFile=null;"></i>
+            <div class="mb-1">
+              <div *ngIf="imageFileError">
+                {{ imageFileError.message }}
+              </div>
+              <div *ngIf="imageUploadResponse.status === 'error'">
+                {{ imageUploadResponse.message }}
+              </div>
+              <div *ngIf="imageUploadResponse.status === 'progress'">
+                <div role="progressbar" [style.width.%]="imageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                  {{imageUploadResponse.message}}%
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="input-group-append">
+            <span class="input-group-text cursor" (click)="uploadBill()">Upload</span>
+          </div>
+        </span>
+      </div>
+    </div>
+    <form [formGroup]="form" *ngIf="bill?.imageId">
+      <div class="row m-0">
+        <div class="col-md-12 pr-0 pl-1 form-group mb-1">
+          <label class="d-b">Bill Image </label>
+          <a class="f-b badge badge-success fs-12" *ngIf="imageFile?.file" [href]="imageFile?.file" target="_blank" ngbTooltip="Click to View">View Bill</a>
+        </div>
+        <div class="col-md-12 pr-0 pl-1 form-group mb-1">
+          <label class="d-b">Payment Type </label>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="bill.paymentType" formControlName="paymentType">
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="PrePaid"> PrePaid
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="PostPaid"> Post Paid
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 pr-0 pl-1 form-group mb-1">
+          <label for="roles">Bill Amount </label>
+          <input type="number" class="form-control" placeholder="Enter Bill Amount" [(ngModel)]="bill.amount" formControlName="amount">
+        </div>
+        <div class="col-md-12 pr-0 pl-1 form-group mb-1">
+          <label for="roles">Bill Date</label>
+          <input class="form-control" placeholder="Bill Date" [(ngModel)]="bill.billDate" formControlName="billDate" name="dp" ngbDatepicker (dateSelect)="dp.close()" #dp="ngbDatepicker" (focus)="dp.toggle()">
+        </div>
+        <div class="col-md-12 pr-0 pl-1 form-group mb-1">
+          <label class="d-b">Select Bill Type </label>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="bill.billType" (ngModelChange)="getPostingData()" [ngModelOptions]="{standalone:true}">
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="Capex"> Capex
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="BuildingOpex"> Building Opex
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="HOOpex"> HO Opex
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 pr-0 pl-1" *ngIf="bill.billType=='BuildingOpex'">
+          <label for="roles">Building</label>
+          <ng-select [items]="buildings" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select Building" [(ngModel)]="bill.buildingId" [ngModelOptions]="{standalone:true}">
+          </ng-select>
+        </div>
+        <div class="col-md-12 pr-0 pl-1" *ngIf="bill.billType=='Capex'">
+          <label for="roles">Project</label>
+          <ng-select [items]="projects" [closeOnSelect]="true" [hideSelected]="true" bindLabel="title" placeholder="Select Project" [(ngModel)]="bill.project" [ngModelOptions]="{standalone:true}">
+          </ng-select>
+        </div>
+        <div class="col-md-12 pr-0 pl-1 mt-2 form-group mb-1" *ngIf="bill.paymentType=='PrePaid' && bill.billType">
+          <label class="d-b">Payment Method </label>
+          <div class="btn-group btn-group-toggle" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="bill.paymentMode" formControlName="paymentMode" (ngModelChange)="getPaymentAccounts()">
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="PettyCash"> PettyCash
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="DebitCard"> Debit Card
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 pr-0 pl-1 mt-2 form-group mb-1" *ngIf="bill.paymentMode=='PettyCash'">
+          <ng-select class="" [items]="pettyCashAccounts" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select PettyCash Account" [(ngModel)]="bill.pettyCashAccountId" [ngModelOptions]="{standalone:true}"></ng-select>
+        </div>
+        <div class="col-md-12 pr-0 pl-1 mt-2 form-group mb-1" *ngIf="bill.paymentMode=='DebitCard'">
+          <ng-select class="" [items]="debitCardAccounts" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select DebitCard Account" [(ngModel)]="bill.debitCardAccountId" [ngModelOptions]="{standalone:true}"></ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button type="button" class="btn btn-sm btn-info" [disabled]="loading||form.invalid||!bill.billType" (click)="submitBill()">Submit</button>
+  </div>
+</ng-template>
+<ng-template #buildingAMCsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!amcsSelectedBuilding">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Building</h5>
+      <span class="badge badge-outline-info m-2 fs-16" *ngFor="let building of authService.buildings" (click)="filterBuildingAMCs(building)">{{building.name}}, {{building.location.name}}</span>
+    </div>
+    <div *ngIf="amcsSelectedBuilding">
+      <div class="border-bottom pb-1 mb-1">Selected Building : <strong>{{amcsSelectedBuilding.name}}, {{amcsSelectedBuilding?.location?.name}} &nbsp; <i class="fa fa-times" *ngIf="!selectedBuilding" (click)="amcsSelectedBuilding=null"></i></strong></div>
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of buildingAmcs">
+        <a class="flex-grow-1">
+          <h5 class="mb-0">
+            {{item.amcItem?.name}}
+            <span class="float-right d-ib badge badge-info" *ngIf="item.responsibility=='Company'">Company</span>
+            <span class="float-right d-ib badge badge-light" *ngIf="item.responsibility=='Owner'">Owner</span>
+          </h5>
+          <p class="m-0 text-small mb-0">Notes : <strong>{{item.notes}}</strong></p>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #ownerContactsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!ownerContactsSelectedBuilding">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Building</h5>
+      <span class="badge badge-outline-info m-2 fs-16" *ngFor="let building of authService.buildings" (click)="filterOwnerContacts(building)">{{building.name}}, {{building.location.name}}</span>
+    </div>
+    <div *ngIf="ownerContactsSelectedBuilding">
+      <div class="border-bottom pb-1 mb-1">Selected Building : <strong>{{ownerContactsSelectedBuilding.name}}, {{ownerContactsSelectedBuilding?.location?.name}} &nbsp; <i class="fa fa-times" *ngIf="!selectedBuilding" (click)="ownerContactsSelectedBuilding=null"></i></strong></div>
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of buildingOwnerContacts">
+        <a class="flex-grow-1">
+          <h5 class="mb-0">{{item.name}}</h5>
+          <p class="m-0 text-small mb-0">Phone : <strong>{{item.phone}}</strong></p>
+          <p class="m-0 text-small mb-0">Email : <strong>{{item.email}}</strong></p>
+          <p class="m-0 text-small mb-0">Purposes : <strong>{{item.purposes}}</strong></p>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #tenantsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!tenantsSelectedBuilding">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Building</h5>
+      <span class="badge badge-outline-info m-2 fs-16" *ngFor="let building of authService.buildings" (click)="filterTenants(building)">{{building.name}}, {{building.location.name}}</span>
+    </div>
+    <div *ngIf="tenantsSelectedBuilding">
+      <div class="border-bottom pb-1 mb-1">Selected Building : <strong>{{tenantsSelectedBuilding.name}}, {{tenantsSelectedBuilding?.location?.name}} &nbsp; <i class="fa fa-times" *ngIf="!selectedBuilding" (click)="tenantsSelectedBuilding=null"></i></strong></div>
+      <input type="text" placeholder="Search by Tenant Company" [(ngModel)]="tenantSearch" [formControl]="tenantsSearchControl" class="form-control w-100 mb-1">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of buildingTenants">
+        <a class="flex-grow-1">
+          <h5 class="mb-0">{{item.client.company || item.client.name}}</h5>
+          <p class="m-0 text-small mb-0">Offices : <strong>{{item.offices}}</strong>
+            <span class="float-right badge badge-info" *ngIf="item.status=='Booked'">Booked</span>
+            <span class="float-right badge badge-success" *ngIf="item.status=='Active'">Active</span>
+            <span class="float-right badge badge-light" *ngIf="item.status=='Exiting'">Exiting</span>
+          </p>
+          <p class="m-0 text-small mb-0">Phone : <strong>{{item.client.phone}}</strong></p>
+          <p class="m-0 text-small mb-0">Email : <strong>{{item.client.email}}</strong></p>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #providersModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!providersSelectedBuilding">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Building</h5>
+      <span class="badge badge-outline-info m-2 fs-16" *ngFor="let building of authService.buildings" (click)="filterProviders(building)">{{building.name}}, {{building.location.name}}</span>
+    </div>
+    <div *ngIf="providersSelectedBuilding">
+      <div class="border-bottom pb-1 mb-1">Selected Building : <strong>{{providersSelectedBuilding.name}}, {{providersSelectedBuilding?.location?.name}} &nbsp; <i class="fa fa-times" *ngIf="!selectedBuilding" (click)="providersSelectedBuilding=null"></i></strong></div>
+      <input type="text" placeholder="Search by Service Provider" [(ngModel)]="providerSearch" [formControl]="providersSearchControl" class="form-control w-100 mb-1">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of buildingProviders">
+        <a class="flex-grow-1">
+          <h5 class="mb-0">{{item.name}}</h5>
+          <p class="m-0 text-small mb-0">Person : <strong>{{item.contactName || '-'}}</strong></p>
+          <p class="m-0 text-small mb-0">Phone : <strong>{{item.contactPhone || '-'}}</strong></p>
+          <p class="m-0 text-small mb-0">Email : <strong>{{item.contactEmail || '-'}}</strong></p>
+          <p class="m-0 text-small mb-0">Service : <strong>{{item.category}}</strong></p>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #vendorsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!vendorsSelectedBuilding">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Building</h5>
+      <span class="badge badge-outline-info m-2 fs-16" *ngFor="let building of authService.buildings" (click)="filterVendors(building)">{{building.name}}, {{building.location.name}}</span>
+    </div>
+    <div *ngIf="vendorsSelectedBuilding">
+      <div class="border-bottom pb-1 mb-1">Selected Building : <strong>{{vendorsSelectedBuilding.name}}, {{vendorsSelectedBuilding?.location?.name}} &nbsp; <i class="fa fa-times" *ngIf="!selectedBuilding" (click)="vendorsSelectedBuilding=null"></i></strong></div>
+      <input type="text" placeholder="Search by Vendor Company" [(ngModel)]="vendorSearch" [formControl]="vendorsSearchControl" class="form-control w-100 mb-1">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of buildingVendors">
+        <a class="flex-grow-1">
+          <h5 class="mb-0">{{item.name}}</h5>
+          <p class="m-0 text-small mb-0">Person : <strong>{{item.contactName || '-'}}</strong></p>
+          <p class="m-0 text-small mb-0">Phone : <strong>{{item.contactPhone || '-'}}</strong></p>
+          <p class="m-0 text-small mb-0">Email : <strong>{{item.contactEmail || '-'}}</strong></p>
+          <p class="m-0 text-small mb-0">Skus : <strong>{{item.skuTypes.join(", ")}}</strong></p>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #bookingsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let booking of bookings">
+      <!-- href="#/bookings/view/{{booking.id}}" -->
+      <a class="flex-grow-1">
+        <h5 class="mb-0">{{booking.client.company || booking.client.name}} -
+          <small class="badge fs-10" [ngClass]="{'badge-light':booking.contract.status=='Draft','badge-info':booking.contract.status=='Approved','badge-success':booking.contract.status=='Confirmed'}">{{booking.contract.status}}</small></h5>
+        <p class="m-0 text-small text-muted mb-0">Moving In on <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong> with SD as <strong>{{booking.contract.security | inr}}</strong> and Rent as
+          <strong>{{booking.contract.rent | inr}}</strong> - {{booking.contract.kind}}</p>
+        <div class="mb-1"></div>
+        <button class="btn btn-sm btn-success float-right" *ngIf="actions.pendingSalesApproval && !booking.updated" (click)="approveContract(booking)"><i class="fa fa-check"></i> Approve Contract</button>
+        <button class="btn btn-sm btn-success float-right" *ngIf="actions.pendingAccountsApproval && !booking.updated" (click)="confirmContract(booking)"><i class="fa fa-check"></i> Confirm Contract</button>
+        <button class="btn btn-sm btn-outline-info float-left" (click)="viewContracts(booking)">View Contracts</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #moveinsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let booking of moveins">
+      <!-- href="#/bookings/view/{{booking.id}}" -->
+      <a class="flex-grow-1">
+        <h5 class="mb-0"><strong>{{booking.client.company || booking.client.name}}</strong></h5>
+        <p class="m-0 text-small mb-0">Moving In : <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong>
+          <p class="m-0 mb-1 text-small"> <strong>{{booking.offices}}</strong></p>
+          <div class="mb-1"></div>
+          <button class="btn btn-sm btn-success float-right" *ngIf="!booking.updated && booking.status!='Active'" (click)="markMoveIn(booking)"><i class="fa fa-check"></i> MoveIn</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #exitsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let booking of exits">
+      <!-- href="#/bookings/view/{{booking.id}}" -->
+      <a class="flex-grow-1">
+        <h5 class="mb-0"><strong>{{booking.client.company || booking.client.name}}</strong></h5>
+        <p class="m-0 text-small mb-0">Exit on : <strong>{{booking.ended | date : 'MMM dd, yyyy'}}</strong></p>
+        <p class="m-0 text-small"> <strong>{{booking.offices}}</strong></p>
+        <p class="m-0 text-small" *ngIf="actions.pendingApprovals"> Requested on : <strong>{{booking.exitRequest.requestedDate | date : 'MMM dd, yyyy'}}</strong></p>
+        <p class="m-0 text-small" *ngIf="actions.pendingAcceptance"> Approved on : <strong>{{booking.exitRequest.updated | date : 'MMM dd, yyyy'}}</strong></p>
+        <div class="mb-1"></div>
+        <button class="btn btn-sm btn-outline-info float-right" *ngIf="booking.status=='Exiting'" (click)="openExitProcess(booking)">Process Exit</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #renewalsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let booking of renewals">
+      <!-- href="#/bookings/view/{{booking.id}}" -->
+      <a class="flex-grow-1">
+        <h5 class="mb-0"><strong>{{booking.company}}</strong></h5>
+        <p class="m-0 mb-1 text-small"> Office : <strong>{{booking.offices}}</strong></p>
+        <p class="m-0 text-small mb-0">Started : <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong></p>
+        <p class="m-0 text-small mb-0">New Contract Date : <strong>{{booking.newEffectiveDate | date : 'MMM dd, yyyy'}}</strong></p>
+        <p class="m-0 text-small mb-0">New Rent : <strong>{{booking.newRent | inr}}</strong></p>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #payinsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of payins">
+      <a class="flex-grow-1">
+        <h5 class="mb-0"><strong>{{item.booking?.client?.company}}</strong></h5>
+        <p class="m-0 mb-1 text-small">Office : <strong>{{item.booking?.offices}}</strong></p>
+        <p class="m-0 text-small mb-0">
+          <span>Amount : <strong>{{item.amount | inr}}</strong></span>
+          <span class="float-right">Due from : <strong>{{item.date | date : 'MMM dd, yyyy'}}</strong></span>
+        </p>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #capexPayoutsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of capexPayouts">
+      <a class="flex-grow-1">
+        <h5 class="mb-0"><strong>{{item.purchaseOrder?.vendor?.name}}</strong></h5>
+        <p class="m-0 mb-1 text-small">Project : <strong>{{item.purchaseOrder?.project?.title}}</strong></p>
+        <p class="m-0 text-small mb-0">
+          <span>Amount : <strong>{{item.amount | inr}}</strong></span>
+          <span class="float-right">Approved On : <strong>{{item.approvedOn | date : 'MMM dd, yyyy'}}</strong></span>
+        </p>
+        <div class="mb-1"></div>
+        <button class="btn btn-sm btn-success float-right" *ngIf="!item.updated" (click)="processPayout(item)"><i class="fa fa-check"></i> Process Payout</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #opexPayoutsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of opexPayouts">
+      <a class="flex-grow-1">
+        <h5 class="mb-0"><strong>{{item.opexBill?.serviceProvider?.name}}</strong></h5>
+        <p class="m-0 text-small mb-0">
+          <span>Amount : <strong>{{item.amount | inr}}</strong></span>
+          <span class="float-right">Approved On : <strong>{{item.approvedOn | date : 'MMM dd, yyyy'}}</strong></span>
+        </p>
+        <div class="mb-1"></div>
+        <button class="btn btn-sm btn-success float-right" *ngIf="!item.updated" (click)="processPayout(item)"><i class="fa fa-check"></i> Process Payout</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #exitPayoutsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of exitPayouts">
+      <a class="flex-grow-1">
+        <h5 class="mb-0"><strong>{{item.exitRequest?.booking?.client?.company || item.exitRequest?.booking?.client?.name }}</strong></h5>
+        <p class="m-0 text-small mb-0">
+          <span>Amount : <strong>{{item.amount | inr}}</strong></span>
+          <span class="float-right">Approved On : <strong>{{item.approvedOn | date : 'MMM dd, yyyy'}}</strong></span>
+        </p>
+        <div class="mb-1"></div>
+        <button class="btn btn-sm btn-success float-right" *ngIf="!item.updated" (click)="processPayout(item)"><i class="fa fa-check"></i> Process Payout</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #workOrdersModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!woSelectedProject">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Project</h5>
+      <span class="badge badge-outline-info m-2 fs-16" *ngFor="let project of projects" (click)="filterWorkOrders(project)">{{project?.title}}</span>
+    </div>
+    <div *ngIf="woSelectedProject">
+      <div class="border-bottom pb-1 mb-1">Selected Project : <strong>{{woSelectedProject.title}} &nbsp; <i class="fa fa-times" (click)="woSelectedProject=null"></i></strong></div>
+      <input type="text" placeholder="Search by vendor" [(ngModel)]="woSearch" [formControl]="woSearchControl" class="form-control w-100 mb-1">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center pb-2 mb-2 border-bottom" *ngFor="let item of projectWorkOrders">
+        <a class="flex-grow-1">
+          <h5 class="mb-0"><strong>{{item.vendor?.name}}</strong></h5>
+          <p class="m-0 text-small mb-0">Project : <strong>{{item.project?.title}}</strong></p>
+          <p class="m-0 text-small mb-0">
+            <span>Budget : <strong>{{item.budget | inr}}</strong></span>
+            <span class="float-right">Proposed On : <strong>{{item.proposedOn | date : 'MMM dd, yyyy'}}</strong></span>
+          </p>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #purchaseOrdersModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!poSelectedProject">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Project</h5>
+      <span class="badge badge-outline-info m-2 fs-14" *ngFor="let project of projects" (click)="filterPurchaseOrders(project)">{{project?.title}}</span>
+    </div>
+    <div *ngIf="poSelectedProject">
+      <div class="border-bottom pb-1 mb-1">Selected Project : <strong>{{poSelectedProject.title}} &nbsp; <i class="fa fa-times" (click)="poSelectedProject=null"></i></strong></div>
+      <input type="text" placeholder="Search by vendor" [(ngModel)]="poSearch" [formControl]="poSearchControl" class="form-control w-100 mb-1">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 pb-2 border-bottom" *ngFor="let item of projectPurchaseOrders">
+        <a class="flex-grow-1">
+          <h5 class="mb-0"><strong>{{item.vendor?.name}}</strong></h5>
+          <p class="m-0 text-small mb-0">Project : <strong>{{item.project?.title}}</strong></p>
+          <p class="m-0 text-small mb-0">
+            <span>Amount : <strong>{{item.amount | inr}}</strong></span>
+            <span class="float-right">Raised On : <strong>{{item.date | date : 'MMM dd, yyyy'}}</strong></span>
+          </p>
+          <button class="btn btn-sm btn-success float-right mt-1" *ngIf="!item.updated && actions.startPo && item.status=='Raised'" (click)="startPO(item)"><i class="fa fa-check"></i> Start PO</button>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #milestonesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!milestoneSelectedProject">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Project</h5>
+      <span class="badge badge-outline-info m-2 fs-14" *ngFor="let project of projects" (click)="filterMilestones(project)">{{project?.title}}</span>
+    </div>
+    <div *ngIf="milestoneSelectedProject">
+      <div class="border-bottom pb-1 mb-1">Selected Project : <strong>{{milestoneSelectedProject.title}} &nbsp; <i class="fa fa-times" (click)="milestoneSelectedProject=null"></i></strong></div>
+      <input type="text" placeholder="Search by vendor" [(ngModel)]="milestoneSearch" [formControl]="milestoneSearchControl" class="form-control w-100 mb-1">
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-2 pb-2 border-bottom" *ngFor="let item of projectMilestones">
+        <a class="flex-grow-1">
+          <h5 class="mb-0"><strong>{{item.purchaseOrder?.vendor?.name}}</strong></h5>
+          <p class="m-0 text-small mb-0">Project : <strong>{{item.purchaseOrder?.project?.title}}</strong></p>
+          <p class="m-0 text-small mb-0">PaymentTerm : <strong>{{item.name}}</strong></p>
+          <p class="m-0 text-small mb-0">
+            <span>Amount : <strong>{{item.amount | inr}}</strong></span>
+            <span class="float-right">Due Date : <strong>{{(item.actualDate || item.expectedDate) | date : 'MMM dd, yyyy'}}</strong></span>
+          </p>
+          <button class="btn btn-sm btn-info float-right mt-1" *ngIf="!item.updated && actions.releaseMilestone" (click)="releaseMilestone(item)"><i class="fa fa-check"></i> Release Milestone</button>
+          <button class="btn btn-sm btn-success float-right mt-1" *ngIf="!item.updated && actions.approveMilestone" (click)="approveMilestone(item)"><i class="fa fa-check"></i> Approve Milestone</button>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn  btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #ticketsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{title}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-3 border-bottom pb-2" *ngFor="let item of tickets">
+      <a class="flex-grow-1">
+        <h5 class="mb-1">{{item.description}}</h5>
+        <p class="m-0 text-small mb-0">Context : <strong>{{item.issue}}</strong></p>
+        <p class="m-0 text-small mb-0">Client : <strong>{{item.booking?.client?.company || item.booking?.client?.name}}</strong></p>
+        <p class="m-0 text-small mb-0">Office : <strong>{{item.booking?.offices}}</strong></p>
+        <p class="m-0 text-small mb-0">Priority : <strong>{{item.priority?.name}}</strong></p>
+        <p class="m-0 text-small mb-0">Assigned to : <strong>{{item.assigned?.name}}</strong></p>
+        <p class="m-0 text-small mb-0" *ngIf="actions.unattended">Attend by : <strong>{{item.expectedAttended | date : 'MMM dd, hh:mm aa'}}</strong></p>
+        <p class="m-0 text-small mb-0" *ngIf="actions.yetToResolve">Resolve by : <strong>{{item.expectedResolved | date : 'MMM dd, hh:mm aa'}}</strong></p>
+        <p class="m-0 text-small mb-0" *ngIf="actions.yetToClosed">Close by : <strong>{{item.expectedClosed | date : 'MMM dd, hh:mm aa'}}</strong></p>
+        <div class="mb-1"></div>
+        <button class="btn btn-sm btn-info float-right" *ngIf="!item.updated && actions.unattended && item.status!='Attended'" (click)="changeTicketStatus(item,'Attended')"><i class="fa fa-check"></i> Mark as Attended</button>
+        <button class="btn btn-sm btn-primary float-right" *ngIf="!item.updated && actions.yetToResolve && item.status!='Resolved' && item.status!='Closed'" (click)="changeTicketStatus(item,'Resolved')"><i class="fa fa-check"></i> Mark as Resolved</button>
+        <button class="btn btn-sm btn-success float-right" *ngIf="!item.updated && actions.yetToClosed && item.status=='Resolved'" (click)="changeTicketStatus(item,'Closed')"><i class="fa fa-check"></i> Mark as Closed</button>
+        <button class="btn btn-sm btn-info float-left mr-10" (click)="viewMessage(item)">Messages</button>
+        <button class="btn btn-sm btn-success float-left mr-10" *ngIf="item.status!='Closed'" (click)="replyMessage(item)"><i class="fa fa-pencil"></i> Reply</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #messagesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Ticket Messages</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-3 border-bottom pb-2" *ngFor="let item of messages">
+      <a class="flex-grow-1">
+        <p class="m-0 text-small mb-0">{{item.reply}}</p>
+        <p class="m-0 text-small mb-0">
+          <span><strong>{{item.by}}</strong> ({{item.from}})</span>
+          <span class="float-right">{{item.date | date : 'MMM dd, hh:mm aa'}}</span>
+        </p>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn  btn-sm btn-outline-info float-left" (click)="replyMessage()"><i class="fa fa-pencil"></i> Write Reply</button>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #replyModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Reply Message</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <textarea class="form-control w-100" style="height: 100%;" placeholder="Write your reply here" [(ngModel)]="reply"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-success float-right" (click)="submitMessage(reply)"><i class="fa fa-check"></i> Submit Reply</button>
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #contractsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Booking Contracts</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="d-flex flex-column flex-sm-row align-items-sm-center mb-3 border-bottom pb-2" *ngFor="let item of contracts">
+      <a class="flex-grow-1">
+        <h5 class="mb-1"><strong>{{item.contract?.kind}} Contract</strong> <small> effective from <strong>{{item.contract?.effectiveDate | date : 'MMM dd, yyyy'}}</strong></small></h5>
+        <p class="m-0 text-small mb-0">SD : <strong>{{item.contract?.security | inr}}</strong>
+          <span class="float-right">Rent : <strong>{{item.contract?.rent | inr}}</strong> </span></p>
+        <p class="m-0 text-small mb-0">Service : <strong>{{item.contract?.invoiceServiceType}}</strong>
+          <span class="float-right">DeskType : <strong>{{item.contract?.type}}</strong> </span></p>
+        <p class="m-0 text-small mb-0"><span>Desks : <strong>{{item.contract?.desks}}</strong></span>
+          <span class="float-right">Desk Price : <strong>{{item.contract?.deskPrice | inr}}</strong></span></p>
+        <p class="m-0 text-small mb-0"><span>LockIn : <strong>{{item.contract?.lockIn}} months</strong></span>
+          <span class="float-right">Contract Period : <strong>{{item.contract?.contractPeriod}} months</strong></span></p>
+        <p class="m-0 text-small mb-0" *ngIf="item.contract?.signedAgreement"><a [href]="item.contract?.signedAgreement?.file" target="_blank" class="badge badge-info">View Agreement</a></p>
+        <button class="btn btn-sm btn-outline-info float-right mt-1" *ngIf="item.contract?.terms?.length" (click)="viewContractTerms(item.contract?.terms)"> View Contract Terms</button>
+      </a>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn  btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #bookingContractTermsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Booking Contract Terms</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="row">
+      <div class="col-md-4 mb-1 pb-1 border-bottom" *ngFor="let item of contractTerms">
+        <div class="f-b"> {{item.term}} </div>
+        <div class="card text-white o-hidden mb-1">
+          <a [href]="item.image" target="_blank"><img alt="" class="card-img" [src]="item.image"></a>
+        </div>
+        <div class="text-black"><small>{{item.info}}</small></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #ownerContractTermsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Owner Contract Terms</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div *ngIf="!contractsSelectedBuilding">
+      <h5 class="fs-14 border-bottom pb-1 f-b mb-1">Select Building</h5>
+      <span class="badge badge-outline-info m-2 fs-16" *ngFor="let building of authService.buildings" (click)="filterBuildingContracts(building)">{{building.name}}, {{building.location.name}}</span>
+    </div>
+    <div *ngIf="contractsSelectedBuilding">
+      <div class="border-bottom pb-1 mb-1">Selected Building : <strong>{{contractsSelectedBuilding.name}}, {{contractsSelectedBuilding?.location?.name}} &nbsp; <i class="fa fa-times" *ngIf="!selectedBuilding" (click)="contractsSelectedBuilding=null;ownerAgreement=null;"></i></strong></div>
+      <div class="row">
+        <div class="col-md-4 mb-1 pb-1 border-bottom" *ngFor="let item of contractTerms">
+          <div class="f-b"> {{item.term}} </div>
+          <div class="card text-white o-hidden mb-1">
+            <a [href]="item.image" target="_blank"><img alt="" class="card-img" [src]="item.image"></a>
+          </div>
+          <div class="text-black"><small>{{item.info}}</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <a *ngIf="ownerAgreement" [href]="ownerAgreement?.file" target="_blank" class="badge badge-info float-left p-2">View Agreement</a>
+    <button type="button" class="btn  btn-sm btn-outline-light float-right" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #exitProcessModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Exit Process</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body mobile">
+    <div class="row">
+      <div class="col-md-4 mb-1 pb-1 border-bottom" *ngFor="let item of exitRequest.acrs">
+        <div class="card text-white o-hidden mb-1" *ngIf="item.image">
+          <a [href]="item.image" target="_blank"><img alt="" class="card-img" [src]="item.image"></a>
+        </div>
+        <div class="text-black"><small>{{item.damage}}</small></div>
+      </div>
+    </div>
+    <div *ngIf="newAcr">
+      <div class="card text-white o-hidden mb-1" *ngIf="newAcr.image">
+        <a [href]="newAcr.image" target="_blank"><img alt="" class="card-img" [src]="newAcr.image"></a>
+      </div>
+      <span class="input-group mb-1" *ngIf="!newAcr.image">
+        <div class="custom-file" *ngIf="!acrImageFile">
+          <input class="custom-file-input" id="acrImageId" (change)="acrImageFileChange($event)" type="file">
+          <label class="custom-file-label" for="acrImageId">Choose file</label>
+        </div>
+        <div class="custom-file" *ngIf="acrImageFile">
+          <span class="float-left">{{acrImageFile?.name}}</span>
+          <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="acrImageFile=null;"></i>
+          <div class="mb-1">
+            <div *ngIf="acrImageFileError">
+              {{ acrImageFileError.message }}
+            </div>
+            <div *ngIf="acrImageUploadResponse.status === 'error'">
+              {{ acrImageUploadResponse.message }}
+            </div>
+            <div *ngIf="acrImageUploadResponse.status === 'progress'">
+              <div role="progressbar" [style.width.%]="acrImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                {{acrImageUploadResponse.message}}%
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="input-group-append">
+          <span class="input-group-text cursor" (click)="uploadAcrImageFile()">Upload</span>
+        </div>
+      </span>
+      <textarea class="form-control w-100 mb-1" placeholder="Enter damages here" [(ngModel)]="newAcr.damage"></textarea>
+      <button type="button" class="btn btn-sm btn-success float-right" (click)="saveAcr()"><i class="fa fa-check"></i> Save ACR</button>
+      <button type="button" class="btn btn-sm btn-icon btn-outline-danger float-right mr-2" (click)="newAcr=null"><i class="fa fa-times"></i></button>
+    </div>
+    <button type="button" class="btn btn-sm btn-info float-right" *ngIf="!newAcr" (click)="newAcr={}"><i class="fa fa-plus"></i> New ACR</button>
+  </div>
+  <div class="modal-footer d-ib">
+    <button type="button" class="btn btn-sm btn-success float-left" (click)="confirmBookingExit(booking)"><i class="fa fa-check"></i> Confirm Exit</button>
+    <button type="button" class="btn btn-sm btn-outline-light float-right" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

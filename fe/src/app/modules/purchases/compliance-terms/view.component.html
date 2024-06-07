@@ -1,0 +1,164 @@
+<div class="row">
+  <div class="col-md-6 mt-2">
+    <h4 class="float-left">GST Compliance Terms</h4>
+    <div class="float-left ml-50">
+      <ng-select class="mini" [items]="years" bindLabel="label" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Year" [(ngModel)]="currentGstYear" [ngModelOptions]="{standalone: true}" (ngModelChange)="listVendorGstComplianceTerms()"></ng-select>
+    </div>
+    <button class="float-right btn btn-sm btn-info" *ngIf="gstComplianceTerms?.length" (click)="updateGstTerms()"><i class="fa fa-pencil"></i> Update</button>
+    <button class="float-right btn btn-sm btn-info" *ngIf="!gstComplianceTerms?.length" (click)="updateGstTerms()"><i class="fa fa-plus"></i> Add</button>
+    <table class="table table-sm table-hover table-strip">
+      <thead>
+        <th class="w-30">Name</th>
+        <th class="w-50">Dates</th>
+        <th class="w-20">Due Date</th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let term of gstComplianceTerms;">
+          <td class="w-30">{{term.term}}</td>
+          <td class="w-50">{{term.dateFrom | date: 'MMM dd, yyyy'}} - {{term.dateTo | date: 'MMM dd, yyyy'}}</td>
+          <td class="w-20">{{term.dueDate | date: 'MMM dd, yyyy'}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="p-4 text-center" *ngIf="!gstComplianceTerms?.length">No Terms added for the year {{currentGstYear.label}}</p>
+  </div>
+  <div class="col-md-6 mt-2">
+    <h4 class="float-left">TDS Compliance Terms</h4>
+    <div class="float-left ml-50">
+      <ng-select class="mini" [items]="years" bindLabel="label" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Year" [(ngModel)]="currentTdsYear" [ngModelOptions]="{standalone: true}" (ngModelChange)="listVendorTdsComplianceTerms()"></ng-select>
+    </div>
+    <button class="float-right btn btn-sm btn-info" *ngIf="tdsComplianceTerms?.length" (click)="updateTdsTerms()"><i class="fa fa-pencil"></i> Update</button>
+    <button class="float-right btn btn-sm btn-info" *ngIf="!tdsComplianceTerms?.length" (click)="updateTdsTerms()"><i class="fa fa-plus"></i>Add</button>
+    <table class="table table-sm table-hover table-strip">
+      <thead>
+        <th class="w-30">Name</th>
+        <th class="w-50">Dates</th>
+        <th class="w-20">Due Date</th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let term of tdsComplianceTerms;">
+          <td class="w-30">{{term.term}}</td>
+          <td class="w-50">{{term.dateFrom | date: 'MMM dd, yyyy'}} - {{term.dateTo | date: 'MMM dd, yyyy'}}</td>
+          <td class="w-20">{{term.dueDate | date: 'MMM dd, yyyy'}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="p-4 text-center" *ngIf="!tdsComplianceTerms?.length">No Terms added for the year {{currentGstYear.label}}</p>
+  </div>
+</div>
+<ng-template #gstTermsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{currentGstYear.label}} GST Compliance Terms</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body p-1">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-1 form-group mb-1"></div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">Name *</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="gstTerm.term">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="firstName">Date From *</label>
+          <input type="text" class="form-control" formControlName="dateFrom" ngbDatepicker #dp="ngbDatepicker" (focus)="dp.toggle()" (dateSelect)="dp.close()" [(ngModel)]="gstTerm.dateFrom" placeholder="Date From">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="firstName">Date To *</label>
+          <input type="text" class="form-control" formControlName="dateTo" ngbDatepicker #dpt="ngbDatepicker" (focus)="dpt.toggle()" (dateSelect)="dpt.close()" [(ngModel)]="gstTerm.dateTo" placeholder="Date To">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="firstName">Due Date *</label>
+          <input type="text" class="form-control" formControlName="dueDate" ngbDatepicker #dpd="ngbDatepicker" (focus)="dpd.toggle()" (dateSelect)="dpd.close()" [(ngModel)]="gstTerm.dueDate" placeholder="Due Date">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <button class="btn btn-primary btn-ico mt-4" [disabled]="form.invalid" (click)="addGstTerm()"><i class="fa fa-plus"></i> Add</button>
+          <button type="button" class="btn btn-sm btn-icon btn-outline-danger mt-4" (click)="form.reset()"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+    </form>
+    <table class="table table-sm table-hover table-strip">
+      <thead>
+        <th class="w-30">Name</th>
+        <th class="w-45">Dates</th>
+        <th class="w-20">Due Date</th>
+        <th class="w-5"></th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let term of updatingGstTerms;">
+          <td class="w-30">{{term.term}}</td>
+          <td class="w-45">{{term.dateFrom | date: 'MMM dd, yyyy'}} - {{term.dateTo | date: 'MMM dd, yyyy'}}</td>
+          <td class="w-20">{{term.dueDate | date: 'MMM dd, yyyy'}}</td>
+          <td class="w-5">
+            <button type="button" class="btn btn-sm btn-icon btn-outline-danger" (click)="removeGstTerm(term)"><i class="fa fa-times"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!updatingGstTerms.length" (click)="saveGstTerms()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #tdsTermsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{currentGstYear.label}} TDS Compliance Terms</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body p-1">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-1 form-group mb-1"></div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">Name *</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="tdsTerm.term">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="firstName">Date From *</label>
+          <input type="text" class="form-control" formControlName="dateFrom" ngbDatepicker #dp="ngbDatepicker" (focus)="dp.toggle()" (dateSelect)="dp.close()" [(ngModel)]="tdsTerm.dateFrom" placeholder="Date From">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="firstName">Date To *</label>
+          <input type="text" class="form-control" formControlName="dateTo" ngbDatepicker #dpt="ngbDatepicker" (focus)="dpt.toggle()" (dateSelect)="dpt.close()" [(ngModel)]="tdsTerm.dateTo" placeholder="Date To">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="firstName">Due Date *</label>
+          <input type="text" class="form-control" formControlName="dueDate" ngbDatepicker #dpd="ngbDatepicker" (focus)="dpd.toggle()" (dateSelect)="dpd.close()" [(ngModel)]="tdsTerm.dueDate" placeholder="Due Date">
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <button class="btn btn-primary btn-ico mt-4" [disabled]="form.invalid" (click)="addTdsTerm()"><i class="fa fa-plus"></i> Add</button>
+          <button type="button" class="btn btn-sm btn-icon btn-outline-danger mt-4" (click)="form.reset()"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+    </form>
+    <table class="table table-sm table-hover table-strip">
+      <thead>
+        <th class="w-30">Name</th>
+        <th class="w-45">Dates</th>
+        <th class="w-20">Due Date</th>
+        <th class="w-5"></th>
+      </thead>
+      <tbody>
+        <tr *ngFor="let term of updatingTdsTerms;">
+          <td class="w-30">{{term.term}}</td>
+          <td class="w-45">{{term.dateFrom | date: 'MMM dd, yyyy'}} - {{term.dateTo | date: 'MMM dd, yyyy'}}</td>
+          <td class="w-20">{{term.dueDate | date: 'MMM dd, yyyy'}}</td>
+          <td class="w-5">
+            <button type="button" class="btn btn-sm btn-icon btn-outline-danger" (click)="removeTdsTerm(term)"><i class="fa fa-times"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!updatingTdsTerms.length" (click)="saveTdsTerms()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

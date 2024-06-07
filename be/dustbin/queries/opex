@@ -1,0 +1,51 @@
+list of all bills which dont have taxable amounts
+---------------------------------------------------------------------------------
+select (p.id), v.name vendor, b.name building, p.status, p.date, date(i.dateFrom), p.amount poAmount, i.taxableAmount,i.gst, i.amount itemAmount,i.id itemId, iv.id invId, d.file invoiceFile, concat('https://nerp.hustlehub.xyz/#/purchases/purchaseorder/',p.id) url
+from vendor_purchase_orders p
+left join vendor_purchase_items i on i.purchaseOrderId=p.id
+left join vendor_purchase_order_invoices iv on iv.purchaseOrderId=p.id
+left join docs d on d.id=iv.docId
+left join vendors v on v.id = p.vendorId
+left join buildings b on b.id=p.buildingId
+where p.status in ('Approved','Paid','PrePaid')
+and p.isBill=1 and p.isOpex=1 and (i.dateFrom >='2020-04-01' or i.dateFrom is null) and p.date >= '2020-04-01'
+and iv.docId is not null
+and (i.taxableAmount=0 or p.amount=0) 
+
+
+list of expenses building wise vendor
+----------------------------------------------------
+select (p.id), ifnull(b.name, 'HO') building, v.name vendor, oc.name category, ot.name type,
+ p.status, p.date, date(i.dateFrom) accountedMonth, p.amount poAmount, i.taxableAmount,i.gst, i.amount itemAmount,
+ i.id itemId, iv.id invId, d.file invoiceFile, concat('https://nerp.hustlehub.xyz/#/purchases/purchaseorder/',p.id) url
+from vendor_purchase_orders p
+left join vendor_purchase_items i on i.purchaseOrderId=p.id
+left join vendor_purchase_order_invoices iv on iv.purchaseOrderId=p.id
+left join opex_types ot on ot.id=i.opexTypeId
+left join opex_categories oc on oc.id=ot.catId
+left join docs d on d.id=iv.docId
+left join vendors v on v.id = p.vendorId
+left join buildings b on b.id=p.buildingId
+where p.status in ('Approved','Paid','PrePaid')
+and p.isBill=1 and p.isOpex=1 and (i.dateFrom >='2020-04-01' or i.dateFrom is null) and p.date >= '2020-04-01'
+order by b.name, p.date, v.name
+
+
+opex bills list query
+-------------------------------------------------------------
+ select (t.id),g.id, g.name, v.name, oc.name, ot.name, t.amount, t.`status`
+from vendor_purchase_orders t
+      left join buildings g on g.id=t.buildingId
+      left join vendor_purchase_items i on i.purchaseOrderId = t.id  left join vendors v on v.id=t.vendorId
+      left join opex_types ot on ot.id=i.opexTypeId and ot.active=1
+      left join opex_categories oc on oc.id=ot.catId
+			left join vendor_purchase_order_milestones m on m.purchaseOrderId=t.id
+			left join vendor_purchase_order_invoices iv on iv.purchaseOrderId = t.id
+			left join docs ivd on ivd.id = iv.docId
+			left join vendor_purchase_order_invoice_gsts gt on gt.purchaseOrderInvoiceId = iv.id
+			left join docs gtd on gtd.id = iv.gstFileId
+      where t.companyId=1 and t.isBill=1 and t.isOpex=1  and t.status in ('Draft','New','Raised','PrePaid') 
+and (t.buildingId>0 or t.buildingId is null) and ot.active=1
+and t.date between '2020-07-31' and '2020-08-30'  and (1=0   or lower(g.name) like '%rental%'  or lower(v.name) like '%rental%'
+       or lower(oc.name) like '%rental%'  or lower(ot.name) like '%rental%' or lower(t.refNo) like  '%rental%') 
+order by g.name

@@ -1,0 +1,85 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Revenue Codes</h1>
+      <input type="text" placeholder="Search by name, category, type" [formControl]="search" class="form-control pull-left w-30 ml-1" />
+      <ng-select class="w-20 float-left ml-10" [items]="['Published','Archieved']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="filters.statuses" [ngModelOptions]="{standalone: true}"></ng-select>
+      <button *checkAccess="'accounts:addRevenueCode'" class="btn btn-outline-info btn-ico pull-right" (click)="openServiceModal()">
+        <i class="fa fa-plus"></i> Revenue Code
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #invoiceServicesList [filter]="filters" [dataUrl]="'internal/accounts/listInvoiceServices'" [config]="listConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #serviceModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{service.id ? 'Edit Revenue Code' : 'New Revenue Code'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="serviceForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Revenue Code Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Service Name" [(ngModel)]="service.name">
+        </div>
+        <div class="col-md-5 pr-1 form-group mb-1 pr-0">
+          <label for="category">Service Category</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Service Category" [(ngModel)]="service.category">
+        </div>
+        <div class="col-md-5 pl-1 form-group mb-1 pl-1 pr-0">
+          <label for="roles">Service Type</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Service Type" [(ngModel)]="service.type">
+        </div>
+        <div class="col-md-2 form-group pr-1 mb-1 mt-4 pl-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="service.hasTds" [ngModelOptions]="{standalone:true}">
+            <span>Has TDS</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group pr-1 mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="service.hasGst" [ngModelOptions]="{standalone:true}">
+            <span>Has GST</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group pr-1 pl-1 mb-1">
+          <label for="firstName">IGST</label>
+          <input type="text" class="form-control" id="igst" [attr.disabled]="!service.hasGst?true:null" [ngModelOptions]="{standalone:true}" placeholder="Enter igst" [(ngModel)]="service.igst">
+        </div>
+        <div class="col-md-2 form-group pr-1 pl-1 mb-1">
+          <label for="firstName">CGST</label>
+          <input type="text" class="form-control" id="cgst" [attr.disabled]="!service.hasGst?true:null" [ngModelOptions]="{standalone:true}" placeholder="Enter cgst" [(ngModel)]="service.cgst">
+        </div>
+        <div class="col-md-2 form-group pr-1 pl-1 mb-1">
+          <label for="firstName">SGST</label>
+          <input type="text" class="form-control" id="sgst" [attr.disabled]="!service.hasGst?true:null" placeholder="Enter sgst" [(ngModel)]="service.sgst" [ngModelOptions]="{standalone:true}">
+        </div>
+        <div class="col-md-3 form-group  pl-1 mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="service.inclusive" [attr.disabled]="!service.hasGst?true:null" [ngModelOptions]="{standalone:true}">
+            <span>Is GST Inclusive</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!service.category||!service.type" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

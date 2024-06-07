@@ -1,0 +1,89 @@
+<div class="breadcrumb">
+  <h1 class="text-center">My Employees</h1>
+</div>
+<div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+<div class="card user-profile o-hidden mb-1 d-b">
+  <div class="float-left pt-1">
+    <p class="m-0 pl-3 text-18">{{booking.client.company || booking.client.name}}</p>
+    <p class="text-black f-b m-0 pl-3 text-14" style="margin-top: -5px !important">{{booking.refNo}}</p>
+  </div>
+  <div class="clear d-block d-lg-none"></div>
+  <div class="card-body pt-1">
+    <loading [loading]="loading"></loading>
+    <div class="float-right">
+      <button class="btn btn-outline-primary btn-sm m-1 btn-ico pull-right" (click)="openEmployeeModal()">
+        <i class="fa fa-plus"></i> Add Employee
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="row mt-1">
+      <div class="col-md-2 col-sm-4 col-12 pl-1 pr-1" *ngFor="let employee of employees">
+        <div class="card card-profile-1 mb-1">
+          <div class="card-body text-center p-2 on-hover">
+            <div>
+              <h5 class="m-0 d-ib">{{employee.name}}</h5>
+              <i class="fa fa-pencil float-right cursor text-primary on-hover-item" (click)="openEmployeeModal(employee);"></i>
+              <div class="clear"></div>
+            </div>
+            <!-- <p class="m-0">{{getDepartment(employee.department)}}</p> -->
+            <p class="m-0">{{employee.contactPurposes}}</p>
+            <button class="btn btn-outline-info btn-icon btn-rounded" ngbTooltip="Mail to {{employee.email}}"><i class="i-Mail"></i></button>
+            <button class="btn btn-outline-info btn-icon btn-rounded" ngbTooltip="SMS to {{employee.phone}}"><i class="i-Mail-3"></i></button>
+            <button class="btn btn-outline-info btn-icon btn-rounded" ngbTooltip="Call to {{employee.phone}}"><i class="i-Telephone"></i></button>
+            <button class="btn btn-outline-info btn-icon btn-rounded" *ngIf="employee.hasAccess" ngbTooltip="Has access to ERP"><i class="i-Computer-Secure"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #employeeModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{employee.id ? 'Edit Employee' : 'New Employee'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="employeeForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Employee Name" [(ngModel)]="employee.name">
+        </div>
+        <!--  <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Department</label>
+          <ng-select [items]="departments" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Department" [(ngModel)]="employee.department" formControlName="department" name="department"> </ng-select>
+        </div> -->
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Email</label>
+          <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="employee.email">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Phone</label>
+          <input type="number" placeholder="Enter Phone number" class="form-control" name="phone" [(ngModel)]="employee.phone" formControlName="phone" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Contact Purposes</label>
+          <ng-select [items]="contactPurposes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Contact Puposes" [(ngModel)]="employee.contactPurposes" formControlName="contactPurposes" name="contactPurposes"> </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1 pt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="employee.hasAccess" [ngModelOptions]="{standalone: true}">
+            <span>Has Account Access</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1" *ngIf="employee.hasAccess">
+          <label for="roles">Password</label>
+          <input type="password" placeholder="Enter Password for ERP" class="form-control" name="password" [(ngModel)]="employee.password" formControlName="password" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||employeeForm.invalid" (click)="saveEmployee()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

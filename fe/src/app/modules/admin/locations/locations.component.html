@@ -1,0 +1,154 @@
+<div class="row">
+  <div [ngClass]="cityFilters.countryId ? 'col-3':'col-12'" class="p-1">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Countries</h1>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="citySearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openCountryModal()">
+        <i class="fa fa-plus"></i> Country
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #countryList [filter]="countryFilters" [dataUrl]="'internal/admin/listCountries'" [config]="countryConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div [ngClass]="locationFilters.cityId ? 'col-4':'col-9'" class="p-1">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Cities</h1>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="citySearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openCityModal()">
+        <i class="fa fa-plus"></i> City
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #cityList [filter]="cityFilters" [dataUrl]="'internal/admin/listCities'" [config]="cityConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-5 p-1" *ngIf="locationFilters.cityId">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Locations</h1>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="locationSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openLocationModal(locationModal)">
+        <i class="fa fa-plus"></i> Location
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #locationList [filter]="locationFilters" [dataUrl]="'internal/admin/listLocations'" [config]="locationConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #countryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{country.id ? 'Edit Country' : 'New Country'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="country.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="country.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="saveCountry()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #cityModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{city.id ? 'Edit City' : 'New City'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form" (validSubmit)="saveCity()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="city.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="city.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="saveCity()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #locationModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{location.id ? 'Edit Location' : 'New Location'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="locationForm" (validSubmit)="saveLocation()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="location.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="location.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Latitude</label>
+          <input type="text" class="form-control" id="lat" formControlName="lat" placeholder="Enter lat" [(ngModel)]="location.lat">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Longitude</label>
+          <input type="text" class="form-control" id="lng" formControlName="lng" placeholder="Enter lng" [(ngModel)]="location.lng">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||locationForm.invalid" (click)="saveLocation()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

@@ -1,0 +1,700 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left mr-5 f-b">
+        Credit Entries
+        <help-notes
+          [context]="'Accounts:PayinStatusFlow'"
+          [type]="'popup'"
+          [placement]="'bottom'"
+          class="float-right ml-5"
+        ></help-notes>
+      </h5>
+      <input
+        type="text"
+        placeholder="Search by UTR, ChequeNo, <10000, >5000, 1000-10000"
+        [formControl]="search"
+        class="form-control form-control-rounde pull-left w-20 ml-5"
+        placeholder="Search by UTR, ChequeNo, <10000, >5000, 1000-10000"
+      />
+      <input
+        class="form-control pull-left w-15 ml-5"
+        autocomplete="off"
+        placeholder="PaidOn : Start Date - End Date"
+        name="dp"
+        id="daterangepicker"
+      />
+      <button
+        class="btn btn-sm btn-icon btn-outline-danger"
+        ngbTooltip="Clear Dates Selection"
+        *ngIf="payinsFilters.endDate"
+        (click)="clearDates()"
+      >
+        <i class="fa fa-times"></i>
+      </button>
+      <div class="ml-5 w-20 d-ib">
+        <ng-select
+          class="w-90 float-left"
+          multiple="true"
+          [items]="[
+            'Received',
+            'Deposited',
+            'Credited',
+            'Linked',
+            'Attributed',
+            'Deleted'
+          ]"
+          [hideSelected]="true"
+          placeholder="Statuses"
+          [(ngModel)]="payinsFilters.statuses"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="getPayinsByStatus()"
+        ></ng-select>
+        <span *ngIf="payinsFilters.paymentMode == 'Online'">
+          <help-notes
+            [context]="'Accounts:PGReconciliationTerms'"
+            [type]="'popup'"
+            [placement]="'bottom'"
+            class="float-right ml-5"
+          ></help-notes>
+        </span>
+      </div>
+      <div
+        class="float-right ml-0 mr-5"
+        *ngIf="payinsFilters.paymentMode != 'Online'"
+      >
+        <span *checkAccess="'accounts:addCreditEntry'">
+          <button
+            class="btn btn-outline-primary btn-ico btn-sm float-right"
+            (click)="isForm = true; openEntryModal()"
+          >
+            <i class="fa fa-plus"></i> Entry
+          </button>
+        </span>
+      </div>
+      <div
+        class="btn-group btn-group-toggle pull-right ml-5 mr-10"
+        data-toggle="buttons"
+      >
+        <div
+          class="btn-group btn-group-toggle"
+          ngbRadioGroup
+          name="radioBasic"
+          [(ngModel)]="payinsFilters.paymentMode"
+          (ngModelChange)="getPayinsByStatus()"
+        >
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="BankTransfer" /> Bank
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="CashFree" /> PG
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Cheque" /> Cheques
+          </label>
+          <label ngbButtonLabel class="btn btn-sm btn-secondary">
+            <input ngbButton type="radio" value="Cash" /> Cash
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-7 pl-2">
+        <div class="ml-10 d-ib mt-1">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payinsFilters.noInvoice"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >NoInvoice <strong>({{ noInvoice }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-10 d-ib mt-1">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payinsFilters.nonRevenue"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >NonRevenue <strong>({{ nonRevenue }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-20 d-ib mt-1 mr-4 pr-4">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payinsFilters.suspense"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >Suspense <strong>({{ suspense }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-20 d-ib mt-1 ml-4">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payinsFilters.notAttributed"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >Not Attributed
+              <!-- <strong>({{totalPayins - attributedPayins}})</strong> --></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="ml-20 d-ib mt-1">
+          <label class="checkbox checkbox-success">
+            <input
+              type="checkbox"
+              [(ngModel)]="payinsFilters.linked"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <span class="d-ib mt--10"
+              >Linked <strong>({{ linked }})</strong></span
+            >
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4 pt-2 pl-4">
+        <strong class="float-left mr-10 d-ib"
+          >Total : ({{ totalPayins }})</strong
+        >
+        <span class="float-left mr-10 d-ib"
+          >Attributed : <strong>({{ attributedPayins }})</strong></span
+        >
+        <span class="float-left mr-10 d-ib"
+          >NotAttributed :
+          <strong>({{ totalPayins - attributedPayins }})</strong></span
+        >
+        <!-- <span class="float-left mr-10 d-ib" *ngFor="let status of statuses">{{status.status}} : (<strong>{{status.count}}</strong>)</span> -->
+      </div>
+      <div class="col-md-1" *checkAccess="'accounts:importCreditEntries'">
+        <button
+          class="btn btn-outline-info btn-ico btn-sm float-right"
+          (click)="openImport()"
+        >
+          <i class="fa fa-file-excel-o"></i> Import
+        </button>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card o-hidden">
+          <loading [loading]="loading"></loading>
+          <data-list
+            #payinsList
+            [dataUrl]="'internal/accounts/listPayinEntries'"
+            [filter]="payinsFilters"
+            [config]="payinConfig"
+            (onAction)="action($event)"
+          ></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #entryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      <span *ngIf="isForm">Submit</span> {{ payinsFilters.paymentMode }} PayIn
+      Entry
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="payinForm" *ngIf="isForm">
+      <div class="row">
+        <div class="col-md-2 form-group mb-1 pr-0">
+          <label for="roles">Amount</label>
+          <input
+            type="number"
+            placeholder="Enter Amount"
+            class="form-control"
+            [(ngModel)]="payin.amount"
+            formControlName="amount"
+          />
+        </div>
+        <div class="col-md-2 form-group mb-1">
+          <label for="roles">ReceivedOn</label>
+          <input
+            placeholder="Select Date"
+            class="form-control"
+            name="dpi"
+            ngbDatepicker
+            #dpi="ngbDatepicker"
+            [(ngModel)]="payin.receivedDate"
+            formControlName="receivedDate"
+            (dateSelect)="dpi.close()"
+            (focus)="dpi.toggle()"
+          />
+        </div>
+        <div
+          class="col-md-3 pl-0 pr-0 form-group mb-1"
+          *ngIf="payinsFilters.paymentMode == 'BankTransfer'"
+        >
+          <label for="roles">Bank Unique Reference No (URN)</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Bank Transfer Reference Number"
+            [(ngModel)]="payin.utr"
+            formControlName="utr"
+          />
+        </div>
+        <div
+          class="col-md-3 form-group mb-1"
+          *ngIf="payinsFilters.paymentMode == 'Cheque'"
+        >
+          <label for="roles">Cheque No</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Enter Cheque Number"
+            [(ngModel)]="payin.chequeNo"
+            formControlName="chequeNo"
+          />
+        </div>
+        <div class="col-md-12">
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="payin.narration"
+            placeholder="Enter Narration on the Source of Payment"
+            formControlName="narration"
+          />
+        </div>
+      </div>
+    </form>
+    <div class="row mb-1" *ngIf="!isForm">
+      <!--   <div class="col-md-2">
+        <label class="d-b f-b mb-0">Payment Mode</label>
+        <span>{{payin.paymentMode}}</span>
+      </div> -->
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Amount</label>
+        <span>{{ payin.amount | inr }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Status</label>
+        <span>{{ payin.status }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Received On</label>
+        <span>{{ payin.receivedDate | date : "MMM dd, yyyy" }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Added On</label>
+        <span ngbTooltip="{{ payin.addedBy }}">{{
+          payin.addedOn | date : "MMM dd, yyyy"
+        }}</span>
+      </div>
+      <div class="col-md-3" *ngIf="payin.paymentMode == 'BankTransfer'">
+        <label class="d-b f-b mb-0">UTR</label>
+        <span>{{ payin.utr }}</span>
+      </div>
+      <div class="col-md-3" *ngIf="payin.paymentMode == 'Cheque'">
+        <label class="d-b f-b mb-0">Cheque No</label>
+        <span>{{ payin.chequeNo }}</span>
+      </div>
+      <div class="col-md-12">
+        <label class="d-b f-b mb-0">Narration</label>
+        <span>{{ payin.narration }}</span>
+      </div>
+    </div>
+    <div class="row mt-2" *ngIf="payin.linkedTo">
+      <div class="col-md-12">
+        <h4 class="border-bottom pb-1 fs-14 d-ib pr-2 f-b">Linked To :</h4>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Payment Mode</label>
+        <span>{{ payin.linkedTo.paymentMode }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Amount</label>
+        <span>{{ payin.linkedTo.amount | inr }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Status</label>
+        <span>{{ payin.linkedTo.status }}</span>
+      </div>
+      <div class="col-md-3" *ngIf="payin.linkedTo.paymentMode == 'Cheque'">
+        <label class="d-b f-b mb-0">Cheque No</label>
+        <span>{{ payin.linkedTo.chequeNo }}</span>
+      </div>
+      <div class="col-md-3" *ngIf="payin.linkedTo.paymentMode == 'Online'">
+        <label class="d-b f-b mb-0">PG Settlement Id</label>
+        <span>{{ payin.linkedTo.pgSettlementId }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Received On</label>
+        <span>{{ payin.linkedTo.receivedDate | date : "MMM dd, yyyy" }}</span>
+      </div>
+      <div class="col-md-2">
+        <label class="d-b f-b mb-0">Credited On</label>
+        <span>{{ payin.linkedTo.creditedDate | date : "MMM dd, yyyy" }}</span>
+      </div>
+    </div>
+    <div class="row mt-2" *ngIf="payin.attributed && payin.booking">
+      <div class="col-md-12">
+        <h4 class="border-bottom pb-1 fs-14 d-ib pr-2 f-b">Attributed To :</h4>
+        <a
+          class="f-b"
+          href="/#/bookings/view/{{ payin.bookingId }}"
+          target="_blank"
+          >{{ payin.booking }}</a
+        >
+      </div>
+    </div>
+    <!--     <div class="row mt-4" *ngIf="payin.id && !isForm && payin.linked && !payin.attributed">
+    </div> -->
+    <div
+      class="row mt-1"
+      *ngIf="payin.id && !isForm && !payin.attributed && !payin.nonRevenue"
+    >
+      <div
+        class="col-md-12 mt-4"
+        *ngIf="!payin.linked && unlinkedEntries.length"
+      >
+        <h4 class="f-b fs-12 border-bottom pb-1">Possible Linkings :</h4>
+        <p class="text-center fs-14 mt-2" *ngIf="!unlinkedEntries.length">
+          No possible linkings for this payments
+        </p>
+        <table
+          class="table table-stripped table-sm table-hover"
+          *ngIf="unlinkedEntries.length"
+        >
+          <thead>
+            <tr>
+              <th>Amount</th>
+              <th>ReceivedDate</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of unlinkedEntries">
+              <td>{{ entry.amount | inr }}</td>
+              <td>{{ entry.receivedDate | date : "MMM dd, yyyy" }}</td>
+              <td>{{ entry.status }}</td>
+              <td>
+                <button
+                  class="btn btn-sm btn-outline-primary btn-icon"
+                  ngbTooltip="Link to this Payment"
+                  (click)="linkPayinTo(entry)"
+                >
+                  <i class="fa fa-link"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-12">
+        <div
+          class="form-group col-md-12 mt-2"
+          *ngIf="selectedBookings.length > 0"
+        >
+          <h5 class="f-b fs-12 border-bottom pb-1 d-b">
+            Selected Booking to attribute this payment
+          </h5>
+          <strong
+            >{{ selectedBookings[0].company }} ({{ selectedBookings[0].name }})
+            [{{ selectedBookings[0].refNo }}] @
+            {{ selectedBookings[0].office }} -
+            {{ selectedBookings[0].due | inr }} &nbsp;
+            <i
+              class="fa fa-times float-right fa-2x"
+              ngbTooltip="Clear Booking"
+              (click)="selectedBookings = []"
+            ></i
+          ></strong>
+        </div>
+        <div class="form-group col-md-12" *ngIf="selectedBookings.length > 0">
+          <button
+            class="btn btn-sm btn-outline-primary btn-ico float-right"
+            (click)="confirmAttribution()"
+          >
+            <i class="fa fa-check"></i> Confirm Attribution
+          </button>
+        </div>
+        <div
+          class="form-group col-md-12 mt-2"
+          *ngIf="selectedBookings.length == 0"
+        >
+          <h4 class="f-b fs-14 mt-2 d-ib float-left">
+            Select Booking to attribute this payment
+          </h4>
+          <!--    <tag-input [formControl]="selectedBooking" theme='primary' [(ngModel)]="selectedBookings" secondaryPlaceholder="Type Booking Client company name to search" (onTextChange)="searchBookings($event)" maxItems="1" [onlyFromAutocomplete]="true">
+            <tag-input-dropdown [autocompleteItems]="autocompleteBookings" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+              <ng-template let-item="item" let-index="index">
+                {{item.company}} ({{item.name}}) [{{item.refNo}}] @ {{item.office}} - {{item.due | inr}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input> -->
+          <input
+            type="text"
+            placeholder="Search by Booking company Name"
+            [formControl]="bookingSearchControl"
+            class="form-control form-control-rounde col-md-5 w-50 float-right mb-1"
+            [(ngModel)]="bookingSearch"
+          />
+        </div>
+        <!-- <h5 class="f-b fs-12 border-bottom pb-1">Possible Attributions : </h5> -->
+        <table class="table table-stripped table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Booking</th>
+              <th class="text-right">Due</th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let booking of attributions">
+              <td>
+                <a ngbTooltip="View Detailed Booking" target="_blank" href="#/bookings/view/{{booking.id}}">
+                  {{ booking.company }} ({{ booking.name }}) ({{ booking.refNo }})
+                  @ {{ booking.office }} - {{ booking.status }}
+                </a>
+              </td>
+              <td class="text-right">{{ booking.amount | inr }}</td>
+              <td class="text-center">
+                <button
+                  class="btn btn-sm btn-outline-primary btn-icon"
+                  ngbTooltip="Attribute to this Booking"
+                  (click)="selectedBookings = [booking]"
+                >
+                  <i class="fa fa-check"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="text-center fs-14 mt-2" *ngIf="!attributions.length">
+          No suggestions found for payment attribution
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      *ngIf="isForm"
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading || payinForm.invalid"
+      (click)="savePayin()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Submit
+    </button>
+    <button
+      *ngIf="!isForm && !payin.attributed"
+      class="btn btn-outline-light ladda-button btn-ico float-left"
+      (click)="payin.noInvoice = 1; payin.suspense = 0; openBillReason()"
+    >
+      NoInvoice
+    </button>
+    <button
+      *ngIf="!isForm && !payin.attributed"
+      class="btn btn-outline-info ladda-button btn-ico float-left"
+      (click)="
+        payin.nonRevenue = 1;
+        payin.suspense = 0;
+        payin.status = 'Attributed';
+        payin.attributed = 1;
+        openBillReason()
+      "
+    >
+      Mark as NonRevenue
+    </button>
+    <button
+      *ngIf="!isForm && !payin.attributed"
+      class="btn btn-outline-warning ladda-button btn-ico float-left ml-10"
+      (click)="payin.suspense = 1; openBillReason()"
+    >
+      Mark as Suspense
+    </button>
+  </div>
+</ng-template>
+<ng-template #importModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Import Excel Entries</h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row" *ngIf="!importRows.length">
+      <div class="col-md-3"></div>
+      <div class="col-md-6">
+        <strong> Import Excel File </strong>
+        <span class="input-group">
+          <div class="custom-file">
+            <input
+              class="custom-file-input"
+              id="import"
+              (change)="onImportFileChange($event)"
+              type="file"
+            />
+            <label class="custom-file-label" for="import">Choose file</label>
+          </div>
+        </span>
+        <help-notes
+          [context]="'Accounts:CreditEntriesImportFormat'"
+          [type]="'popup'"
+          [placement]="'bottom'"
+          class="float-right mr-5"
+        ></help-notes>
+      </div>
+    </div>
+    <table
+      class="tableBodyScroll table table-striped table-hover table-sm"
+      *ngIf="importRows.length"
+    >
+      <thead>
+        <tr>
+          <th class="w-15">Date</th>
+          <th class="w-15 text-right">Amount</th>
+          <th class="w-25">UTR</th>
+          <th class="w-40">Narration</th>
+          <th class="w-5 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody class="tableBodyScroll" infiniteScroll [autoHeightAdjust]="350">
+        <tr *ngFor="let row of importRows">
+          <td class="w-15">{{ row.date | date : "MMM dd, yyyy" }}</td>
+          <td class="w-15 text-right">{{ row.amount | inr }}</td>
+          <td class="w-25">{{ row.utr }}</td>
+          <td class="w-40">{{ row.narration }}</td>
+          <td class="w-5">
+            <button
+              *ngIf="!row.id"
+              class="btn btn-sm btn-outline-primary btn-icon"
+              ngbTooltip="Save Entry"
+              (click)="savePayinRow(row)"
+            >
+              <i class="fa fa-upload"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      *ngIf="importRows.length"
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading"
+      (click)="confirmImport()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm Import
+    </button>
+  </div>
+</ng-template>
+<ng-template #billReasonModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">
+      {{ payin.noInvoice ? "Set as No Invoice" : "Mention your Reason" }}
+    </h4>
+    <button
+      type="button"
+      class="close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mt-2" *ngIf="payin.noInvoice">
+      <div class="col-md-12 pr-1 form-group mb-1">
+        <label for="roles">Revenue Code</label>
+        <ng-select
+          [items]="invoiceServices"
+          [closeOnSelect]="true"
+          [hideSelected]="true"
+          bindLabel="label"
+          placeholder="Search or Select Revenue Code"
+          [(ngModel)]="invoiceService"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="onInvoiceServiceSelected()"
+        >
+        </ng-select>
+      </div>
+    </div>
+    <div class="row mt-2" *ngIf="!payin.noInvoice">
+      <div class="col-md-12">
+        <textarea
+          class="col-md-12 form-control"
+          [(ngModel)]="payin.reason"
+          placeholder="Please mention your reason to mark this credit as {{
+            payin.suspense ? 'Suspense' : 'NonRevenue'
+          }}"
+        ></textarea>
+      </div>
+    </div>
+    <!--  <div class="row mt-2" *ngIf="payin.noInvoice && payin.opexTypeId">
+      <div class="col-md-12">
+        <textarea class="col-md-12  form-control" [(ngModel)]="payin.reason" placeholder="NoBill reason"></textarea>
+      </div>
+    </div> -->
+  </div>
+  <div class="modal-footer d-b">
+    <button
+      type="button"
+      class="btn btn-outline-light float-right"
+      (click)="modal.close('close click')"
+    >
+      Close
+    </button>
+    <button
+      class="btn btn-primary ladda-button btn-ico float-right mr-1"
+      [ladda]="loading"
+      [disabled]="loading || !payin.reason"
+      (click)="confirmReason()"
+    >
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm
+    </button>
+  </div>
+</ng-template>

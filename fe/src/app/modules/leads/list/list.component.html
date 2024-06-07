@@ -1,0 +1,131 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Leads</h1>
+    <input type="text" placeholder="Search by lead name, phone, email" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-50 ml-1">
+    <button class="btn btn-info btn-icon"><i class="i-Filter-2"></i></button>
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="newLead()">
+      <i class="fa fa-plus"></i> New Lead
+    </button>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="clear"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);padding-top: 20px;margin-top: -10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12 pl-1 pr-1">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <a routerLink="/leads/view/{{item.id}}" class="w-20 w-sm-100" ngbTooltip="Lead Details">
+              <div class="m-0 text-secondary text-smal">
+                {{item.id}} - {{item.source}}, {{item.attribute}}
+              </div>
+              <div class="item-title text-primary" ngbTooltip="Created on {{item.cretedOn | date : 'MMM dd, yyyy'}}">
+                <strong>{{item.company}}</strong>
+              </div>
+            </a>
+            <div class="m-0 text-muted text-small w-20 w-sm-100 pr-1" ngbTooltip="Contact Details">
+              <div class="text-primary">
+                <strong>{{item.name}}</strong> (<i class="i-Telephone"></i> {{item.phone}})
+              </div>
+              <div>
+                <span class="text-secondary"><i class="i-Email"></i> {{item.email}}</span></div>
+            </div>
+            <div class="m-0 text-muted text-small w-20 w-sm-100" ngbTooltip="Client Requirement">
+              <div class="d-b text-primary"> <span class="text-secondary">{{item.desks}}d, {{item.deskType}} @ {{item.price|inr}}</span></div>
+              <span class="d-b text-info"> <span class="text-secondary">Need From :</span> {{item.startDate | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="m-0 text-muted text-small w-15 w-sm-100 pl-1" ngbTooltip="Location :: {{item.location}}">
+              <div class="d-b text-primary" [ngStyle]="{'height': item.info ? '20px':'40px'}" style="overflow: hidden;"> {{item.location}}</div>
+              <div class="badge badge-secondary fs-10" *ngIf="item.status=='Dead'">{{item.info}}</div>
+              <div class="badge badge-info fs-10" *ngIf="item.status=='New'">{{item.info}}</div>
+              <div class="badge badge-light fs-10" *ngIf="item.status=='Attended'">{{item.info}}</div>
+              <div class="badge badge-warning fs-10" *ngIf="item.status=='Hot'">{{item.info}}</div>
+              <div class="badge badge-success fs-10" *ngIf="item.status=='Closed'">{{item.info}}</div>
+            </div>
+            <div class="m-0 text-muted text-small w-20 w-sm-100 pl-1" *ngIf="item.propositions && item.propositions.length" ngbTooltip="Proposed Offices">
+              <span class="text-secondary d-ib" *ngFor="let p of item.propositions | slice:0:2;let i=index;">
+                <span *ngIf="i<2">{{p.desksAvailable}}d in {{p.office.name}}</span>
+              </span>
+            </div>
+            <div class="m-0 text-muted text-small w-20 w-sm-100 pl-1" *ngIf="!item.propositions || !item.propositions.length">
+              <div class="text-primary font-weight-bold text-center">Proposed Offices</div>
+              <div class="text-center">No office found for this lead criteria</div>
+            </div>
+            <div class="m-0 text-muted text-center text-small w-5 w-sm-100 d-none d-lg-block item-actions">
+              <span class="lead-status {{item.status}}">{{item.status}}</span>
+              <button class="btn btn-icon btn-info" ngbTooltip="View Detailed Lead" routerLink="/leads/view/{{item.id}}">
+                <i class="i-Magnifi-Glass1 text-bold"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #newLeadModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{lead.id ? 'Edit Lead' : 'New Lead'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="leadForm">
+      <div class="row">
+        <div class="col-md-5 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Company</label>
+          <input type="text" class="form-control" id="company" formControlName="company" placeholder="Company Name" [(ngModel)]="lead.companyName">
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Contact Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Contact Name" [(ngModel)]="lead.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Phone</label>
+          <input type="number" placeholder="Enter Phone number" class="form-control" name="phone" [(ngModel)]="lead.phone" formControlName="phone" />
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Email</label>
+          <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="lead.email">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Lead Source</label>
+          <ng-select [items]="leadSources" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Lead Source" [(ngModel)]="lead.source" formControlName="source" name="source" (change)="lead.attribute=null"> </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Source Attribute</label>
+          <div *ngIf="!lead.source"><small>Please select Lead source for source attributes</small></div>
+          <ng-select *ngIf="lead.source" [items]="lead.source.attributes" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Attribution" [(ngModel)]="lead.attribute" formControlName="attribute" name="attribute"> </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1">
+          <label for="roles">No of Desks</label>
+          <input type="number" placeholder="Desks Count" class="form-control" name="desks" [(ngModel)]="lead.desks" formControlName="desks" />
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Desk Types</label>
+          <ng-select [items]="deskTypes" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Desk Type" [(ngModel)]="lead.deskType" formControlName="deskType" name="deskType"> </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Interested Price</label>
+          <input type="number" placeholder="Enter Price" class="form-control" name="price" [(ngModel)]="lead.price" formControlName="price" />
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Start Date</label>
+          <input placeholder="Select start date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="lead.date" formControlName="date" (focus)="dp.toggle()" />
+        </div>
+        <div class="col-md-5 form-group mb-1 pl-1 pr-1 googleplace-container">
+          <label for="roles">Interested Location <small> (type to fetch more location details)</small></label>
+          <input class="form-control" placeholder="Enter Interested location" (setAddress)="getGooglePlaceAddress($event)" name="googlelocation" formControlName="googlelocation" [(ngModel)]="lead.location" googleplace id="googleplace">
+          <div class="pac-container" style="z-index: 9999 !important"></div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||leadForm.invalid" (click)="saveLead()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

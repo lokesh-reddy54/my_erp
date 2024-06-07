@@ -1,0 +1,54 @@
+<div class="">
+  <div class="breadcrumb row">
+    <h1 class="pull-left col-md-3 mb-1">Resource Bookings</h1>
+    <!-- <div class="col-md-5 mb-1 pull-left">
+      <input type="text" placeholder="Search by Name" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-90">
+      <button class="btn btn-info btn-icon"><i class="i-Filter-2"></i></button>
+      <div class="clear"></div>
+    </div> -->
+    <button class="col-md-2 col-6 btn btn-sm btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="newBooking()">
+      <i class="fa fa-plus"></i> New Booking
+    </button>
+    <div class="clear"></div>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);padding-top: 20px;margin-top: -10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <div class="m-0 text-muted text-small w-20 w-sm-100">
+              <div class="text-primary"><i class="i-Building"></i> {{item.resource?.name}}</div>
+              <span class="badge badge-secondary">{{item.resource?.type}}</span>
+            </div>
+            <a href="" class="w-25 w-sm-100">
+              <div class="item-title d-ib">{{item.client?.name}}</div>
+              <span class="mr-20 text-secondary text-smal pull-right d-ib">{{item.creditUsed.credits}} credits used</span>
+              <div class="clear"></div>
+              <span class="m-0 text-secondary text-smal">{{item.refNo}}</span>
+              <span class="mr-20 text-secondary text-smal pull-right d-ib">Amount: <span class="m-0 text-primary">{{item.amount | inr}}</span></span>
+            </a>
+            <div class="m-0 text-muted text-small w-25 w-sm-100">
+              <div class="d-b text-primary"> <span class="text-secondary">Reserved On :</span> {{item.date | date : 'MMM dd, yyyy'}}</div>
+              <span class="d-b text-info"> <span class="text-secondary">DateTime :</span> {{item.from | date : 'MMM dd, yyyy hh:mm a'}} - {{item.to | date : ' hh:mm a'}}</span>
+            </div>
+            <div class="m-0 text-muted text-small w-30 w-sm-100">
+              <div class="m-0 text-muted text-small w-75 float-left">
+                <div class="text-primary"><i class="i-Telephone"></i> {{item.client?.phone}}</div>
+                <span class="text-secondary"><i class="i-Email"></i> {{item.client?.email}}</span>
+              </div>
+              <div class="m-0 text-muted text-small w-20 float-right item-actions  mr-1 ml-5">
+                <div class="badge badge-info">{{item.status}}</div>
+                <button class="btn btn-icon btn-danger btn-sm" *ngIf="item.status!='Done'" ngbTooltip="Cancel Booking" (click)="cancelBooking(item)">
+                  <i class="i-Close-Window text-bold"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

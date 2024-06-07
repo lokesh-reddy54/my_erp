@@ -1,0 +1,689 @@
+<div class="row mt--10">
+  <div class="col-2 row p-2 pl-3 ml-0 mr-0 pt-4">
+    <h4 class="">Contracting <help-notes [context]="'Admin:ContractingFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-10 float-right"></help-notes>
+    </h4>
+  </div>
+  <div class="col-6 row p-2 ml-0 mr-0 pl-0 pr-0">
+    <div class="form-group p-0 col-md-3 mb-1">
+      <label for="roles">Select Country</label>
+      <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()">
+      </ng-select>
+    </div>
+    <div class="form-group p-0 col-md-3 mb-1" *ngIf="selectedCountry?.id">
+      <label for="roles">Select City</label>
+      <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+      </ng-select>
+    </div>
+    <div class="form-group p-0 col-md-6 mb-1" *ngIf="selectedCity?.id">
+      <label for="roles">Select Location</label>
+      <ng-select [items]="locations" [multiple]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select Location" [(ngModel)]="selectedLocations" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadMoreProperties()">
+      </ng-select>
+    </div>
+  </div>
+  <div class="col-md-4 row pl-0 pr-0">
+    <div class="col-md-9 mt-4 pt-2 pr-1">
+      <help-notes [context]="'Admin:ContractingDesc'" [type]="'popup'" [placement]="'bottom'" class="mr-10 float-left"></help-notes>
+      <ng-select class="w-90 float-left" [items]="officeStatuses" [multiple]="true" [hideSelected]="true" [(ngModel)]="filters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadMoreProperties()" placeholder="Search by Statuses">
+      </ng-select>
+    </div>
+    <div class="col-md-3 mt-4 pt-2 pl-0 pr-0">
+      <button class="btn btn-outline-primary btn-mini btn-icon float-right" ngbTooltip="Add New Property" (click)="openPropertyModal()">
+        <i class="fa fa-plus"></i>
+      </button>
+      <button class="btn btn-outline-primary btn-mini btn-icon float-right mr-10" ngbTooltip="View Properties on Map" (click)="openPropertiesMapModal()">
+        <i class="fa fa-map"></i>
+      </button>
+      <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Quick Filters" *ngIf="!moreFilters" (click)="moreFilters=true;loadMoreProperties()"><i class="fa fa-caret-square-o-down"></i></button>
+      <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Hide Filters" *ngIf="moreFilters" (click)="moreFilters=false;"><i class="fa fa-caret-square-o-up"></i></button>
+    </div>
+  </div>
+</div>
+<div class="row" *ngIf="moreFilters">
+  <div class="col-md-2"></div>
+  <div class="col-md-5 row" *ngIf="!showSliders">
+    <div class="col-md-3 f-b text-right pr-1 pl-0 pt-2">
+      BuildUp Area :
+    </div>
+    <div class="col-md-3">
+      <input class="form-control" [(ngModel)]="filters.minSqft" placeholder="Min Sqft" (ngModelChange)="loadMoreProperties()">
+    </div>
+    <div class="col-md-2 pl-0 pr-0">
+      <input class="form-control" [(ngModel)]="filters.maxSqft" placeholder="Max Sqft" (ngModelChange)="loadMoreProperties()">
+    </div>
+    <div class="col-md-4 pt-2">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="showSliders" [ngModelOptions]="{standalone: true}">
+        <span>Show Slider</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+  </div>
+  <div class="col-md-5 mt-3" *ngIf="showSliders">
+    <ng5-slider [(value)]="filters.minSqft" [(highValue)]="filters.maxSqft" [options]="sqftSliderOptions" (userChangeEnd)="loadMoreProperties($event)">
+    </ng5-slider>
+  </div>
+  <div class="col-md-5 row">
+    <input type="text" placeholder="Search by name" class="form-control col-md-4" [(ngModel)]="filters.name" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadMoreProperties()">
+    <div class="col-md-3 mt-1 form-group">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="filters.shortlisted" (ngModelChange)="loadMoreProperties()" [ngModelOptions]="{standalone: true}">
+        <span>Shortlisted</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <ng-select class="col-md-5 pr-0 pl-0" [items]="['2019-Q4','2020-Q1','2020-Q2','2020-Q3','2020-Q4']" [multiple]="true" [hideSelected]="true" [(ngModel)]="filters.quarters" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadMoreProperties()" placeholder="Quarters">
+    </ng-select>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12 p-1 pl-2">
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+          <div class="table-responsive" *ngIf="selectedLocations.length">
+            <loading [loading]="loading"></loading>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-10">Name</th>
+                  <th class="w-10">Location</th>
+                  <th class="w-10">Street</th>
+                  <th class="w-20">Landmark</th>
+                  <th class="w-10">Status</th>
+                  <th class="w-10 text-cente">ShortListed</th>
+                  <th class="w-10 text-center">Quarter</th>
+                  <th class="w-10 text-center">Priority</th>
+                  <th class="w-10 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll (onScroll)="loadMoreProperties()">
+                <tr *ngFor="let property of properties;" [ngClass]="property.selected ? 'selected':''">
+                  <td class="w-10">{{property.name}}</td>
+                  <td class="w-10">{{property.location?.name}}</td>
+                  <td class="w-10">{{property.street}}</td>
+                  <td class="w-20">{{property.landmark}}</td>
+                  <td class="w-10"><small>{{property.status}}</small></td>
+                  <td class="w-10 text-center">
+                    <label class="checkbox checkbox-success">
+                      <input type="checkbox" (ngModelChange)="shortlistProperty(property)" [(ngModel)]="property.shortlisted" [ngModelOptions]="{standalone: true}">
+                      <span></span>
+                      <span class="checkmark"></span>
+                    </label>
+                  </td>
+                  <td class="w-10 text-center">
+                    <span class="f-b" *ngIf="!property.shortlisted">-</span>
+                    <ng-select *ngIf="property.shortlisted" class="mini" [items]="['2019-Q4','2020-Q1','2020-Q2','2020-Q3','2020-Q4']" [hideSelected]="true" [(ngModel)]="property.quarter" [ngModelOptions]="{standalone: true}" (ngModelChange)="updateProperty(property)" placeholder="Quarters"></ng-select>
+                  </td>
+                  <td class="w-10 text-center">
+                    <span class="f-b" *ngIf="!property.shortlisted">-</span>
+                    <ng-select *ngIf="property.shortlisted" class="mini" [items]="['Top','Medium','Low']" [hideSelected]="true" [(ngModel)]="property.priority" [ngModelOptions]="{standalone: true}" placeholder="Priority" (ngModelChange)="updateProperty(property)"></ng-select>
+                  </td>
+                  <td class="w-10 text-center">
+                    <button class="btn btn-icon btn-sm btn-info mr-5" ngbTooltip="Pictures Gallery" (click)="openPropertyGalleryModal(property)"><i class="fa fa-picture-o"></i></button>
+                    <button class="btn btn-icon btn-sm btn-info mr-5" ngbTooltip="Open in Google Maps" (click)="openPropertyMapModal(property)"><i class="fa fa-map-pin"></i></button>
+                    <button ngbTooltip="Edit" class="btn btn-icon btn-sm btn-info" (click)="openPropertyModal(property)"><i class="i-Pen-5"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #propertyModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{property.id ? 'Edit Property' : 'New Property'}}
+      <help-notes [context]="'Admin:ContractingFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-10"></help-notes>
+      <help-notes [context]="'Admin:ContractingDesc'" [type]="'popup'" [placement]="'bottom'" class="ml-10"></help-notes>
+    </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-tabset class="nav-righ" [activeId]="activePropertyModalTab">
+      <ngb-tab title="Basic Info" id="0">
+        <ng-template ngbTabContent>
+          <form [formGroup]="propertyBasicInfoForm">
+            <div class="row">
+              <div class="col-md-6 form-group mb-1">
+                <!-- <label for="firstName">Name</label> -->
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="property.name">
+              </div>
+              <div class="col-md-3 form-group mb-1 pr-0" *ngIf="property.id">
+                <!-- <label for="roles">Status</label> -->
+                <ng-select [items]="officeStatuses" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select status of this Property" bindLabel="name" bindValue="type" [(ngModel)]="property.status" [ngModelOptions]="{standalone: true}">
+                </ng-select>
+              </div>
+              <div class="form-group col-md-3 mb-1">
+                <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select Location" [(ngModel)]="property.locationId" [ngModelOptions]="{standalone: true}">
+                </ng-select>
+              </div>
+              <!--     <div class="col-md-2 pl-0 pr-1  form-group mb-1 mt-2">
+                <label class="checkbox checkbox-success">
+                  <input type="checkbox" [(ngModel)]="property.active" [ngModelOptions]="{standalone: true}">
+                  <span>Active</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div> -->
+              <div class="col-md-4 form-group mb-1 pr-0">
+                <!-- <label for="firstName">Street</label> -->
+                <input type="text" class="form-control" id="street" formControlName="street" placeholder="Enter Street" [(ngModel)]="property.street">
+              </div>
+              <div class="col-md-5 form-group mb-1">
+                <!-- <label for="firstName">Landmark</label> -->
+                <input type="text" class="form-control" id="landmark" formControlName="landmark" placeholder="Enter Landmark" [(ngModel)]="property.landmark">
+              </div>
+              <div class="col-md-8 form-group mb-1">
+                <!-- <label for="firstName">Address</label> -->
+                <input type="text" class="form-control" id="address" formControlName="address" placeholder="Enter Address" [(ngModel)]="property.address">
+              </div>
+              <div class="col-md-2 form-group mb-1">
+                <!-- <label for="firstName">Latitude</label> -->
+                <input type="number" class="form-control" id="lat" formControlName="lat" placeholder="Latitude degree" [(ngModel)]="property.lat">
+              </div>
+              <div class="col-md-2 form-group mb-1">
+                <!-- <label for="firstName">Longitude</label> -->
+                <input type="number" class="form-control" id="lat" formControlName="lat" placeholder="Longitude degree" [(ngModel)]="property.lng">
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Property Details" *ngIf="property.id" id="1">
+        <ng-template ngbTabContent>
+          <form [formGroup]="propertyForm">
+            <div class="row">
+              <div class=" col-md-6 row">
+                <div class="col-md-6 form-group mb-1">
+                  <label for="firstName">Floors</label>
+                  <input type="number" class="form-control" id="floors" formControlName="floors" placeholder="Count" [(ngModel)]="property.floors">
+                </div>
+                <div class="col-md-6 form-group mb-1">
+                  <label class="d-b">Site Size <small>(LxW) <small>(in mtrs)</small></small></label>
+                  <input type="number" class="form-control w-40 float-left" [ngModelOptions]="{standalone:true}" placeholder="Length" [(ngModel)]="property.length">
+                  <div class="text-center float-left w-20 fs-18 f-b">x</div>
+                  <input type="number" class="form-control w-40 float-right" [ngModelOptions]="{standalone:true}" placeholder="Width" [(ngModel)]="property.width">
+                </div>
+                <div class="col-md-6 form-group mb-1">
+                  <label for="firstName">Carpet Area <small>(sqft)</small></label>
+                  <input type="number" class="form-control" id="carpetArea" formControlName="carpetArea" placeholder="in SqFt" [(ngModel)]="property.carpetArea">
+                </div>
+                <div class="col-md-6 form-group mb-1">
+                  <label for="firstName">Build Area <small>(sqft)</small></label>
+                  <input type="number" class="form-control" id="buildupArea" formControlName="buildupArea" placeholder="in SqFt" [(ngModel)]="property.buildupArea">
+                </div>
+                <div class="col-md-6 form-group mb-1" *ngIf="property.shortlisted">
+                  <label for="firstName">Targeted Quarter</label>
+                  <ng-select class="" [items]="['2019-Q4','2020-Q1','2020-Q2','2020-Q3','2020-Q4']" [hideSelected]="true" [(ngModel)]="property.quarter" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadMoreProperties()" placeholder="Quarters"></ng-select>
+                </div>
+                <div class="col-md-6 form-group mb-1" *ngIf="property.shortlisted">
+                  <label for="firstName">Priority</label>
+                  <ng-select class="" [items]="['Top','Medium','Low']" [hideSelected]="true" [(ngModel)]="property.priority" [ngModelOptions]="{standalone: true}" placeholder="Priority"></ng-select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <p class="text-muted mb-0">SqFt Area Math:</p>
+                <img *ngIf="property.sqftAreaImage" [src]="property.sqftAreaImage" style="width: 100%;height: auto;min-height: 200px;" class="mb-2" />
+                <span class="input-group">
+                  <div class="custom-file" *ngIf="!sqftAreaImageFile">
+                    <input class="custom-file-input" id="sqftAreaImageId" (change)="sqftAreaImageFileChange($event)" type="file">
+                    <label class="custom-file-label" for="sqftAreaImageId">Choose file</label>
+                  </div>
+                  <div class="custom-file" *ngIf="sqftAreaImageFile">
+                    <span class="float-left">{{sqftAreaImageFile?.name}}</span>
+                    <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="sqftAreaImageFile=null;"></i>
+                    <div class="mb-1">
+                      <div *ngIf="sqftAreaImageFileError">
+                        {{ sqftAreaImageFileError.message }}
+                      </div>
+                      <div *ngIf="sqftAreaImageUploadResponse.status === 'error'">
+                        {{ sqftAreaImageUploadResponse.message }}
+                      </div>
+                      <div *ngIf="sqftAreaImageUploadResponse.status === 'progress'">
+                        <div role="progressbar" [style.width.%]="sqftAreaImageUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                          {{sqftAreaImageUploadResponse.message}}%
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="input-group-append">
+                    <span class="input-group-text cursor" (click)="uploadSqftAreaImageFile()">Upload</span>
+                  </div>
+                </span>
+              </div>
+            </div>
+          </form>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="2" *ngIf="property.id">
+        <ng-template ngbTabTitle>
+          <div>Contacts</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <button class="btn btn-primary btn-mini btn-ico pull-right" *ngIf="!showContactForm" (click)="showContactForm=true">
+            <i class="fa fa-plus"></i> New Contact
+          </button>
+          <form [formGroup]="propertyContactForm" *ngIf="showContactForm">
+            <div class="row">
+              <div class="col-md-2 form-group mb-1 pr-0">
+                <!-- <label for="firstName">Name</label> -->
+                <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="contact.name">
+              </div>
+              <div class="col-md-3 form-group mb-1 pl-1 pr-0">
+                <!-- <label for="firstName">] Email</label> -->
+                <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="contact.email">
+              </div>
+              <div class="col-md-2 form-group mb-1 pl-1 pr-0">
+                <!-- <label for="firstName">] Phone</label> -->
+                <input type="text" class="form-control" id="phone" formControlName="phone" placeholder="Enter Phone" [(ngModel)]="contact.phone">
+              </div>
+              <div class="col-md-4 form-group mb-1 mt-1 pl-2 pr-0">
+                <label class="checkbox checkbox-success mr-3 float-left">
+                  <input type="checkbox" [(ngModel)]="contact.owner" [ngModelOptions]="{standalone: true}">
+                  <span>Owner</span>
+                  <span class="checkmark"></span>
+                </label>
+                <label class="checkbox checkbox-success mr-3 float-left">
+                  <input type="checkbox" [(ngModel)]="contact.writer" [ngModelOptions]="{standalone: true}">
+                  <span>Writer</span>
+                  <span class="checkmark"></span>
+                </label>
+                <label class="checkbox checkbox-success mr-3 float-left">
+                  <input type="checkbox" [(ngModel)]="contact.contractor" [ngModelOptions]="{standalone: true}">
+                  <span>Contractor</span>
+                  <span class="checkmark"></span>
+                </label>
+              </div>
+              <div class="col-md-1 form-group mb-1 pr-0 pl-0">
+                <button class="btn btn-primary btn-mini btn-icon pull-right" [disabled]="propertyContactForm.invalid" ngbTooltip="Save Contact" (click)="savePropertyContact()">
+                  <i class="fa fa-check"></i>
+                </button>
+                <button class="btn btn-mini btn-icon pull-right" ngbTooltip="Cancel" (click)="showContactForm=false;">
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+          <h4 class="text-center p-4" *ngIf="!propertyContacts?.length">No owner contacts are added yet.</h4>
+          <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="propertyContacts?.length">
+            <thead>
+              <tr>
+                <th class="w-20 text-left">Name</th>
+                <th class="w-20 text-left">Email</th>
+                <th class="w-10 text-left">Phone</th>
+                <th class="w-30 text-left">Role</th>
+                <th class="w-10 text-left">Status</th>
+                <th class="w-10 text-left"></th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll" style="max-height: 325px;">
+              <tr *ngFor="let contact of propertyContacts;">
+                <td class="w-20 text-left">{{contact.name}}</td>
+                <td class="w-20 text-left">{{contact.email}}</td>
+                <td class="w-10 text-left">{{contact.phone}}</td>
+                <td class="w-30 text-left">{{contact.purposes}}</td>
+                <td class="w-10 text-left">
+                  <label class="checkbox checkbox-success">
+                    <input type="checkbox" [(ngModel)]="contact.active" (ngModelChange)="savePropertyContact(contact)">
+                    <span></span>
+                    <span class="checkmark"></span>
+                  </label>
+                </td>
+                <td class="w-10 text-center">
+                  <button (click)="editContact(contact)" class="btn btn-sm btn-info btn-icon"><i class="fa fa-pencil"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="3" *ngIf="property.id">
+        <ng-template ngbTabTitle>
+          <div>Negotiations</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <div class="row" style="margin-top: -15px;">
+            <div class="col-md-12 pl-0 pr-0 mt-2">
+              <div class="pb-1 float-right mr-10" *ngIf="!showNegotiationForm && !showTargetForm">
+                <button type="button" class="btn btn-mini btn-ico btn-outline-primary float-right" (click)="showNegotiationForm=true;"><i class="fa fa-plus"></i> Negotiation</button>
+                <div class="clear"></div>
+              </div>
+              <div class="pb-1 float-right mr-10" *ngIf="!showTargetForm && !showNegotiationForm">
+                <button type="button" class="btn btn-mini btn-ico btn-outline-primary float-right" (click)="showTargetForm=true;"><i class="fa fa-plus"></i> Target</button>
+                <div class="clear"></div>
+              </div>
+              <form [formGroup]="propertyContractTargetForm" *ngIf="showTargetForm" class="w-60" style="margin: auto;">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td><input type="number" class="form-control" [(ngModel)]="propertyContractUpdate.targetedSqftPrice" placeholder="Sqft Price" formControlName="targetedSqftPrice" /></td>
+                      <td><input type="number" class="form-control" [(ngModel)]="propertyContractUpdate.targetedRent" placeholder="Monthly Rent" formControlName="targetedRent" /></td>
+                      <td><input type="number" class="form-control" [(ngModel)]="propertyContractUpdate.targetedDeposit" placeholder="Security Deposit" formControlName="targetedDeposit" /></td>
+                      <td><input type="text" class="form-control" (focus)="targetedHandover.toggle()" ngbDatepicker #targetedHandover="ngbDatepicker" name="targetedHandover" [ngModelOptions]="{standalone: true}" [(ngModel)]="propertyContractUpdate.targetedHandover" placeholder="Handover Date" /></td>
+                      <td><input type="number" placeholder="in days" class="form-control" [(ngModel)]="propertyContractUpdate.targetedRentFree" placeholder="Rent free days" formControlName="targetedRentFree" /></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <textarea class="form-control mt-1 mb-1" placeholder="Enter your comments for Negotiations" [(ngModel)]="propertyContractUpdate.comments" formControlName="comments"></textarea>
+                <div class="w-30 float-right mb-4" *ngIf="showTargetForm">
+                  <button class="btn btn-mini btn-icon pull-right" ngbTooltip="Cancel" (click)="showTargetForm=false;"><i class="fa fa-times"></i></button>
+                  <button class="btn btn-info ladda-button btn-ico pull-right" [ladda]="loading" [disabled]="loading||propertyContractTargetForm.invalid" (click)="savePropertyContractUpdate()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Target</button>
+                </div>
+              </form>
+              <form [formGroup]="propertyContractUpdateForm" *ngIf="showNegotiationForm">
+                <table class="w-100">
+                  <thead>
+                    <tr>
+                      <td> OE Sft Price</td>
+                      <td> HH Sft Price</td>
+                      <td> OE Rent</td>
+                      <td> HH Rent</td>
+                      <td> OE SD</td>
+                      <td> HH SD</td>
+                      <td> OE Handover</td>
+                      <td> HH Handover</td>
+                      <td> OE RentFree</td>
+                      <td> HH RentFree</td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><input type="number" class="form-control" style="width: 90px;" [(ngModel)]="propertyContractUpdate.expectedSqftPrice" placeholder="per sqft" formControlName="expectedSqftPrice" /></td>
+                      <td><input type="number" class="form-control" style="width: 90px;" [(ngModel)]="propertyContractUpdate.negotiatedSqftPrice" placeholder="per sqft" formControlName="negotiatedSqftPrice" /></td>
+                      <td><input type="number" class="form-control" style="width: 90px;" [(ngModel)]="propertyContractUpdate.expectedRent" placeholder="Amount" formControlName="expectedRent" /></td>
+                      <td><input type="number" class="form-control" style="width: 90px;" [(ngModel)]="propertyContractUpdate.negotiatedRent" placeholder="Amount" formControlName="negotiatedRent" /></td>
+                      <td><input type="number" class="form-control" style="width: 90px;" [(ngModel)]="propertyContractUpdate.expectedDeposit" placeholder="Amount" formControlName="expectedDeposit" /></td>
+                      <td><input type="number" class="form-control" style="width: 90px;" [(ngModel)]="propertyContractUpdate.negotiatedDeposit" placeholder="Amount" formControlName="negotiatedDeposit" /></td>
+                      <td><input type="text" class="form-control" style="width: 100px;" (focus)="expectedHandover.toggle()" ngbDatepicker #expectedHandover="ngbDatepicker" name="expectedHandover" [(ngModel)]="propertyContractUpdate.expectedHandover" formControlName="expectedHandover" placeholder="Date" /></td>
+                      <td><input type="text" class="form-control" style="width: 100px;" (focus)="negotiatedHandover.toggle()" ngbDatepicker #negotiatedHandover="ngbDatepicker" name="negotiatedHandover" [(ngModel)]="propertyContractUpdate.negotiatedHandover" formControlName="negotiatedHandover" placeholder="Date" /></td>
+                      <td><input type="number" class="form-control" placeholder="in days" style="width: 90px;" [(ngModel)]="propertyContractUpdate.expectedRentFree" formControlName="expectedRentFree" /></td>
+                      <td><input type="number" class="form-control" placeholder="in days" style="width: 90px;" [(ngModel)]="propertyContractUpdate.negotiatedRentFree" formControlName="negotiatedRentFree" /></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <textarea class="form-control w-100 mt-1 mb-1" placeholder="Enter your comments on owner discussion" [(ngModel)]="propertyContractUpdate.comments" formControlName="comments"></textarea>
+                <div class="w-30 float-right mb-4" *ngIf="showNegotiationForm">
+                  <button class="btn btn-mini btn-icon pull-right" ngbTooltip="Cancel" (click)="showNegotiationForm=false;">
+                    <i class="fa fa-times"></i>
+                  </button>
+                  <button class="btn btn-info ladda-button btn-ico pull-right" [ladda]="loading" [disabled]="loading||propertyContractUpdateForm.invalid" (click)="savePropertyContractUpdate()"><i class="fa fa-check" *ngIf="!loading"></i> Submit Negotiation</button>
+                </div>
+              </form>
+              <h5 class="f-b">Negotiations History</h5>
+              <p class="text-center p-4" *ngIf="!propertyNegotiations?.length">No updates are added yet</p>
+              <table class="w-100 mt-2" *ngIf="propertyNegotiations?.length">
+                <thead>
+                  <tr style="border-bottom: 2px solid #ccc;">
+                    <td class="pt-0 pb-0 p-1 m-0" style="width: 20px;"></td>
+                    <td class="pt-0 pb-0 p-1 m-0 f-b" style="width: 100px;">
+                      Negotiation Date
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0 border-bottom">
+                      <div class="text-center border-bottom f-b">Sft Price</div>
+                      <span class="w-50 text-right d-ib">OE</span>
+                      <span class="w-50 text-right d-ib">HH</span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0 border-bottom">
+                      <div class="text-center border-bottom f-b">Rent</div>
+                      <span class="w-50 text-right d-ib">OE</span>
+                      <span class="w-50 text-right d-ib">HH</span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0 border-bottom">
+                      <div class="text-center border-bottom f-b">Security Deposit</div>
+                      <span class="w-50 text-right d-ib">OE</span>
+                      <span class="w-50 text-right d-ib">HH</span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0 border-bottom">
+                      <div class="text-center border-bottom f-b">Handover</div>
+                      <span class="w-50 text-right d-ib">OE</span>
+                      <span class="w-50 text-right d-ib">HH</span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0 border-bottom">
+                      <div class="text-center border-bottom f-b">RentFree <small>(in days)</small></div>
+                      <span class="w-50 text-right d-ib">OE</span>
+                      <span class="w-50 text-right d-ib">HH</span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0 text-center border-bottom f-b"> Comments </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-bottom" [ngClass]="{'bg-info text-white':update.targetedRent}" *ngFor="let update of propertyNegotiations;let i=index;">
+                    <td class="pt-0 pb-0 p-1 m-0">#{{i+1}}</td>
+                    <td class="pt-0 pb-0 p-1 m-0"> {{update.updated | date : 'MMM dd, yyyy'}} </td>
+                    <td class="pt-0 pb-0 p-1 m-0">
+                      <span class="w-50 text-right d-ib bg-light pr-1" *ngIf="update.expectedSqftPrice"> {{update.expectedSqftPrice | inr}} </span>
+                      <span class="w-50 text-right d-ib" *ngIf="update.negotiatedSqftPrice"> {{update.negotiatedSqftPrice | inr}} </span>
+                      <span class="text-center d-b" *ngIf="update.targetedSqftPrice"> {{update.targetedSqftPrice | inr}} </span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0">
+                      <span class="w-50 text-right d-ib bg-light pr-1" *ngIf="update.expectedRent"> {{update.expectedRent | inr}} </span>
+                      <span class="w-50 text-right d-ib" *ngIf="update.negotiatedRent"> {{update.negotiatedRent | inr}} </span>
+                      <span class="text-center d-b" *ngIf="update.targetedRent"> {{update.targetedRent | inr}} </span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0">
+                      <span class="w-50 text-right d-ib bg-light pr-1" *ngIf="update.expectedDeposit"> {{update.expectedDeposit | inr}} </span>
+                      <span class="w-50 text-right d-ib" *ngIf="update.negotiatedDeposit"> {{update.negotiatedDeposit | inr}} </span>
+                      <span class="text-center d-b" *ngIf="update.targetedDeposit"> {{update.targetedDeposit | inr}} </span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0">
+                      <span class="w-50 text-right d-ib bg-light pr-1" *ngIf="update.expectedHandover"> {{update.expectedHandover | date : 'MMM dd, yyyy'}} </span>
+                      <span class="w-50 text-right d-ib" *ngIf="update.negotiatedHandover"> {{update.negotiatedHandover | date : 'MMM dd, yyyy'}} </span>
+                      <span class="text-center d-b" *ngIf="update.targetedHandover"> {{update.targetedHandover | date : 'MMM dd, yyyy'}} </span>
+                    </td>
+                    <td class="pt-0 pb-0 p-1 m-0">
+                      <span class="w-50 text-right d-ib bg-light pr-1" *ngIf="update.expectedRentFree"> {{update.expectedRentFree}} </span>
+                      <span class="w-50 text-right d-ib" *ngIf="update.negotiatedRentFree"> {{update.negotiatedRentFree}} </span>
+                      <span class="text-center d-b" *ngIf="update.targetedRentFree"> {{update.targetedRentFree}} </span>
+                    </td>
+                    <td class="text-center">
+                      <span *ngIf="update.comments" placement="left" ngbTooltip="{{update.comments}}">View</span>
+                      <span *ngIf="!update.comments" ngbTooltip="No Comments">-</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab id="4" *ngIf="property.id">
+        <ng-template ngbTabTitle>
+          <div>Images</div>
+        </ng-template>
+        <ng-template ngbTabContent>
+          <div class="row">
+            <div class="col-6 row">
+              <div class="col-md-5">
+                <h4>Select files</h4>
+                <div ng2FileDrop [ngClass]="{'nv-file-over': hasBaseDropZoneOver}" (fileOver)="fileOverBase($event)" [uploader]="uploader" class="well my-drop-zone" style="width: 100%;height: 120px;border: dotted 3px lightgray; padding-top: 30%;text-align: center;">
+                  Files Drop Zone
+                </div>
+                Select Files
+                <input type="file" ng2FileSelect [uploader]="uploader" multiple /><br />
+              </div>
+              <div class="col-md-7" style="margin-bottom: 40px">
+                <!-- <h4>Uploading Images</h4> -->
+                <p class="mb-0">Queue length: {{ uploader?.queue?.length }}</p>
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let item of uploader.queue">
+                      <td><strong>{{ item?.file?.name }}</strong></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="mt-1">
+                  <div class="mb-2">
+                    <p class="text-right mb-0" *ngIf="uploader.progress">Queue progress : {{uploader.progress}}% </p>
+                    <div class="progress" style="">
+                      <div class="progress-bar" role="progressbar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-ico btn-success btn-sm float-left" (click)="uploader.uploadAll()" [disabled]="!uploader.getNotUploadedItems().length">
+                    <span class="fa fa-upload"></span> Upload
+                  </button>
+                  <!--   <button type="button" class="btn btn-ico btn-warning btn-sm ml-1" (click)="uploader.cancelAll()" [disabled]="!uploader.isUploading">
+                    <span class="fa fa-times"></span> Cancel
+                  </button> -->
+                  <button type="button" class="btn btn-ico btn-danger btn-sm float-right" (click)="uploader.clearQueue()" [disabled]="!uploader.queue.length">
+                    <span class="fa fa-trash"></span> Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 row tableBodyScroll" style="height: calc(100vh - 200px);overflow: auto;">
+              <!-- {{propertyImages | json}} -->
+              <div class="col-md-6 pl-1 pr-1 float-left" *ngFor="let propertyImage of propertyImages;">
+                <div class="card text-white o-hidden mb-3">
+                  <img alt="" class="card-img" [src]="propertyImage.image">
+                  <div class="card-img-overlay">
+                    <div class="p-1 text-left card-footer font-weight-light">
+                      <div class=""><i class="i-Boy mr-1"></i> {{propertyImage.updatedBy}} </div>
+                      <div class=""><i class="i-Calendar-4 mr-2"></i> <small>{{propertyImage.updated | date: 'medium'}}</small></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||propertyForm.invalid" (click)="saveProperty()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #propertiesMapModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Properties Map View </h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row properties-map">
+      <div class="col-md-12 row mb-1">
+        <div class="col-md-1 text-right f-b">Filters : </div>
+        <!--  <div class="col-md-4 mt-2 pr-0">
+          <ng5-slider [(value)]="mapFilters.minSqft" [(highValue)]="mapFilters.maxSqft" [options]="sqftSliderOptions" (userChangeEnd)="renderMap($event)">
+          </ng5-slider>
+        </div> -->
+        <div class="col-md-4 row" *ngIf="!showMapSliders">
+          <div class="col-md-4">
+            <input class="form-control" [(ngModel)]="mapFilters.minSqft" placeholder="Min Sqft" (ngModelChange)="renderMap()">
+          </div>
+          <div class="col-md-3 pl-0 pr-0">
+            <input class="form-control" [(ngModel)]="mapFilters.maxSqft" placeholder="Max Sqft" (ngModelChange)="renderMap()">
+          </div>
+          <div class="col-md-5 pt-2" *ngIf="mapFilters.minSqft && mapFilters.maxSqft">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [disabled]="!mapFilters.minSqft || !mapFilters.maxSqft" [(ngModel)]="showMapSliders" [ngModelOptions]="{standalone: true}">
+              <span>Show Slider</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+        <div class="col-md-4 mt-3" *ngIf="showMapSliders">
+          <ng5-slider [(value)]="mapFilters.minSqft" [(highValue)]="mapFilters.maxSqft" [options]="sqftSliderOptions" (userChangeEnd)="renderMap($event)">
+          </ng5-slider>
+        </div>
+        <div class="col-md-3 pr-0">
+          <ng-select [items]="officeStatuses" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select statuses of  Property" multiple="true" bindLabel="name" bindValue="type" [(ngModel)]="mapFilters.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="renderMap()"></ng-select>
+        </div>
+        <div class="col-md-2 pr-0">
+          <ng-select [items]="currentStreets" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Street" [(ngModel)]="mapFilters.street" bindLabel="name" bindValue="type" [ngModelOptions]="{standalone: true}" (ngModelChange)="renderMap()"></ng-select>
+        </div>
+        <div class="col-md-2 pr-0">
+          <ng-select [items]="currentLandmarks" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Landmark" [(ngModel)]="mapFilters.landmark" bindLabel="name" bindValue="type" [ngModelOptions]="{standalone: true}" (ngModelChange)="renderMap()"></ng-select>
+        </div>
+      </div>
+      <div class="col-7" *ngIf="isMapReady">
+        <agm-map [latitude]="lat" [longitude]="lng" [zoom]="14" style="height: calc(100vh - 140px)">
+          <agm-marker *ngFor="let marker of markers;" [label]="marker.label" [latitude]="marker.lat" [longitude]="marker.lng" [opacity]="marker.alpha" [animation]="marker.animation" [markerDraggable]="false" (markerClick)="scrollToProperty(marker)">
+          </agm-marker>
+          <!-- (mouseOut)="markerOut(marker)" (mouseOver)="markerOver(marker)" -->
+        </agm-map>
+      </div>
+      <div class="col-5">
+        <span class="text-secondary d-ib p-1 fs-16">Total <strong>{{filteredProperties.length}} properties</strong> </span>
+        <div class="tableBodyScroll cabins" style="height: calc(100vh - 200px);overflow-y: auto;">
+          <div id="map-property-{{i+1}}" class="hot-desk card p-2 m-1 cursor" [ngClass]="{'selected':property.selected}" *ngFor="let property of filteredProperties;let i=index;" (mouseenter)="hoverProperty(property, true)" (mouseleave)="hoverProperty(property, false)">
+            <div>
+              <span class="mb-1 fs-14 w-70 d-ib">#{{i+1}}. {{property.name}} , <small>{{property.street}}, {{property.landmark}} </small></span>
+              <span class="w-30 d-ib"><span class="badge badge-dark text-white float-right">{{property.location?.name}}</span></span>
+            </div>
+            <p class="mb-0 fs-10">{{property.address}}</p>
+            <!--  <div>
+              <span class="d-ib w-50">
+                <span class="text-secondary fs-12">SqFt Price : </span> <span class="text-primary fs-12 f-b">{{property.sqftPrice | inr}}</span>
+              </span>
+              <span class="text-secondary fs-12"> <span class="badge badge-info text-white float-right">{{property.status}}</span> </span>
+            </div> -->
+            <div>
+              <span class="d-ib w-50">
+                <span class="text-secondary fs-12">Carpet Area : </span> <span class="text-primary fs-12 f-b">{{property.carpetArea || '-'}} <small>sqft</small></span>
+              </span>
+              <span class="text-secondary fs-12">BuildUp Area : </span> <span class="text-info f-b">{{property.buildupArea || '-'}} <small>sqft</small></span>
+            </div>
+            <!-- <div>
+              <span class="d-ib w-50">
+                <span class="text-secondary fs-12">HandOver : </span> <span class="text-primary fs-12 f-b">{{property.handover | date : 'MMM dd, yyyy'}}</span>
+              </span>
+              <span class="text-secondary fs-12">Expected Live : </span> <span class="text-info fs-12 f-b">{{property.expectedLive | date : 'MMM dd, yyyy'}} </span>
+            </div> -->
+            <div>
+              <a class="btn btn-mini btn-outline-primary btn-icon float-left" ngbTooltip="Locate on Map" placement="right" (click)="makeAsCenter(property)">
+                <i class="fa fa-location-arrow"></i>
+              </a>
+              <a class="btn btn-mini btn-outline-primary btn-ico float-right" ngbTooltip="Open Property Negotiations" (click)="showPropertyContracts(property)">Negotiations</a>
+              <span class="badge badge-info text-white fs-10 mr-2 mt-2 float-right">{{property.status}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<ng-template #propertyMapModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">'{{property.name}}' Map View @ <small>{{property.street}}, {{property.landmark}}, {{property.location.name}} </small></h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row properties-map">
+      <div class="col-12" *ngIf="isMapReady">
+        <agm-map [latitude]="lat" [longitude]="lng" [zoom]="16" style="height: calc(100vh - 120px)">
+          <agm-marker [label]="propertyMarker.label" [latitude]="propertyMarker.lat" [longitude]="propertyMarker.lng" [opacity]="propertyMarker.alpha">
+          </agm-marker>
+        </agm-map>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<ng-template #propertyGalleryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">'{{property.name}}' Gallery @ <small>{{property.street}}, {{property.landmark}}, {{property.location.name}} </small></h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body" style="height: calc(100vh - 80px);">
+    <!-- <ngx-gallery [options]="galleryOptions" [images]="galleryImages"></ngx-gallery> -->
+  </div>
+</ng-template>

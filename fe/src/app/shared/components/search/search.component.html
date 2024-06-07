@@ -1,0 +1,305 @@
+<div class="search-ui rtl-ps-none" perfectScrollbar [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}" style="padding-left: 1.5rem !important;">
+  <div class="search-header">
+    <img [src]="user?.logo || './assets/images/flogo.png'" alt="" class="logo">
+    <input type="text" *ngIf="!searchService.callData?.from" placeholder="Type here to search ... " class="search-input ml-2 fs-32" [formControl]="searchControl" autofocus>
+    <h3 *ngIf="searchService.callData?.from&&searchResult" class="d-ib ml-2">Incoming call from <strong>{{searchService.callData.from}}</strong></h3>
+    <button class="btn btn-icon bg-transparent float-right mt-2" (click)="close()">
+      <i class="i-Close-Window text-22 text-muted"></i>
+    </button>
+  </div>
+  <div class="search-title" *ngIf="searchResult&&searchResult?.booking||searchResult?.lead">
+    <span class="text-muted">Search Result : </span>
+  </div>
+  <div class="row" style="margin-top: 10%" *ngIf="loading">
+    <span class="loader-bubble loader-bubble-info"></span>
+  </div>
+  <div class="row" style="margin-top: 10%" *ngIf="searchService.callData?.from && !searchResult">
+    <div class="col-12">
+      <h2 class="text-center fs-24 text-secondary">Incoming call detected from</h2>
+      <h2 class="fs-42 text-primary text-center mt-3">{{searchService.callData.from}} </h2>
+      <h2 class="text-center fs-32 mt-3 text-info">Analysing, please wait a moment ... </h2>
+    </div>
+    <span class="loader-bubble loader-bubble-info"></span>
+  </div>
+  <div class="search-title" *ngIf="searchControl.value != '' && searchResult && !searchResult?.booking&&!searchResult?.lead">
+    <h3 class="text-center">No client or lead found with above search, please enter details to create New Lead</h3>
+    <strong class="text-primary fs-24">Add New Lead : </strong>
+    <form [formGroup]="leadForm">
+      <div class="row">
+        <div class="col-md-5 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Company</label>
+          <input type="text" class="form-control" id="company" formControlName="company" placeholder="Company Name" [(ngModel)]="lead.company">
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Contact Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Contact Name" [(ngModel)]="lead.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Phone</label>
+          <input type="number" placeholder="Enter Phone number" class="form-control" name="phone" [(ngModel)]="lead.phone" formControlName="phone" />
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Email</label>
+          <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="lead.email">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Lead Source</label>
+          <ng-select [items]="leadSources" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Lead Source" [(ngModel)]="lead.source" formControlName="source" name="source" (change)="lead.attribute=null"> </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Source Attribute</label>
+          <div *ngIf="!lead.source"><small>Please select Lead source for source attributes</small></div>
+          <ng-select *ngIf="lead.source" [items]="lead.source.attributes" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Attribution" [(ngModel)]="lead.attribute" formControlName="attribute" name="attribute"> </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1">
+          <label for="roles">No of Desks</label>
+          <input type="number" placeholder="Desks Count" class="form-control" name="desks" [(ngModel)]="lead.desks" formControlName="desks" />
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-1 pr-1">
+          <label for="firstName">Desk Types</label>
+          <ng-select [items]="deskTypes" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Desk Type" [(ngModel)]="lead.deskType" formControlName="deskType" name="deskType"> </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Interested Price</label>
+          <input type="number" placeholder="Enter Price" class="form-control" name="price" [(ngModel)]="lead.price" formControlName="price" />
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-1 pr-1">
+          <label for="roles">Start Date</label>
+          <input placeholder="Select start date" class="form-control" name="dp" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="lead.date" formControlName="date" (focus)="dp.toggle()" />
+        </div>
+        <div class="col-md-5 form-group mb-1 pl-1 pr-1 googleplace-container">
+          <label for="roles">Interested Location <small> (type to fetch more location details)</small></label>
+          <input class="form-control" placeholder="Enter Interested location" (setAddress)="getGooglePlaceAddress($event)" name="googlelocation" formControlName="googlelocation" [(ngModel)]="lead.location" googleplace id="googleplace">
+          <div class="pac-container" style="z-index: 9999 !important"></div>
+        </div>
+      </div>
+    </form>
+    <div class="float-right">
+      <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||leadForm.invalid" (click)="saveLead()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+    </div>
+  </div>
+  <div *ngIf="searchResult&&searchResult?.lead">
+    <div class="float-right">
+      <a class="btn btn-outline-info btn-sm ml-10 btn-ico pull-right" (click)="searchService.searchOpen = false" [routerLink]="['/leads/view/' +lead.id]">
+        <i class="fa fa-search"></i> View Lead
+      </a>
+    </div>
+    <h4 class="float-left">Lead Information</h4>
+    <p class="float-left ml-1">
+      <strong>{{lead.name}} ({{lead.phone}}) <small>from</small> {{lead.companyName}}</strong>, {{lead.info}}
+    </p>
+    <div class="clear"></div>
+    <div class="row">
+      <div class="col-md-1 col-6 mb-2">
+        <p class="text-muted mb-0">Status</p>
+        <span class="badge" [ngClass]="{'badge-info':lead.status=='New','badge-success':lead.status=='Closed','badge-warning':lead.status=='Hot','badge-danger':lead.status=='Dead'}">{{lead.status}}</span>
+      </div>
+      <div class="col-md-1 col-6 mb-2">
+        <p class="text-muted mb-0">DeskType</p>
+        <span class=""> {{lead.deskType}}</span>
+      </div>
+      <div class="col-md-1 col-6 mb-2">
+        <p class="text-muted mb-0">Created</p>
+        <span class=""> {{lead.createdOn | date :'MMM dd, yyyy'}}</span>
+      </div>
+      <div class="col-md-1 p-1 col-6 mb-2">
+        <p class="text-muted mb-0">Required</p>
+        <span class="">{{lead.desks}} desks</span>
+      </div>
+      <div class="col-md-1 col-6 mb-2">
+        <p class="text-muted mb-0">Start Date</p>
+        <span class=""> {{lead.startDate | date :'MMM dd, yyyy'}}</span>
+      </div>
+      <div class="col-md-7 col-6 mb-2">
+        <p class="text-muted mb-0">Expected Location :</p>
+        <span class="text-bold">{{lead.location}}</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-5 col-12 mb-2">
+        <h4 class="">Proposed Offices</h4>
+        <div class="text-center" *ngIf="lead.propositions.length==0"><strong>No propositions found</strong></div>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="lead.propositions.length>0">
+          <thead>
+            <tr>
+              <th class="w-70 text-center">Office</th>
+              <th class="w-15 text-center">Availability</th>
+              <th class="w-15 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody style="overflow:auto;max-height: 400px;">
+            <tr *ngFor="let prop of lead.propositions;">
+              <td class="w-70 text-center">
+                <span>{{prop.office}}</span> <span *ngIf="prop.location">@ {{prop.location}}</span>
+              </td>
+              <td class="w-15 text-center">{{prop.desksAvailable}} desks</td>
+              <td class="w-15 text-center">
+                <strong *ngIf="prop.status=='Available'">Available</strong>
+                <strong class="badge badge-light" *ngIf="prop.status=='Proposed'">Proposed</strong>
+                <strong class="badge badge-secondary" *ngIf="prop.status=='Interested'">Interested</strong>
+                <strong class="badge badge-info" *ngIf="prop.status=='Agreed'">Agreed</strong>
+                <strong class="badge badge-success" *ngIf="prop.status=='Signed'">Signed</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-4 col-12 mb-2">
+        <h4 class="">Visits</h4>
+        <div class="text-center" *ngIf="lead.visits.length==0"><strong>No visits found</strong></div>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="lead.visits.length>0">
+          <thead>
+            <tr>
+              <th class="w-70 text-center">Office</th>
+              <th class="w-15 text-center">DateTime</th>
+              <th class="w-15 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll" style="max-height: 325px;">
+            <tr *ngFor="let visit of lead.visits;">
+              <td class="w-70 text-center">
+                <span>{{visit.office}}</span> <span *ngIf="visit.location">@ {{visit.location}}</span>
+              </td>
+              <td class="w-15 text-center"><small>{{visit.date | date : 'MMM dd, yyyy hh:mm a'}}</small></td>
+              <td class="w-15 text-center">{{visit.status}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-3 col-12 mb-2">
+        <h4 class="">Calls</h4>
+        <div class="text-center" *ngIf="lead.calls.length==0"><strong>No calls found</strong></div>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="lead.calls.length>0">
+          <thead>
+            <tr>
+              <th class="w-33 text-center">Type</th>
+              <th class="w-33 text-center">DateTime</th>
+              <th class="w-33 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="tableBodyScroll" style="max-height: 325px;">
+            <tr *ngFor="let call of lead.calls;">
+              <td class="w-33 text-center">{{call.type}}
+                <span *ngIf="call.type=='OutBound'">{{call.from}}</span>
+                <span *ngIf="call.type=='InBound'">{{call.to}}</span>
+              </td>
+              <td class="w-33 text-center"><small>{{call.started | date : 'MMM dd, yyyy hh:mm a'}}</small> {{call.duration}}</td>
+              <td class="w-33 text-center">{{call.status}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="searchResult&&searchResult?.booking">
+    <div class="float-right">
+      <a class="btn btn-outline-info btn-sm ml-10 btn-ico pull-right" (click)="searchService.searchOpen = false" [routerLink]="['/bookings/view/' +booking.id]">
+        <i class="fa fa-search"></i> View Booking
+      </a>
+    </div>
+    <h4 class="float-left">Booking Information</h4>
+    <p class="float-left ml-1">
+      <strong>{{booking.client.name}} ({{booking.client.phone}}) <small>from</small> {{booking.client.company}}</strong>
+    </p>
+    <div class="clear"></div>
+    <div class="row">
+      <div class="col-md-1 col-6 mb-2">
+        <p class="text-muted mb-0">Status</p>
+        <span class="badge" [ngClass]="{'badge-info':booking.status=='Booked','badge-success':booking.status=='Active','badge-warning':booking.status=='Cancelled','badge-secondary':booking.status=='Exiting','badge-light':booking.status=='Exited'}">{{booking.status}}</span>
+      </div>
+      <div class="col-md-1 col-6 mb-2">
+        <p class="text-muted mb-0">Type</p>
+        <span class="">{{booking.type}}</span>
+      </div>
+      <div class="col-md-1 p-1 col-6 mb-2">
+        <p class="text-muted mb-0">Total Desks</p>
+        <span class="">{{booking.desks}}</span>
+      </div>
+      <div class="col-md-2 col-12 mb-2">
+        <span class="d-b">Booked : {{booking.reserved | date :'MMM dd, yyyy'}}</span>
+        <span class="d-b">Start : {{booking.started | date :'MMM dd, yyyy'}}</span>
+        <span class="d-b" *ngIf="booking.ended">End : {{booking.ended | date :'MMM dd, yyyy'}}</span>
+      </div>
+      <div class="col-md-3 col-6 mb-2">
+        <p class="text-muted mb-0">Office :</p>
+        <span class="text-bold">{{booking.offices}}, {{booking.location}}</span>
+      </div>
+      <div class="col-md-4 col-12 mb-2">
+        <div><span class="text-primary">Cabins : </span> {{booking.cabinNames}}</div>
+        <div> <span class="text-primary">Desks : </span> {{booking.deskNames}}</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 col-12 mb-2 list-horizontal">
+        <h4 class="border-bottom">Invoices</h4>
+        <div class="text-center" *ngIf="booking.invoices.length==0"><strong>No invoices raised</strong></div>
+        <div *ngFor="let item of booking.invoices;let i=index" class="row list-item mb-2 border-bottom card-body p-0">
+          <div class="m-0 text-muted text-small text-center col-2">
+            <div class="text-primary">{{item.date | date : 'MMM'}}</div>
+            <span class="text-secondary">{{item.date | date : 'yyyy'}}</span>
+          </div>
+          <a href="" class="col-8">
+            <div class="item-title">{{item.name}}</div>
+            <span class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf.file" target="_blank">{{item.refNo}}</a></span>
+          </a>
+          <div class="text-info col-2"><span class="text-secondary d-ib w-30">Total </span> : {{item.amount | inr}}</div>
+          <div class="m-0 text-muted text-small col-5">
+            <div class="d-b text-primary">I : {{item.date | date : 'MMM dd, yyyy'}}</div>
+            <div class="d-b text-info"> D : {{item.dueDate | date : 'MMM dd, yyyy'}}</div>
+          </div>
+          <div class="m-0 text-muted text-small col-5">
+            <div class="text-primary">
+              <span class="text-secondary d-b">Paid : {{item.paid | inr }} </span>
+              <span class="text-secondary d-b">Due : {{item.due | inr}} </span>
+            </div>
+          </div>
+          <div class="m-0 text-muted text-small col-2">
+            <div class="badge badge-success" *ngIf="item.status=='Paid'">PAID</div>
+            <div class="badge badge-warning" *ngIf="item.status=='Cancelled'">CANCELLED</div>
+            <div class="badge badge-info" *ngIf="item.status=='Pending'">PENDING</div>
+            <div class="badge badge-warning" *ngIf="item.status=='Due'">DUE</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-12 mb-2">
+        <h4 class="">Payments</h4>
+        <div class="text-center" *ngIf="booking.payments.length==0"><strong>No payments received</strong></div>
+        <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="booking.payments.length>0">
+          <thead>
+            <tr>
+              <th class="w-10">Type</th>
+              <th class="w-15">Amount</th>
+              <th class="w-30">UTR</th>
+              <th class="w-20">Date</th>
+            </tr>
+          </thead>
+          <tbody style="overflow:auto;max-height: 400px;">
+            <tr *ngFor="let item of booking.payments;">
+              <td class="w-10">{{item.type}}</td>
+              <td class="w-15">{{item.amount | inr}}</td>
+              <td class="w-30">{{item.utr}}</td>
+              <td class="w-20">{{item.date | date : 'MMM dd, yyyy'}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-4 col-12 mb-2 list-horizontal">
+        <h4 class="border-bottom">Support Tickets</h4>
+        <div class="text-center" *ngIf="booking.tickets.length==0"><strong>No tickets raised</strong></div>
+        <div *ngFor="let item of booking.tickets;let i=index" class="row list-item mb-2 border-bottom card-body p-0">
+          <div class="m-0 text-muted text-small text-center col-3">
+            <div class="text-primary">{{item.refNo}}</div>
+            <div class="text-primary">{{item.date | date : 'MMM dd, yyyy'}}</div>
+          </div>
+          <a href="" class="col-9">
+            <div class="item-title">{{item.issue}}</div>
+            <div class="d-b text-info"> {{item.category}}, {{item.context}}, {{item.priority}}</div>
+          </a>
+          <div class="text-info col-9">{{item.description | ellipses:40}}</div>
+          <div class="ticket-status {{item.status}} col-2 pt-1 mt-1">{{item.status}}</div>
+          <div class="badge badge-light col-1 pt-1 mt-1 cursor" routerLink="/support/view/{{item.id}}">view</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

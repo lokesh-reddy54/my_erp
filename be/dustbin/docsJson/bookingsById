@@ -1,0 +1,230 @@
+{
+  id: 1,
+  deskType: 'FixedDesk',
+  frequency: 'Weekly',
+  officeType: null,
+  invoiceServiceType: 'OfficeRent',
+  type: 'FixedDesk',
+  term: 'LongTerm',
+  kind: 'NewBooking',
+  date: 2023-07-21T11:16:09.000Z,
+  effectiveDate: 2023-07-21T03:30:00.000Z,
+  status: 'Approved',
+  discount: 0,
+  rent: 160000,
+  deskPrice: null,
+  additionalRent: null,
+  additionalDesks: null,
+  desks: 12,
+  isSqftRent: 1,
+  sqFt: null,
+  sqFtPrice: null,
+  security: 12000,
+  token: 12000,
+  contractPeriod: 11,
+  lockIn: 2,
+  lockInPenaltyType: 'Fixed',
+  lockInPenalty: 12000,
+  noticePeriod: 2,
+  noticePeriodViolationType: 'MonthRent',
+  noticePeriodViolation: 120000,
+  freeCredits: null,
+  agreementAccepted: null,
+  approvedOn: 2023-07-29T13:31:24.000Z,
+  approvedBy: null,
+  confirmedOn: null,
+  confirmedBy: null,
+  updated: 2023-07-31T05:40:37.000Z,
+  updatedBy: 'system',
+  agreementId: null,
+  signedAgreementId: null,
+  bookingId: 1,
+  tokenSD: null,
+  rentFreePeriod: null,
+  additionalInvoices: [
+    {
+      id: 5,
+      contractId: 1,
+      invoiceServiceId: 24,
+      item: 'Electricity',
+      amount: 120000,
+      status: 'Published',
+      updated: 2023-07-29T13:29:49.000Z,
+      updatedBy: 'system',
+      invoiceService: [Object]
+    },
+    {
+      id: 7,
+      contractId: 1,
+      invoiceServiceId: 6,
+      item: 'ADC',
+      amount: 12000,
+      status: 'Published',
+      updated: 2023-07-29T13:30:41.000Z,
+      updatedBy: 'system',
+      invoiceService: [Object]
+    }
+  ]
+}
+
+
+{
+  id: 1,
+  clientId: 3,
+  locationId: 1,
+  officeId: 4,
+  companyId: 1,
+  exitRequestId: null,
+  offices: '',
+  status: 'New',
+  refNo: 'HHBK23-1',
+  reserved: 2023-07-21T11:16:09.000Z,
+  started: 2023-07-21T00:00:00.000Z,
+  ended: null,
+  sqftArea: null,
+  desks: 14,
+  cabins: 1,
+  itLedgerAdded: null,
+  itLedgerSettled: null,
+  contractId: 1,
+  invoiced: null,
+  paid: null,
+  due: null,
+  updated: 2023-07-21T11:16:09.000Z,
+  updatedBy: 'system',
+  client: {
+    id: 3,
+    leadId: null,
+    title: null,
+    company: 'TechHub',
+    name: 'Loki',
+    email: 'lokeshreddy.art@gmail.com',
+    phone: '9000021909',
+    address: 'Bengalore',
+    website: 'techhub.com',
+    companyRegistrationId: null,
+    gstRegistrationId: null,
+    gstNo: '838463',
+    panNo: 'DR767576GH',
+    stateCode: null,
+    panCardId: null,
+    benificiaryName: null,
+    accountNumber: null,
+    ifscCode: null,
+    updated: 2023-07-21T11:16:09.000Z,
+    updateBy: null
+  },
+  company: {
+    id: 1,
+    name: 'Hustlehub',
+    tradeName: 'Hustlehub',
+    shortName: 'HH',
+    address: '#36/5, Somasundarapalya, 27th Main Rd, Sector 2, HSR Layout, Bengaluru, Karnataka 560102',
+    city: 'Bengaluru',
+    state: 'Karnataka ',
+    phone: '9000021909',
+    email: 'loki@hustlehub.xyz',
+    erpDomain: 'hustlehub.xyz',
+    website: 'hustlehub.xyz',
+    logo: 'https://i.ibb.co/W6J70c2/HH-Logo.png',
+    squareLogo: 'https://i.ibb.co/W6J70c2/HH-Logo.png',
+    gstNo: '123',
+    panNo: '123',
+    cin: '123',
+    stateCode: 123,
+    active: 1,
+    bankName: 'XYZ',
+    branchName: 'XYZ',
+    ifscCode: '123',
+    accountNumber: '123456789',
+    accountName: 'XYZ',
+    supportPhone: '8047489999',
+    supportEmail: 'info@hustlehub.xyz',
+    primaryColor: '',
+    accentColor: '',
+    date: 2023-06-22T05:38:59.000Z,
+    updated: 2023-07-20T06:46:49.000Z,
+    updatedBy: null,
+    modules: null
+  },
+  contract: {
+    id: 1,
+    deskType: 'FixedDesk',
+    frequency: 'Weekly',
+    officeType: null,
+    invoiceServiceType: 'OfficeRent',
+    type: 'FixedDesk',
+    term: 'LongTerm',
+    kind: 'NewBooking',
+    date: 2023-07-21T11:16:09.000Z,
+    effectiveDate: 2023-07-21T03:30:00.000Z,
+    status: 'Approved',
+    discount: 0,
+    rent: 160000,
+    deskPrice: null,
+    additionalRent: null,
+    additionalDesks: null,
+    desks: 12,
+    isSqftRent: 1,
+    sqFt: null,
+    sqFtPrice: null,
+    security: 12000,
+    token: 12000,
+    contractPeriod: 11,
+    lockIn: 2,
+    lockInPenaltyType: 'Fixed',
+    lockInPenalty: 12000,
+    noticePeriod: 2,
+    noticePeriodViolationType: 'MonthRent',
+    noticePeriodViolation: 120000,
+    freeCredits: null,
+    agreementAccepted: null,
+    approvedOn: 2023-07-29T13:31:24.000Z,
+    approvedBy: null,
+    confirmedOn: null,
+    confirmedBy: null,
+    updated: 2023-07-31T05:40:37.000Z,
+    updatedBy: 'system',
+    agreementId: null,
+    signedAgreementId: null,
+    bookingId: 1,
+    tokenSD: null,
+    rentFreePeriod: null,
+    additionalInvoices: [ [Object], [Object] ]
+  },
+  exitRequest: null,
+  bookedDesks: [],
+  location: 'null, H210, 27th Main Rd, Sector 2, HSR Layout, Bengaluru, Karnataka 560102',
+  futureContract: null,
+  cabinNames: '',
+  deskNames: ''
+}
+
+
+
+
+
+
+
+
+
+
+booking.exitRequest.fcpStatus=='Requested'
+booking.exitRequest.fcpStatus=='Accepted'
+booking.exitRequest.fcpStatus=='Rejected'
+booking.exitRequest.fcpStatus=='Approved'
+booking.exitRequest.fcpStatus=='Refunded'
+
+
+
+
+SELECT b.id,i.id invoiceId,i.status,i.refNo, d.date_field invoiceDate, b.started, b.ended, b.status
+              FROM bookings b
+              left join sys_date d on d.date_field >= b.started
+              left join invoices i on i.bookingId = b.id and month(i.date) = month(d.date_field) and  year(i.date) = year(d.date_field)
+              left join invoice_services ins on i.invoiceServiceId=ins.id and ins.category in ('OfficeRent') and ins.type in ('Monthly')
+              where 1=1 and b.status in ("Active","Exiting") and (b.ended is null or b.ended> CURDATE())
+              and (i.id is null or i.refNo is null  or i.isCancelled=1 )
+              and month(d.date_field)=month(CURDATE()) and year(d.date_field)=year(CURDATE())
+              group by month(date_field), year(date_field), b.id, i.id, i.status
+              order by b.id, i.status,  d.date_field

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Invoice</title>
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+  <!--  <link rel="stylesheet" type="text/css" href="../styles.css"> -->
+  <title></title>
+  <style type="text/css">
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    letter-spacing: .3px;
+    line-height: 1.6;
+    font-size: 12px;
+    font-weight: 400;
+    color: #141415;
+    padding: 2pt 24pt 4pt 24pt;
+  }
+  td, th { /* table cells */
+    padding: 5px;
+}
+strong{
+  font-weight: 600;
+}
+table {
+  border-collapse: collapse;
+  border: 1px solid black;
+}
+
+table td {
+  border: 1px solid black;
+}
+.bg-gray-300 {
+    background-color: #ecf0f3 !important;
+  }
+  .a,.d {
+  margin-right:auto;
+}
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+  }
+  .gst-border{
+    border-bottom: 2px solid #2062a4;
+  }
+
+  .table td,
+  .table th {
+    padding: .3rem;
+    vertical-align: center;
+    text-align: left;
+    border: 1px solid #dee2e6;    
+  }
+  /* dl,
+  ol,
+  p,
+  ul {
+    margin-top: 1px;
+    margin-bottom: 1px;
+  } */
+  </style>
+</head>
+<body>
+<!-- <p align="left"><strong>Company Logo</strong></p> -->
+<div  style="display: flex; justify-content: center;">
+  <!-- <img src="https://www.instantoffices.com/-/media/images/logos/logo-dark-grey.png" style="max-height: 120px;"> -->
+  <!-- <img src="https://static.wixstatic.com/media/5dde6e_b352f9f779424d748e52972493f62f7b~mv2.png" style="max-height: 120px;"> -->
+  <div class="a" ><img src="${companyLogo}" style="max-height: 40px;"></div> 
+  <div class="d" style="font-size: 24px;"><strong>Tax Invoice</strong></div>
+</div>
+
+<table border="1" cellspacing="0" style="width: 100%; height: 100%;">
+  <tbody>
+      <tr>
+          <td width="314" valign="top" colspan="3" rowspan="3">
+                  <strong>${companyName}</strong><br>
+                  ${companyAddress}<br>
+                  <!-- <strong>State Name</strong> : Karnataka, Code : 29 <br> -->
+                  <strong>GSTIN: </strong>${gstIn}<br>
+                  <strong>CIN: </strong>${cin}<br>
+                  <strong>Pan: </strong>${pan}<br>
+                  <strong>E-Mail: </strong>${companyEmail}</td>
+          <td width="155" valign="top" colspan="5">Invoice No: <br><strong>${refNo}</strong></td>
+          <td width="153" valign="top" colspan="5"> Dated: <strong>${date}</strong><br>Due Date: <strong>${dueDate}</strong></td>
+      </tr>
+      <tr>
+          <td width="155" valign="top" colspan="5">Delivery Note</td>
+          <td width="153" valign="top" colspan="5">Mode/Terms of Payment</td>
+      </tr>
+      <tr>
+          <td width="155" valign="top" colspan="5">Reference No. &amp; Date.</td>
+          <td width="153" valign="top" colspan="5">Other References</td>
+      </tr>
+      <tr>
+          <td width="314" valign="top" colspan="3" rowspan="4">
+              Buyer (Bill to)<br>
+                  <strong>${clientName}</strong><br>
+                  ${clientAddress}<br>
+                  <strong>GSTIN/UIN</strong>    : ${clientGst} <br>
+                  <!-- <strong>State Name</strong>   : Karnataka, Code : 29 -->
+                  </td>
+          <td width="155" valign="top" colspan="5">Buyer's Order No.</td>
+          <td width="153" valign="top" colspan="5">Dated</td>
+      </tr>
+      <tr>
+          <td width="155" valign="top" colspan="5">Dispatch Doc No.</td>
+          <td width="153" valign="top" colspan="5">Delivery Note Date</td>
+      </tr>
+      <tr>
+          <td width="155" valign="top" colspan="5">Dispatched through</td>
+          <td width="153" valign="top" colspan="5">Destination</td>
+      </tr>
+      <tr>
+          <!-- <td width="308" valign="top" colspan="10">Terms of Delivery</td> -->
+      </tr>
+      <tr class="bg-gray-300">
+          <td width="18" valign="top">SNo</td>
+          <td width="295" valign="top" colspan="2"  align="center">Description of Goods</td>
+          <td width="64" valign="top" colspan="3">HSN/SAC</td>
+          <td width="62" valign="top">Quantity</td>
+          <td width="62" valign="top" colspan="3"> Rate</td>
+          <td width="27" valign="top">per</td>
+          <td width="90" valign="top" colspan="2" align="center">Amount</td>
+      </tr>
+      <#list items as item>
+      <tr>
+          <td width="18" valign="top">${item?counter} </td>
+          <td width="295" valign="top" colspan="2"><strong>${item['item']}</strong></td>
+          <td width="64" valign="top" colspan="3">${item['sacCode']}</td>
+          <td width="62" valign="top" > ${item['qty']}  </td>
+          <td width="62" valign="top" colspan="3"  align="right"> ${item['unitPrice']} </td>
+          <td width="27" valign="top">-</td>
+          <td width="90" valign="top" colspan="2" align="right">  <strong>${item['amount']}</strong></td>
+      </tr>
+      </#list>
+      <tr>
+        <td width="18" valign="top" style="border-top: none;"></td>
+        <td width="295" valign="top" colspan="2" align="right" style="border-top: none;"><strong><em>CGST</em></strong>
+                                                          <br> <strong><em>SGST</em></strong>
+                                                          <#if hasTds==1>
+                                                          <br> <strong><em>TDS Receivable</em></strong>
+                                                          </#if>
+                                                          </td>
+        <td width="64" valign="top" colspan="3" style="border-top: none;"></td>
+        <td width="62" valign="top" align="right" style="border-top: none;"> </td>
+        <td width="62" valign="top" colspan="3"  align="right" style="border-top: none;"><em>${cgst}</em> <br><em>${sgst}</em> <#if hasTds==1><br><em>${tds}</em></#if> </td>
+        <td width="27" valign="top" style="border-top: none;"><em>%</em><br><em>%</em> <#if hasTds==1><br><em>%</em></#if> </td>
+        <td width="90" valign="top" colspan="2" align="right" style="border-top: none;"><strong>${invoiceTotalCGST}</strong>
+                                                         <br> <strong>${invoiceTotalCGST}</strong>
+                                                         <#if hasTds==1>
+                                                         <br> <strong>(-)${invoiceTotalTDS}</strong>
+                                                         </#if>
+                                                         </td>
+    </tr>      
+      <tr>
+          <td width="18" valign="top"> </td>
+          <td width="295" valign="top" colspan="2" align="right"><strong>Total</strong> </td>
+          <td width="64" valign="top" colspan="3"> </td>
+          <td width="62" valign="top" align="right"> <strong></strong></td>
+          <td width="62" valign="top" colspan="3"> </td>
+          <td width="27" valign="top"> </td>
+          <td width="90" valign="top" colspan="2" align="right"> <strong>Rs. ${grandTotal}</strong>  </td>
+      </tr>
+      <tr>
+          <td width="623" valign="top" colspan="13"> <p>Amount Chargeable (in words): <strong>INR ${grandTotalText}</strong></td>
+      </tr>
+      <tr class="bg-gray-300"   style="line-height: 8px;">
+          <td width="260" valign="top" colspan="2" rowspan="2" align="center"> HSN/SAC </td>
+          <td width="69" valign="top" colspan="2" rowspan="2" align="center">  Taxable Value </p> </td>
+          <td width="111" valign="top" colspan="3" align="center"> CGST</td>
+          <td width="111" valign="top" colspan="5" align="center">  SGST/UTGST  </td>
+          <td width="69" valign="top" rowspan="2" align="center"> Total Tax Amount </td>
+      </tr>
+      <tr class="bg-gray-300"   style="line-height: 8px;">
+          <td width="42" valign="top"> Rate  </td>
+          <td width="69" valign="top" colspan="2">  Amount </td>
+          <td width="41" valign="top" colspan="2"> Rate   </td>
+          <td width="69" valign="top" colspan="3">  Amount </td>
+      </tr>
+      <tr  style="line-height: 8px;">
+          <td width="260" valign="top" colspan="2" align="center"> - </td>
+          <td width="69" valign="top" colspan="2" align="right"> ${invoiceTaxableAmount}</td>
+          <td width="42" valign="top" align="center">  ${cgst}  </td>
+          <td width="69" valign="top" colspan="2" align="right"> ${invoiceTotalCGST} </td>
+          <td width="41" valign="top" colspan="2" align="center">  ${sgst}  </td>
+          <td width="69" valign="top" colspan="3" align="right"> ${invoiceTotalSGST}  </td>
+          <td width="69" valign="top" align="right"> ${invoiceTotalGST} </td>
+      </tr>
+      <tr   style="line-height: 8px;">
+          <td width="260" valign="top" colspan="2" align="right"> <strong>Total</strong></td>
+          <td width="69" valign="top" colspan="2" align="right"><strong>${invoiceTaxableAmount}</strong> </td>
+          <td width="42" valign="top"> </td>
+          <td width="69" valign="top" colspan="2" align="right"> <strong>${invoiceTotalCGST}</strong> </td>
+          <td width="41" valign="top" colspan="2"> </td>
+          <td width="69" valign="top" colspan="3" align="right"> <strong>${invoiceTotalSGST}</strong> </td>
+          <td width="69" valign="top" align="right"> <strong>${invoiceTotalGST}</strong></td>
+      </tr>
+      <tr>
+          <td width="623" valign="top" colspan="13">
+              <p>Tax Amount (in words) : <strong>${invoiceTotalGSTText}</strong></p>
+              Company's Bank Details: <strong>${accountName}</strong>
+              <br>Bank Name       : <strong>${bankName}</strong>
+              <br>A/c No. : <strong>${accountNumber}</strong>
+              <br>Branch &amp; IFSC Code: <strong>${bankBranch} &amp; ${ifscCode}</strong>
+          </td>
+      </tr>
+      <tr>
+          <td width="314" valign="top" colspan="3">
+              <p><strong><u>Declaration:</u></strong> We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct. </p>
+          </td>
+          <td width="308" valign="top" colspan="10"><strong>for ${companyName}</strong>
+            <p align="right">Authorised Signatory<img src="http://135.181.20.185:9900/download/sign.png" style="max-height: 100px;"></p>
+          </td>
+      </tr>
+  </tbody>
+</table>
+<p align="center"> This is a Computer Generated Invoice </p>
+</body>
+</html>
+

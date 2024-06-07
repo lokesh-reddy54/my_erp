@@ -1,0 +1,239 @@
+<div #bookingModal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title float-left" id="modal-basic-title">New Parking Booking</h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <loading [loading]="loading"></loading>
+    <div class="row p-2 ml-0 mr-0 mt--10" *ngIf="!selectedOfficeId">
+      <div class="form-group p-1 col-md-2">
+        <label for="roles">Select Product Type</label>
+        <ng-select [items]="[ { type: 'Parking', name: 'Parking' } ]" 
+                   [hideSelected]="true" placeholder="Select Product Type" [(ngModel)]="selectedDeskType" [ngModelOptions]="{standalone: true}" bindLabel="name"> </ng-select>
+      </div>
+  
+      <div class="form-group p-1 col-md-1-5" >
+        <label for="roles">Start Date</label>
+        <input placeholder="Select Start Date" class="form-control" name="dp" (dateSelect)="dp.close()" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="booking.startDate" [ngModelOptions]="{standalone: true}" (focus)="dp.toggle()" (ngModelChange)="searchParking()" />
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="(contract.term!='ShortTerm'&&booking.startDate)||(contract.term=='ShortTerm'&&booking.endDate)">
+        <label for="roles">Select Country</label>
+        <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (change)="onCountrySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-1-5" *ngIf="booking.startDate&&selectedCountry?.id">
+        <label for="roles">Select City</label>
+        <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (change)="onCitySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group p-1 col-md-2" *ngIf="selectedCity?.id">
+        <label for="roles">Select Location</label>
+        <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (change)="searchParking()">
+        </ng-select>
+      </div>
+    </div>
+
+
+    <!-- Buildings List ------------------------ -->
+    <div class="row" *ngIf="buildings.length>0 && !selectedBuilding">
+      <div class="col-6">
+        <span class="text-secondary d-ib p-1 fs-16">Total <strong>{{buildings.length}} buildings</strong> are found for above criteria.</span>
+        <div class="tableBodyScroll cabins" style="height: calc(300px - 30px);overflow-y: auto;">
+          <div class="hot-desk card p-2 m-1 cursor" (click)="selectedBuilding=building; offices= selectedBuilding.offices" [ngClass]="{'selected':building.selected}" *ngFor="let building of buildings" (mouseenter)="hoverBuilding(building, true)" (mouseleave)="hoverBuilding(building, false)">
+            <div>
+              <span class="mb-1 fs-14 w-70 d-ib">{{building.name}}</span>
+              <span class="w-30 d-ib"><span class="badge badge-light text-white float-right">{{building.location}}</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="selectedBuilding">
+      <span class="text-secondary d-ib w-50 p-1 fs-16">Total <strong>{{selectedBuilding.parkingLots.length}} Parking Lots</strong> are there in '{{selectedBuilding.name}}'.
+        <button class="btn btn-sm btn-icon ml-1 cursor" ngbTooltip="Click to Cancel Building Selection" (click)="selectedBuilding=null;"><i class="fa fa-times"></i> </button>
+      </span>
+      <span class="d-ib pull-right" *ngIf="selectedDeskType.type!='EnterpriseOffice'">
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-primary" ngbTooltip="Selected"></div>
+        </div>
+        <div class="pull-left mr-10">Selected </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-success" ngbTooltip="Available"></div>
+        </div>
+        <div class="pull-left mr-10">Available </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-warning" ngbTooltip="Will be Available"></div>
+        </div>
+        <div class="pull-left mr-10">Will be available in few days </div>
+        <div class="desk pull-left m-1">
+          <div class="p-2 bg-light" ngbTooltip="Booked"></div>
+        </div>
+        <div class="pull-left mr-10">Booked </div>
+      </span>
+    </div>
+    <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0" [closeOthers]="true">
+      <ngb-panel *ngFor="let office of selectedBuilding?.parkingLots;let i=index;">
+
+        <!------------------- Header  --------------------->
+        <ng-template ngbPanelTitle>
+          <div *ngIf="selectedDeskType.type!='EnterpriseOffice'">
+            <span class="pull-left d-ib">{{office.productType}} - {{office.name}} </span>
+            <span class="pull-right d-ib"> Type : {{office.productType}} </span>
+            <span class="pull-right d-ib mr-50"> Available Spots : {{office.parkingSpots.length}}</span>
+            <!-- <span class="pull-right d-ib mr-50"> Selected : {{desks.length}} out of {{booking.desks}} desks</span> -->
+          </div>
+        </ng-template>
+
+
+        <!--------------------    Cabins/Lots  Start    -------------------------->
+        <ng-template ngbPanelContent>
+          <div class="row p-1 cabins">
+            <div class="row" [ngClass]="{'col-4 ml-0 hot-desk cursor':selectedDeskType=='FlexiDesk','col-12':selectedDeskType!='FlexiDesk'}" >
+              <div class="card p-2 m-1" [ngClass]="{'col-12':selectedDeskType=='FlexiDesk','col-3':selectedDeskType!='FlexiDesk'||selectedDeskType.type=='EnterpriseOffice','selected':office.selected}">
+                <div *ngIf="selectedDeskType.type!='EnterpriseOffice'">
+                  <h5 class="item-title mb-1 d-ib">{{office.productType}} - {{office.name}}</h5>
+                  <button class="btn btn-sm btn-icon float-right" (click)="selectAllDesks(office, true)" ngbTooltip="Select All Desks"><i class="fa fa-check-square-o"></i></button>
+                  <button class="btn btn-sm btn-icon float-right" *ngIf="office.selectedAll" (click)="selectAllDesks(office, false)" ngbTooltip="UnSelect All Desks"><i class="fa fa-check-square"></i></button>
+                  <div class="clear"></div>
+                  <span class="d-ib w-50">
+                    <span class="text-secondary">Total Spots : </span> <span class="text-primary">{{office.parkingSpots.length}}</span>
+                  </span>
+                  <span class="text-secondary">Available Spots : </span> <span class="text-info">{{office.available}}</span>
+                 
+                </div>
+                <div *ngIf="office.price">
+                  <span class="text-secondary d-ib w-50">Price per desk : </span> <span class="text-info">{{cabin.price | inr}}</span>
+                </div>
+                <div *ngIf="office.minPrice && office.maxPrice">
+                  <span class="d-ib w-50">
+                    <span class="text-secondary">Price Range : </span>
+                  </span>
+                  <span class="text-primary">{{cabin.minPrice | inr}}</span> - <span class="text-primary">{{cabin.maxPrice | inr}}</span>
+                </div>
+              </div>
+
+
+              <!--------------------    Cabins/Lots  End    -------------------------->
+
+
+              <!------------------     Desks/Spots Start   --------------------->
+              <div class="col-9 row" [ngClass]="{'d-none':selectedDeskType=='FlexiDesk'}">
+                <div class="desk pull-left card m-1" *ngFor="let desk of office.parkingSpots;let i=index;" (click)="selectDesk(desk)" [ngClass]="{'selected':desk.selected}">
+                  <div style="padding: 0.1rem 0.9rem !important;" class="p-3 bg-success"  ngbTooltip="{{desk.name}}">{{i+1}}</div>
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-warning" *ngIf="desk.status=='Releasing'" ngbTooltip="Available from {{desk.releaseDate}}">{{i+1}}</div>
+                  <div style="padding: 0.1rem 0.6rem !important;" class="p-3 bg-light" *ngIf="desk.status=='Booked'||desk.status=='InUse'" ngbTooltip="Booked">{{i+1}}</div>
+                </div>
+              </div>
+              <!------------------     Desks/Spots End   --------------------->
+
+            </div>
+          </div>
+        </ng-template>
+      </ngb-panel>
+    </ngb-accordion>
+
+
+
+
+    
+    <div *ngIf="selectedDesks.length || selectedDeskType?.type!='EnterpriseOffice' && selectedOffices.length" class="mt-20">
+      <h5 class="pull-left">Selected Parking Spots </h5> - <span>Please review your cabin selection and select facilities to update effective price accordingly</span>
+      <div  style="border-bottom: 1px solid #82A0DF;padding-top: 10px;">
+        <!-- <p class="mb-1"><strong>{{office.office}}</strong></p> -->
+        <!-- <div *ngFor="let cabin of office.cabins;" class="row p-1 ml-0">
+          <div class="col-3 card p-2">
+            <h5 class="item-title mb-1">{{cabin.deskType}}</h5>
+            <span class="text-primary">{{cabin.names}}</span>
+          </div>
+          <div class="col-2 p-1 pl-3" style="max-width: 12% !important">
+            <div>No of Desks : {{desks.length}}</div>
+            <div *ngIf="cabin.price">Price : {{cabin.price | inr}}</div>
+          </div>
+        </div> -->
+      </div>
+    </div>
+
+<!--  -->
+
+
+    <form [formGroup]="form" *ngIf="selectedDesks.length || (selectedOffices.length && totalBookingPrice>0) || selectedCabins.length">
+      <div class="pt-3">
+        <h5 class="pull-left">Client Details </h5> - <span>Please enter accurate and valid client details</span>
+      </div>
+      <div class="clear"></div>
+      <div class="row p-3 pt-0" style="padding-top: 0 !important;">
+        <div class="col-md-2">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="existingClient" [ngModelOptions]="{standalone: true}">
+            <span>Existing Client</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-4" *ngIf="existingClient">
+          <label>Search by Phone Number or Company GST</label>
+          <input type="text" autocomplete="werwerwes21" class="form-control w-90 d-ib" [(ngModel)]="searchInput" [ngbTypeahead]="clientSearch" placeholder="Enter Phone Number or Company GST" [inputFormatter]="typeAheadFormatter" [resultFormatter]="typeAheadFormatter" (selectItem)="client=$event.item" />
+          <span *ngIf="searching" class="pl-1"><i class="fa fa-spinner fa-spin"></i></span>
+        </div>
+      </div>
+      <div class="row p-3 pt-0" style="padding-top: 0 !important;">
+        <div class="col-md-6 form-group mb-1 p-1">
+          <label for="firstName">Client Registered Company Name</label>
+          <input type="text" class="form-control" id="company" formControlName="company" placeholder="Enter Client  Company" [(ngModel)]="client.company">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="name">Contact Name</label>
+          <input class="form-control" id="name" placeholder="Enter Contact Name" formControlName="name" [(ngModel)]="client.name">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Authorised person email" formControlName="email" [(ngModel)]="client.email">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="phone">Phone</label>
+          <input class="form-control" id="phone" placeholder="Authorised person phone" formControlName="phone" [(ngModel)]="client.phone">
+        </div>
+        <div class="col-md-6 form-group mb-1 p-1">
+          <label for="address">Registered Address</label>
+          <input class="form-control" id="address" placeholder="Enter client registered address" formControlName="address" [(ngModel)]="client.address">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="gstNo">GST No</label>
+          <input class="form-control" id="gstNo" placeholder="Registered GST Number" formControlName="gstNo" [(ngModel)]="client.gstNo">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="panNo">PAN No</label>
+          <input class="form-control" type="text" id="panNo" placeholder="Registered PAN Number" formControlName="panNo" [(ngModel)]="client.panNo">
+        </div>
+        <div class="col-md-2 form-group mb-1 p-1">
+          <label for="website">Website</label>
+          <input class="form-control" id="website" placeholder="Enter website URL" formControlName="website" [(ngModel)]="client.website">
+        </div>
+      </div>
+      <h5 class="pull-left">Parking Rental Details </h5> - <span>Please enter accurate and agreed contract details</span>
+      <div class="clear"></div>
+      <div class="row p-3 pt-0" style="padding-top: 0 !important;">
+
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="security">Total Parking Rent for Cars</label>
+          <input type="number" class="form-control" id="security" placeholder="Total Parking Rent for Cars" formControlName="security" [(ngModel)]="contract.carPrice" [attr.disabled]="contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+        <div class="col-md-3 form-group mb-1 p-1">
+          <label for="security">Total Parking Rent for Bikes</label>
+          <input type="number" class="form-control" id="security" placeholder="Total Parking Rent for Bikes" formControlName="security" [(ngModel)]="contract.bikePrice" [attr.disabled]="contract.id||contract.term=='ShortTerm'?true:null">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Description</label>
+          <textarea class="form-control" id="security" formControlName="security" placeholder="Enter Invoice Description" [(ngModel)]="contract.description"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="activeModal.close('close click')">Close</button>
+    <!-- [disabled]="loading||form.invalid" -->
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading"  (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</div>

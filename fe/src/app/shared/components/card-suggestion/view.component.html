@@ -1,0 +1,17 @@
+<!-- <div *ngIf="type=='notes'" class="p-5 float-right">
+  <span [innerHtml]="content"></span>
+</div> -->
+<!-- <div class="p-5 float-right" *ngIf="card.info && !popOverTitle" class="cursor" placement="{{placement}}" ngbPopover="{{content}}" triggers="mouseenter:mouseleave">
+  <i class="fa fa-question-circle-o"></i>
+</div> -->
+<!-- <div class="p-5 float-right" *ngIf="card.info" class="cursor" placement="{{placement}}" [ngbPopover]="popContent" [popoverTitle]="popTitle" triggers="mouseenter:mouseleave">
+  <i class="fa fa-question-circle-o"></i>
+</div> -->
+<div class="mr-5 float-right cursor" *ngIf="card.desc" placement="{{placement}}" ngbTooltip="{{card.desc}}">
+  <i class="fa fa-info"></i>
+</div>
+<div class="mr-5 float-right cursor" *ngIf="card.info" placement="{{placement}}" ngbTooltip="{{card.info}}">
+  <i class="fa fa-question-circle-o"></i>
+</div>
+<!-- <ng-template #popTitle>{{popOverTitle}}</ng-template>
+<ng-template #popContent><span [innerHtml]="popOverBody"></span></ng-template> -->

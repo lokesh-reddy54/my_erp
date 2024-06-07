@@ -1,0 +1,255 @@
+<div class="row">
+  <div [ngClass]="typeFilters.catId ? 'col-3':'col-12'" class="p-1">
+    <div class="breadcrumb">
+      <h4 class="pull-left">Categories</h4>
+      <input type="text" placeholder="Search by Category, Type or SKU name" [formControl]="typeSearch" *ngIf="!typeFilters.catId" class="form-control form-control-rounde pull-left w-30 ml-2">
+      <button class="btn btn-outline-danger btn-sm btn-icon pull-right" *ngIf="typeFilters.catId" (click)="typeFilters={}" placeholder="Close Selected"><i class="fa fa-times"></i></button>
+      <span *checkAccess="'purchases:addSkus'">
+        <button class="btn btn-primary btn-sm btn-ico pull-right" (click)="openCategoryModal()">
+          <i class="fa fa-plus"></i> Category
+        </button>
+      </span>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #categoryList [filter]="categoryFilters" [dataUrl]="'internal/purchases/listSkuCategories'" [config]="categoryConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div [ngClass]="skuFilters.typeId ? 'col-4':'col-9'" class="p-1" *ngIf="typeFilters.catId">
+    <div class="breadcrumb">
+      <h4 class="pull-left">Types</h4>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="typeSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <span *checkAccess="'purchases:addSkus'">
+        <button class="btn btn-primary btn-sm btn-ico pull-right" (click)="openTypeModal()">
+          <i class="fa fa-plus"></i> Type
+        </button>
+      </span>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #typeList [filter]="typeFilters" [dataUrl]="'internal/purchases/listSkuTypes'" [config]="typeConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-5 p-1" *ngIf="skuFilters.typeId">
+    <div class="breadcrumb">
+      <h4 class="pull-left">SKUs</h4>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="skuSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <span *checkAccess="'purchases:addSkus'">
+        <button class="btn btn-primary btn-sm btn-ico pull-right" (click)="openSkuModal(skuModal)">
+          <i class="fa fa-plus"></i> SKU
+        </button>
+      </span>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #skuList [filter]="skuFilters" [dataUrl]="'internal/purchases/listSkus'" [config]="skuConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #categoryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{category.id ? 'Edit Category' : 'New Category'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name *</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="category.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="category.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="saveCategory()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #typeModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{type.id ? 'Edit Type' : 'New Type'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form" (validSubmit)="saveType()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name *</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="type.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="type.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="saveType()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #skuModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{sku.id ? 'Edit SKU' : 'New SKU'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="skuForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name *</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="sku.name">
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Description</label>
+          <textarea class="form-control" id="description" formControlName="description" placeholder="Enter description" [(ngModel)]="sku.description"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 pl-0 pr-0 form-group mb-1 mt-4">
+          <!--  <div class="btn-group btn-group-toggle pull-right mr-10" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="sku.isService" [ngModelOptions]="{standalone: true}">
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="0"> Material
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="1"> Service
+              </label>
+            </div>
+          </div> -->
+          <div class="ml-20 mr-10">
+            <label class="radio radio-success float-left mr-4">
+              <input type="radio" name="radio" [value]="0" [(ngModel)]="sku.isService" [ngModelOptions]="{standalone: true}">
+              <span>Material</span>
+              <span class="checkmark"></span>
+            </label>
+            <label class="radio radio-success float-left mr-4">
+              <input type="radio" name="radio" [value]="1" [(ngModel)]="sku.isService" [ngModelOptions]="{standalone: true}">
+              <span>Service</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-4 pr-0">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="sku.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4 pr-0" *ngIf="sku.isService==0">
+          <label class="checkbox checkbox-success d-b">
+            <input type="checkbox" [(ngModel)]="sku.isAsset" [ngModelOptions]="{standalone: true}">
+            <span>Is Asset</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">GST %</label>
+          <input type="number" class="form-control d-b" id="gst" formControlName="gst" placeholder="Enter GST" [(ngModel)]="sku.gst">
+        </div>
+        <div class="col-md-3 form-group mb-1" *ngIf="sku.isService==1">
+          <label for="firstName">TDS %</label>
+          <input type="number" class="form-control d-b" id="tds" formControlName="tds" placeholder="Enter TDS%" [(ngModel)]="sku.tds">
+        </div>
+        <div class="col-md-4 form-group mb-1">
+          <label for="firstName">Units</label>
+          <ng-select [items]="skuUnits" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="symbol" placeholder="Select Unit" [(ngModel)]="sku.symbol" [ngModelOptions]="{standalone: true}"></ng-select>
+        </div>
+        <!--  <div class="col-md-3 form-group mb-1" *ngIf="sku.isAsset">
+          <label for="firstName" class="d-b">SKU Type Code</label>
+          <span *ngIf="skuTypeCode" class="f-b">{{skuTypeCode}}</span>
+          <input *ngIf="!skuTypeCode" type="text" class="form-control d-b" placeholder="SKU Type Code" [ngModelOptions]="{standalone:true}" [(ngModel)]="sku.typeCode">
+        </div>
+        <div class="col-md-3 form-group mb-1" *ngIf="sku.isAsset">
+          <label for="firstName">SKU Code</label>
+          <input type="text" class="form-control d-b" placeholder="SKU Code" [ngModelOptions]="{standalone:true}" [(ngModel)]="sku.code">
+        </div> -->
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer d-b">
+    <!-- <button type="button" class="btn btn-outline-primary float-left" (click)="openSkuUnitModal()">SKU Units</button> -->
+    <button class="btn btn-info ladda-button btn-ico  float-right" [ladda]="loading" [disabled]="loading||skuForm.invalid" (click)="saveSku()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+    <button type="button" class="btn btn-outline-light float-right" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #skuUnitModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{skuUnit.id ? 'Edit Unit' : 'New Unit'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="unitForm">
+      <table class="table table-sm table-hover table-strip">
+        <thead>
+          <th class="w-50">Name</th>
+          <th class="w-30">Symbol</th>
+          <th class="w-20 text-center">Actions</th>
+        </thead>
+        <tbody>
+          <tr *ngFor="let unit of skuUnits;">
+            <td class="w-50">{{unit.name}}</td>
+            <td class="w-30">{{unit.symbol}}</td>
+            <td class="w-20 text-center"><button class="btn btn-sm btn-icon btn-danger" (click)="deleteSkuUnit(unit)"><i class="fa fa-times"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="row">
+        <div class="col-md-7 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="skuUnit.name">
+        </div>
+        <div class="col-md-5 form-group mb-1">
+          <label for="firstName">Symbol</label>
+          <input type="text" class="form-control" id="name" formControlName="symbol" placeholder="Enter Symbol" [(ngModel)]="skuUnit.symbol">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||skuForm.invalid" (click)="saveSkuUnit()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

@@ -1,0 +1,195 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left mr-5 f-b">Expenses Bills List</h5>
+      <input type="text" placeholder="Search by Vendor or Provider" [formControl]="search" class="form-control form-control-rounde pull-left w-30 ml-1">
+      <input class="form-control pull-left w-20 ml-10" autocomplete="off" placeholder="Bills : Start - End Date" name="dp" id="daterangepicker">
+      <div class="float-right text-right pt-1">
+        <button class="btn btn-ico btn-sm btn-outline-primary" (click)="downloadBills()"><i class="fa fa-download"></i> Download Bills</button>
+      </div>
+      <div class="float-right text-right pt-1 mr-4" *ngIf="billsCount">Total Bills Count : <strong>{{billsCount}}</strong></div>
+    </div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:BillsList'"></help-notes>
+    <div class="clear"></div>
+    <div class="row mt-1">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <loading [loading]="loading"></loading>
+          <ngb-tabset class="nav-center">
+            <ngb-tab title="Capex POs">
+              <ng-template ngbTabContent>
+                <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+                <div class="card o-hidden">
+                  <table class="tableBodyScroll table table-stripe table-hover table-sm">
+                    <thead>
+                      <tr class="bg-primary text-white">
+                        <th class="text-center w-25" (click)="sortBy('vendor')">Vendor Name <i *ngIf="sort.vendor?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendor?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('building')">Building <i *ngIf="sort.building?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.building?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('refNo')">BillNo <i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center">Bill</th>
+                        <th class="w-10 text-right" (click)="sortBy('amount')">Amount <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center" (click)="sortBy('date')">Bill Date <i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+                        <!-- <th class="w-10 text-center" (click)="sortBy('dueDate')">Due Date <i *ngIf="sort.dueDate?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.dueDate?.desc" class="fa fa-caret-down"></i></th> -->
+                      </tr>
+                    </thead>
+                    <tbody infiniteScroll class="tableBodyScroll">
+                      <tr *ngFor="let row of capexPos;">
+                        <td class="w-25">{{row.vendor}}</td>
+                        <td class="w-10">{{row.building}}</td>
+                        <td class="w-10">{{row.refNo || '-'}}</td>
+                        <td class="w-10 text-center">
+                          <span *ngIf="!row.file">-</span>
+                          <a *ngIf="row.file" [href]="row.file" target="_blank">View</a>
+                        </td>
+                        <td class="w-10 text-right">{{row.amount | inr}}</td>
+                        <td class="w-10 text-center">{{row.date |date:'MMM dd, yyyy'}}</td>
+                        <!-- <td class="w-10 text-center">{{row.dueDate |date:'MMM dd, yyyy'}}</td> -->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </ngb-tab>
+            <ngb-tab title="Capex Bills">
+              <ng-template ngbTabContent>
+                <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+                <div class="card o-hidden">
+                  <table class="tableBodyScroll table table-stripe table-hover table-sm">
+                    <thead>
+                      <tr class="bg-primary text-white">
+                        <th class="text-center w-25" (click)="sortBy('vendor')">Vendor Name <i *ngIf="sort.vendor?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendor?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('building')">Building <i *ngIf="sort.building?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.building?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('refNo')">BillNo <i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center">Bill</th>
+                        <th class="w-10 text-right" (click)="sortBy('amount')">Amount <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center" (click)="sortBy('date')">Bill Date <i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+                        <!-- <th class="w-10 text-center" (click)="sortBy('dueDate')">Due Date <i *ngIf="sort.dueDate?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.dueDate?.desc" class="fa fa-caret-down"></i></th> -->
+                      </tr>
+                    </thead>
+                    <tbody infiniteScroll class="tableBodyScroll">
+                      <tr *ngFor="let row of capexBills;">
+                        <td class="w-25">{{row.vendor}}</td>
+                        <td class="w-10">{{row.building}}</td>
+                        <td class="w-10">{{row.refNo || '-'}}</td>
+                        <td class="w-10 text-center">
+                          <span *ngIf="!row.file">-</span>
+                          <a *ngIf="row.file" [href]="row.file" target="_blank">View</a>
+                        </td>
+                        <td class="w-10 text-right">{{row.amount | inr}}</td>
+                        <td class="w-10 text-center">{{row.date |date:'MMM dd, yyyy'}}</td>
+                        <!-- <td class="w-10 text-center">{{row.dueDate |date:'MMM dd, yyyy'}}</td> -->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </ngb-tab>
+            <ngb-tab title="Building Bills">
+              <ng-template ngbTabContent>
+                <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+                <div class="card o-hidden">
+                  <table class="tableBodyScroll table table-stripe table-hover table-sm">
+                    <thead>
+                      <tr class="bg-primary text-white">
+                        <th class="text-center w-25" (click)="sortBy('vendor')">Vendor Name <i *ngIf="sort.vendor?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendor?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('building')">Building <i *ngIf="sort.building?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.building?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('refNo')">BillNo <i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center">Bill</th>
+                        <th class="w-10 text-right" (click)="sortBy('amount')">Amount <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center" (click)="sortBy('date')">Bill Date <i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+                        <!-- <th class="w-10 text-center" (click)="sortBy('dueDate')">Due Date <i *ngIf="sort.dueDate?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.dueDate?.desc" class="fa fa-caret-down"></i></th> -->
+                      </tr>
+                    </thead>
+                    <tbody infiniteScroll class="tableBodyScroll">
+                      <tr *ngFor="let row of buildingBills;">
+                        <td class="w-25">{{row.vendor}}</td>
+                        <td class="w-10">{{row.building}}</td>
+                        <td class="w-10">{{row.refNo || '-'}}</td>
+                        <td class="w-10 text-center">
+                          <span *ngIf="!row.file">-</span>
+                          <a *ngIf="row.file" [href]="row.file" target="_blank">View</a>
+                        </td>
+                        <td class="w-10 text-right">{{row.amount | inr}}</td>
+                        <td class="w-10 text-center">{{row.date |date:'MMM dd, yyyy'}}</td>
+                        <!-- <td class="w-10 text-center">{{row.dueDate |date:'MMM dd, yyyy'}}</td> -->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </ngb-tab>
+            <ngb-tab title="Building POs">
+              <ng-template ngbTabContent>
+                <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+                <div class="card o-hidden">
+                  <table class="tableBodyScroll table table-stripe table-hover table-sm">
+                    <thead>
+                      <tr class="bg-primary text-white">
+                        <th class="text-center w-25" (click)="sortBy('vendor')">Vendor Name <i *ngIf="sort.vendor?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendor?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('building')">Building <i *ngIf="sort.building?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.building?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('refNo')">BillNo <i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center">Bill</th>
+                        <th class="w-10 text-right" (click)="sortBy('amount')">Amount <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center" (click)="sortBy('date')">Bill Date <i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+                        <!-- <th class="w-10 text-center" (click)="sortBy('dueDate')">Due Date <i *ngIf="sort.dueDate?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.dueDate?.desc" class="fa fa-caret-down"></i></th> -->
+                      </tr>
+                    </thead>
+                    <tbody infiniteScroll class="tableBodyScroll">
+                      <tr *ngFor="let row of opexPos;">
+                        <td class="w-25">{{row.vendor}}</td>
+                        <td class="w-10">{{row.building}}</td>
+                        <td class="w-10">{{row.refNo || '-'}}</td>
+                        <td class="w-10 text-center">
+                          <span *ngIf="!row.file">-</span>
+                          <a *ngIf="row.file" [href]="row.file" target="_blank">View</a>
+                        </td>
+                        <td class="w-10 text-right">{{row.amount | inr}}</td>
+                        <td class="w-10 text-center">{{row.date |date:'MMM dd, yyyy'}}</td>
+                        <!-- <td class="w-10 text-center">{{row.dueDate |date:'MMM dd, yyyy'}}</td> -->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </ngb-tab>
+            <ngb-tab title="HO Bills">
+              <ng-template ngbTabContent>
+                <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+                <div class="card o-hidden">
+                  <table class="tableBodyScroll table table-stripe table-hover table-sm">
+                    <thead>
+                      <tr class="bg-primary text-white">
+                        <th class="text-center w-25" (click)="sortBy('vendor')">Vendor Name <i *ngIf="sort.vendor?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.vendor?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('building')">Building <i *ngIf="sort.building?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.building?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10" (click)="sortBy('refNo')">BillNo <i *ngIf="sort.refNo?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.refNo?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center">Bill</th>
+                        <th class="w-10 text-right" (click)="sortBy('amount')">Amount <i *ngIf="sort.amount?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.amount?.desc" class="fa fa-caret-down"></i></th>
+                        <th class="w-10 text-center" (click)="sortBy('date')">Bill Date <i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+                        <!-- <th class="w-10 text-center" (click)="sortBy('dueDate')">Due Date <i *ngIf="sort.dueDate?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.dueDate?.desc" class="fa fa-caret-down"></i></th> -->
+                      </tr>
+                    </thead>
+                    <tbody infiniteScroll class="tableBodyScroll">
+                      <tr *ngFor="let row of hoBills;">
+                        <td class="w-25">{{row.vendor}}</td>
+                        <td class="w-10">HeadOffice</td>
+                        <td class="w-10">{{row.refNo || '-'}}</td>
+                        <td class="w-10 text-center">
+                          <span *ngIf="!row.file">-</span>
+                          <a *ngIf="row.file" [href]="row.file" target="_blank">View</a>
+                        </td>
+                        <td class="w-10 text-right">{{row.amount | inr}}</td>
+                        <td class="w-10 text-center">{{row.date |date:'MMM dd, yyyy'}}</td>
+                        <!-- <td class="w-10 text-center">{{row.dueDate |date:'MMM dd, yyyy'}}</td> -->
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </ng-template>
+            </ngb-tab>
+          </ngb-tabset>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,297 @@
+<div class="">
+  <div class="breadcrumb row">
+    <h1 class="d-ib col-md-2 float-left">Invoices({{invoices.length}})
+      <span >
+        <button class="btn btn-icon btn-light" ngbTooltip="CSV Download" (click)="downloadFile()">
+          <i class="i-Download"></i>
+        </button>
+      </span>      
+      <help-notes [context]="'Booking:OfficeBookingStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="float-right  ml-10"></help-notes>
+      <help-notes [context]="'Booking:OfficeBookingStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="float-right  ml-10"></help-notes>
+    </h1>
+    <div class="d-ib col-md-8 float-left">
+      <input type="text" placeholder="Search by client name, phone, email, reference number, location, city" [formControl]="searchControl" class="form-control form-control-rounde w-40 float-left">
+      <input class="form-control pull-left w-20 ml-10" placeholder="Date Range : Start Date - End Date" name="dp" id="daterangepicker">
+      <!-- <button class="btn btn-info btn-icon float-right"><i class="i-Filter-2"></i></button> -->
+      <!-- <button class="btn btn-outline-primary btn-icon float-right" ngbTooltip="Quick Filters" *ngIf="!moreFilters" (click)="moreFilters=true;loadBuildingBookings()"><i class="fa fa-caret-square-o-down"></i></button>
+      <button class="btn btn-outline-primary btn-icon float-right" ngbTooltip="Hide Filters" *ngIf="moreFilters" (click)="moreFilters=false;"><i class="fa fa-caret-square-o-up"></i></button> -->
+    </div>
+    <!-- <div class="d-ib col-md-4 float-left">
+      <ng-select class="w-90" [items]="['New','Booked','Active','Exiting','Exited','TDSHolded','Settled','Cancelled']" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Select Statuses" [(ngModel)]="filter.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    </div> -->
+    <div class="clear"></div>
+  </div>
+
+  <!-- more filters -->
+  <!-- <div class="row" *ngIf="moreFilters">
+    <div class="col-md-3">
+      <label class="fs-10 mb-0">Exclude</label>
+      <ng-select [items]="['New','Booked','Active','Exiting','Exited','TDSHolded','Settled','Cancelled']" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Exclude Statuses" [(ngModel)]="filter.excludeStatuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    </div>
+    <div class="col-md-3">
+      <label class="fs-10 mb-0">Product Type</label>
+      <ng-select [items]="['FixedDesk', 'FlexiDesk', 'PrivateOffice', 'EnterpriseOffice']" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" placeholder="Product Type" [(ngModel)]="filter.deskType" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    </div>
+    <div class="col-md-9 pt-2">
+      <span class="badge fs-12 mr-2">Total: <span class="m-0 text-primary">{{totalBuildingWiseBookings}}</span></span>
+      <span class="badge fs-12 mr-2 cursor" *ngFor="let building of buildingBookings;" [ngClass]="{'badge-outline-primary':selectedBuilding?.id!=building?.id,'badge-primary':selectedBuilding?.id==building?.id}" (click)="selectBuilding(building)">{{building?.name}} ({{building?.count}})</span>
+    </div>
+  </div> -->
+  <!-- more filters -->
+  
+  <div class="separator-breadcrumb border-top mb-3"></div>
+  <div class="clear"></div>
+
+    <div style="margin-top: 10px">
+      <!-- <div class="float-right" *ngIf="!user.clientId">
+        <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="openPaymentsList()">
+          <i class="fa fa-list"></i> Payments List
+        </button>
+        <span *ngIf="!(booking.status=='Cancelled'||booking.status=='Settled')">
+          <span *checkAccess="'bookings:addPayment'">
+            <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="openPaymentModal()">
+              <i class="fa fa-dollar"></i> Add Payment
+            </button>
+          </span>
+          <span *checkAccess="'bookings:raiseInvoice'">
+            <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="openInvoiceModal()">
+              <i class="fa fa-plus"></i> Add Invoice
+            </button>
+          </span>
+          <span *checkAccess="'bookings:raiseInvoice'">
+            <button disabled="{{true}}" class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="raiseInvoices()">
+              <i class="fa fa-flash"></i> Raise Invoices
+            </button>
+          </span>
+          <span *checkAccess="'bookings:raiseInvoice'">
+            <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="raiseNextMonthInvoice()">
+              <i class="fa fa-flash"></i> Raise Next Month Invoices
+            </button>
+          </span>
+          <span *checkAccess="'bookings:raiseInvoice'">
+            <button class="btn btn-outline-primary btn-sm m-1 ml-10 btn-ico pull-right" (click)="updateBookingsLedger()">
+              <i class="fa fa-refresh"></i> Update Ledger
+            </button>
+          </span>
+        </span>
+      </div> -->
+      <div class="float-left">
+        <div class="pull-left mr-10"> 
+        <!-- btn btn-primary rounded-pill btn-sm m-1 ml-10" disabled -->
+            <strong>Deposit : </strong> {{deposit|inr}} <i *ngIf="liabilityPaid" class="fa fa-check fa-2x bg-success"></i>
+        </div>
+
+        <div class="pull-left mr-10"> <strong>Invoiced : </strong> {{invoiceAmount|inr}}</div>
+       
+        <!-- <div class="pull-left mr-10">
+          <button class="btn btn-primary rounded-pill btn-sm m-1 ml-10" disabled> 
+             <strong>Total Paid : </strong> {{paidAmount|inr}}
+          </button>
+        </div> -->
+
+        <div class="pull-left mr-10"> <strong>Paid : </strong> {{paidAmount|inr}}</div>
+        <div class="pull-left mr-10" *ngIf="extraAmount<=0"> <strong>Due : </strong> {{dueAmount|inr}}</div>
+        <div class="pull-left mr-10" *ngIf="liabilityClearedAmount<=0 && extraAmount>0"> <strong>Extra Paid : </strong> {{extraAmount|inr}}</div>
+        <div class="pull-left mr-10" *ngIf="toRefund>0"> <strong>To Refund : </strong> {{toRefund|inr}}</div>
+        <div class="pull-left mr-10 mt-1 badge badge-success" *ngIf="booking.exitRequest?.fcpStatus=='Refunded'">Refunded ({{booking.exitRequest?.refund | inr}})</div>
+      </div>
+      <div class="clear"></div>
+    </div>
+    <!-- infiniteScroll (onScroll)="loadMoreInvoices()"  -->
+    <div class="list-horizontal tableBodyScroll" style="overflow:auto;height: calc(100vh - 250px);padding-top: 10px;">
+      <loading [loading]="loading"></loading>
+      <div *ngFor="let item of invoices;let i=index" class="list-item">
+        <div class="card mb-2 d-flex flex-row">
+          <div class="flex-grow-1 d-flex">
+            <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+              <div class="w-30 w-sm-100 d-b">
+                <div class="m-0 text-muted text-small text-center w-20 float-left">
+                  <div class="text-primary">{{item.date | date : 'MMM'}}</div>
+                  <span class="text-secondary">{{item.date | date : 'yyyy'}}</span>
+                </div>
+                <div class="w-80 float-right">
+                  <span  class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Booking"><a href="#/bookings/view/{{item.booking.id}}" target="_blank">{{item.booking.client.company}}</a></span>
+                  <div class="item-titl">{{item.name}}</div>
+                  <span *ngIf="item.pdf?.file" class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf?.file" target="_blank">{{item.refNo}}</a></span>
+                  <span *ngIf="!item.pdf?.file" class="m-0 text-primary font-weight-bold">{{item.refNo}}</span>
+                </div>
+              </div>
+              <div class="m-0 text-muted text-small w-15 w-sm-100  d-md-none d-block">
+                <div class="d-b text-primary mb-1">
+                  <span class="d-ib text-secondary w-50 text-right">Invoice Date : </span>
+                  <span class="d-ib w-50 text-right">{{item.date | date : 'MMM dd, yyyy'}}</span>
+                </div>
+                <div class="d-b text-primary mb-1">
+                  <span class="d-ib text-secondary w-50 text-right">Due Date : </span>
+                  <span class="d-ib w-50 text-right">{{item.dueDate | date : 'MMM dd, yyyy'}}</span>
+                </div>
+                <div class="d-b text-primary mb-1">
+                  <span class="d-ib text-secondary w-50 text-right">Charge : </span>
+                  <span class="d-ib w-50 text-right">{{item.taxableAmount | inr}}</span>
+                </div>
+                <div class="d-b text-primary mb-1">
+                  <span class="d-ib text-secondary w-50 text-right">GST : </span>
+                  <span class="d-ib w-50 text-right">{{item.gst | inr}}</span>
+                </div>
+                <div class="d-b text-primary mb-1">
+                  <span class="d-ib text-secondary w-50 text-right">TDS : </span>
+                  <span class="d-ib w-50 text-right">{{item.tds | inr}}</span>
+                </div>
+                <div class="d-b text-primary mb-1">
+                  <span class="d-ib text-secondary w-50 text-right">Total : </span>
+                  <span class="d-ib w-50 text-right">{{item.amount | inr}}</span>
+                </div>
+                <div class="d-b text-primary mb-1">
+                  <span class="d-ib text-secondary w-50 text-right">Paid : </span>
+                  <span class="d-ib w-50 text-right">{{item.paid | inr}}</span>
+                </div>
+                <div class="d-b text-primary mb-1" *ngIf="item.due > 0">
+                  <span class="d-ib text-secondary w-50 text-right">Due : </span>
+                  <span class="d-ib w-50 text-right">{{item.due | inr}}</span>
+                </div>
+                <div class="d-ib text-primary mb-1 w-50 text-right">
+                  <span *ngIf="item.pdf?.file" class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf?.file" target="_blank">Invoice</a></span>
+                </div>
+                <div class="d-ib text-primary mb-1 w-50 ">
+                  <div class="float-right badge badge-success" *ngIf="item.status=='Paid'">PAID</div>
+                  <div class="float-right badge badge-warning" *ngIf="item.status=='Cancelled'">CANCELLED</div>
+                  <div class="float-right badge badge-info" *ngIf="item.status=='Pending'">PENDING</div>
+                  <div class="float-right badge badge-warning" *ngIf="item.status=='Due'">DUE</div>
+                  <div class="float-right badge badge-success" *ngIf="item.status=='Cleared'">CLEARED</div>
+                  <div class="clear"></div>
+                </div>
+              </div>
+              <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                <div class="d-b text-primary">
+                  <span class="text-secondary w-10 pull-left">I </span>
+                  <span class="d-b text-right pull-left pr-3"> : {{item.date | date : 'MMM dd, yyyy'}}</span>
+                </div>
+                <div class="clear"></div>
+                <div class="d-b text-info">
+                  <span class="text-secondary w-10 pull-left">D </span>
+                  <span class="d-b text-right pull-left pr-3"> : {{item.dueDate | date : 'MMM dd, yyyy'}}</span>
+                </div>
+                <div class="clear"></div>
+                <div class="d-b text-info">
+                  <span class="text-secondary w-10 pull-left">B </span>
+                  <span class="d-b text-right pull-left pr-3"> : {{item.booking.office.building.name}}, {{item.booking.office.name}}</span>
+                </div>
+              </div>
+              <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                <div class="text-primary"><span class="text-secondary d-ib w-30">Charge </span> : {{item.taxableAmount | inr }}</div>
+                <span class="text-info"><span class="text-secondary d-ib w-30">GST </span> : {{item.gst | inr}}</span>
+                <div class="text-primary"><span class="text-secondary d-ib w-30">TDS </span> : {{item.tds | inr }}</div>
+              </div>
+              <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                <div class="text-info"><span class="text-secondary d-ib w-30">Total </span> : {{item.amount | inr}}</div>
+                <div class="text-info"><span class="text-secondary d-ib w-30">Verified </span> : {{(item.booking.sendInvoice) > 0?'&#9989;':'&#10060;'}}</div>
+                <div class="text-info"><span class="text-secondary d-ib w-30">Sent </span> : {{(item.isSent) > 0?'&#9989;':'&#10060;'}}</div>
+              </div>
+              <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                <div class="text-primary"><span class="text-secondary d-ib w-30">Paid </span> : {{item.paid | inr }}</div>
+                <span class="text-info"><span class="text-secondary d-ib w-30">Due </span> : <span>{{item.due | inr}}</span></span>
+              </div>
+              <div class="w-15 w-sm-100 d-none d-md-block">
+                <div class="m-0 text-black f-b text-small w-30 item-actions float-left">
+                  <div class="badge badge-success" *ngIf="item.status=='Paid'">PAID</div>
+                  <div class="badge badge-warning" *ngIf="item.status=='Cancelled'">CANCELLED</div>
+                  <div class="badge badge-info" *ngIf="item.status=='Pending'">PENDING</div>
+                  <div class="badge badge-warning" *ngIf="item.status=='Due'">DUE</div>
+                  <div class="badge badge-success" *ngIf="item.status=='Cleared'">CLEARED</div>
+                  <div class="badge badge-danger" *ngIf="item.isCancelled==1">Wrong</div>
+                </div>
+                <div class="m-0 text-black f-b text-small w-60 float-right item-actions">
+                  <!-- *checkAccess="'bookings:editInvoices'" -->
+                  <span >
+                    <button class="btn btn-icon btn-info" ngbTooltip="Edit Invoice" (click)="editInvoice(item)">
+                      <i class="i-Pen-5 text-bold"></i>
+                    </button>
+                  </span>
+                  <!-- *checkAccess="'bookings:cancelInvoice'" -->
+                  <span >
+                    <button class="btn btn-icon btn-danger btn-sm" ngbTooltip="Cancel Invoice" (click)="cancelInvoice(item)" *ngIf="isCancellable(item) && !(item.isLiability&&booking.status=='TDSHolded')">
+                      <i class="i-Close-Window text-bold"></i>
+                    </button>
+                  </span>
+                  <!-- *checkAccess="'bookings:refundLiability'" -->
+                  <span >
+                    <button class="btn btn-icon btn-success btn-sm" ngbTooltip="Refund Liability" (click)="refundLiability(item)" *ngIf="item.isLiability && item.isLiabilityCleared==0&&booking.status=='TDSHolded'">
+                      <i class="i-Dollar-Sign text-bold"></i>
+                    </button>
+                  </span>
+                  <!-- *checkAccess="'bookings:sendInvoiceNotification'" -->
+                  <span >
+                    <button class="btn btn-icon btn-primary" ngbTooltip="Send Invoice Mail" (click)="sendInvoice(item)">
+                      <i class="i-Mail-Send text-bold"></i>
+                    </button>
+                  </span>
+                  <span >
+                    <button class="btn btn-icon btn-success" ngbTooltip="Invoice is Correct" (click)="isInvoiceCorrect(item)">
+                      <i class="i-Flash text-bold"></i>
+                    </button>
+                  </span>
+                  <!-- <span >
+                    <button class="btn btn-icon btn-warning" ngbTooltip="Invoice Mail Sent Successfully" (click)="isInvoiceSent(item)">
+                      <i class="i-Next-Music text-bold"></i>
+                    </button>
+                  </span> -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <ng-template #invoiceModal let-modal>
+      <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+      <div class="modal-header">
+        <h4 class="modal-title" id="modal-basic-title">{{invoice.id ? 'Edit Invoice' : 'New Invoice'}}</h4>
+        <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="invoiceForm">
+          <div class="row">
+            <div class="col-md-8 form-group mb-1">
+              <label for="firstName">Invoice Service</label>
+              <ng-select [items]="invoiceServices" [hideSelected]="true" [bindLabel]="'name'" bindValue="id" placeholder="Select Invoice Service" [(ngModel)]="invoice.invoiceServiceId" formControlName="type" name="type"> </ng-select>
+            </div>
+            <div class="col-md-4 form-group mb-1 pt-4">
+              <label class="checkbox checkbox-success">
+                <input type="checkbox" [(ngModel)]="invoice.sendNotification" [ngModelOptions]="{standalone: true}">
+                <span>Send Notification</span>
+                <span class="checkmark"></span>
+              </label>
+            </div>
+            <div class="col-md-4 form-group mb-1">
+              <label for="firstName">Amount</label>
+              <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter taxable amount" [(ngModel)]="invoice.taxableAmount">
+            </div>
+            <div class="col-md-4 form-group mb-1">
+              <label for="roles">Invoice Date</label>
+              <input placeholder="Select invoice date " class="form-control" name="date" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="invoice.date" formControlName="date" (dateSelect)="dp.close()" (focus)="dp.toggle()" />
+            </div>
+            <div class="col-md-4 form-group mb-1">
+              <label for="roles">Invoice Due Date</label>
+              <input placeholder="Select invoice due date " class="form-control" name="dueDate" ngbDatepicker #ddp="ngbDatepicker" (dateSelect)="ddp.close()" [(ngModel)]="invoice.dueDate" formControlName="dueDate" (focus)="ddp.toggle()" />
+            </div>
+            <div class="col-md-12 form-group mb-1">
+              <label for="firstName">Description</label>
+              <textarea class="form-control" id="description" formControlName="description" placeholder="Enter Invoice Description" [(ngModel)]="invoice.items[0].item"></textarea>
+            </div>
+            <div class="col-md-12 form-group mb-1">
+              <label for="firstName">Remarks</label>
+              <textarea class="form-control" id="remarks" formControlName="remarks" placeholder="Enter Invoice Remarks" [(ngModel)]="invoice.remarks"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+        <button class="btn btn-info btn-sm ladda-button btn-ico" [ladda]="loading" [disabled]="loading||invoiceForm.invalid" (click)="saveInvoice()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+      </div>
+    </ng-template>    

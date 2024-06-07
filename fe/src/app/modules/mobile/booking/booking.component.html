@@ -1,0 +1,540 @@
+<div class="breadcrumb">
+  <h1 class="text-center">Booking View</h1>
+</div>
+<div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+<div class="card user-profile o-hidden mb-1 d-b">
+  <div class="float-left pt-1">
+    <p class="m-0 pl-3 text-18">{{booking.client.company || booking.client.name}}</p>
+    <p class="text-black f-b m-0 pl-3 text-14" style="margin-top: -5px !important">{{booking.refNo}}</p>
+  </div>
+  <div class="clear d-block d-lg-none"></div>
+  <div class="card-body pt-1">
+    <loading [loading]="loading"></loading>
+    <ngb-tabset class="nav-center mini nav-no-bg" #tabset="ngbTabset">
+      <ngb-tab title="Booking Info" id="info">
+        <ng-template ngbTabContent>
+          <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+          <h4>Booking Information</h4>
+          <div class="row">
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Booked On</p>
+              <span class="">{{booking.reserved | date :'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Start Date</p>
+              <span class="">{{booking.started | date :'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.ended">
+              <p class="text-black f-b mb-0">Exit Date</p>
+              <span class="">{{booking.ended | date :'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-1 col-6 mb-2">
+              <p class="text-black f-b mb-0">Status</p>
+              <span class="badge" [ngClass]="{'badge-dark':booking.status=='Reserved','badge-info':booking.status=='Booked','badge-success':booking.status=='Active','badge-warning':booking.status=='Cancelled','badge-secondary':booking.status=='Exiting','badge-light':booking.status=='Exited', 'badge-light':booking.status=='Settled'}">{{booking.status}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Type</p>
+              <span class="">{{booking.contract.type}}</span>
+            </div>
+            <div class="col-md-3 col-6 mb-2">
+              <p class="text-black f-b mb-0">Office :</p>
+              <span class="text-bold">{{booking.offices}}</span>
+            </div>
+            <div class="col-md-6 col-12 mb-2">
+              <p class="text-black f-b mb-0">Address</p>
+              <span class="">{{booking.location}}</span>
+            </div>
+            <div class="mb-2 col-12" [ngClass]="booking.contract?.signedAgreement?'col-md-8':'col-md-4' ">
+              <!-- <p class="text-black f-b mb-0">Cabins & Desks</p> -->
+              <div><span class="text-black f-b">Cabins : </span> {{booking.cabinNames}}</div>
+              <!--  <div *ngIf="booking.contract.type!='HotDesk'"> <span class="text-black f-b">Desks : </span> {{booking.deskNames | ellipses:200}}
+                <p *ngIf="booking.deskNames?.length>150" class="pull-right"> few more ... </p>
+              </div> -->
+            </div>
+            <div class="col-md-1 col-6 mb-2">
+              <p class="text-black f-b mb-0">Desks</p>
+              <span class="">{{booking.desks}}</span>
+            </div>
+            <div class="col-md-2 col-12 mb-2" *ngIf="!booking.contract.agreementId && !booking.contract?.signedAgreement">
+              <p class="text-black f-b mb-0">Generate Agreement</p>
+              <span class="cursor badge badge-info" (click)="generateAgreement()" ngbTooltip="Click to generate agreement">Generate</span>
+            </div>
+            <div class="col-md-2 col-12 mb-2" *ngIf="booking.contract.agreementId">
+              <p class="text-black f-b mb-0">{{booking.contract?.signedAgreement ? 'Signed' : '' }} Agrement PDF</p>
+              <span class="" *ngIf="booking.contract?.signedAgreement"><a class="badge badge-success" href="{{booking.contract.signedAgreement?.file}}" target="_blank" ngbTooltip="Click to view signed agreement">View Signed Agreement</a></span>
+              <span class="" *ngIf="!booking.contract?.signedAgreement"><a class="badge badge-info" href="{{booking.contract.agreement?.file}}" target="_blank" ngbTooltip="Click to view unsigned agreement">View Agreement</a></span>
+            </div>
+          </div>
+          <hr class="mb-1">
+          <h4>Client Information</h4>
+          <div class="row ">
+            <div class="col-md-3 col-12 mb-2">
+              <p class="text-black f-b mb-0">Company : </p>
+              <span class="">{{booking.client.company}}</span>
+            </div>
+            <div class="col-md-3 col-12 mb-2">
+              <p class="text-black f-b mb-0">Name : </p>
+              <span class="">{{booking.client.name}}</span>
+            </div>
+            <div class="col-md-3 col-12 mb-2">
+              <p class="text-black f-b mb-0">Email : </p>
+              <span class="">{{booking.client.email}}</span>
+            </div>
+            <div class="col-md-2 col-12  mb-2">
+              <p class="text-black f-b mb-0">Phone : </p>
+              <span class="">{{booking.client.phone}}</span>
+            </div>
+            <div class="col-md-2 col-12 mb-2">
+              <p class="text-black f-b mb-0">Pan Number: </p>
+              <span class=""> {{booking.client.panNo || '-'}}
+                <a class="badge badge-info" href="{{booking.client.panCard.file}}" target="_blank" ngbTooltip="Click to view PAN" *ngIf="booking.client.panCard">View</a></span>
+            </div>
+            <div class="col-md-2 col-12 mb-2" *ngIf="booking.client.companyRegistration">
+              <p class="text-black f-b mb-0">Company Registration : </p>
+              <span class="">
+                <a class="badge badge-info" href="{{booking.client.companyRegistration.file}}" target="_blank" ngbTooltip="Click to view Company Registration Certificate">View</a></span>
+            </div>
+            <div class="col-md-3 col-12 mb-2">
+              <p class="text-black f-b mb-0">GST Number : </p>
+              <span class="">{{booking.client.gstNo || '-'}}
+                <a class="badge badge-info" href="{{booking.client.gstRegistration.file}}" target="_blank" ngbTooltip="Click to view GST Certificate" *ngIf="booking.client.gstRegistration">View</a></span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">State Code : </p>
+              <span class="">{{booking.client.stateCode || '-'}}</span>
+            </div>
+          </div>
+          <hr class="mb-1">
+          <h4>Contract Information -
+            <small class="badge badge-light fs-10" *ngIf="booking.contract.status=='Draft'">{{booking.contract.status}}</small>
+            <small class="badge badge-info fs-10" *ngIf="booking.contract.status=='Approved'">{{booking.contract.status}}</small>
+            <small class="badge badge-success fs-10" *ngIf="booking.contract.status=='Confirmed'">{{booking.contract.status}}</small>
+          </h4>
+          <div class="row">
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Security Deposit</p>
+              <span class="">{{booking.contract.security | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Rent per Month</p>
+              <span class="">{{booking.contract.rent | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.deskPrice">
+              <p class="text-black f-b mb-0">Rent per Desk</p>
+              <span class="">{{booking.contract.deskPrice | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Booking Token Amount</p>
+              <span class="">{{booking.contract.token | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="contract.kind=='NewBooking'">
+              <p class="text-black f-b mb-0">MoveIn Date</p>
+              <span class="">{{booking.started | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="contract.kind!='NewBooking'">
+              <p class="text-black f-b mb-0">Effective Date</p>
+              <span class="">{{booking.contract.effectiveDate | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Date</p>
+              <span class="">{{booking.contract.date | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Period</p>
+              <span class="">{{booking.contract.contractPeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Period</p>
+              <span class="">{{booking.contract.lockIn}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty Type</p>
+              <span class="">{{booking.contract.lockInPenaltyType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty</p>
+              <span class="" *ngIf="booking.contract.lockInPenaltyType=='Fixed'">{{booking.contract.lockInPenalty | inr}}</span>
+              <span class="" *ngIf="booking.contract.lockInPenaltyType=='MonthRent'">{{booking.contract.lockInPenalty}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Period</p>
+              <span class="">{{booking.contract.noticePeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Type</p>
+              <span class="">{{booking.contract.noticePeriodViolationType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Charge</p>
+              <span class="" *ngIf="booking.contract.noticePeriodViolationType=='Fixed'">{{booking.contract.noticePeriodViolation | inr}} </span>
+              <span class="" *ngIf="booking.contract.noticePeriodViolationType=='MonthRent'">{{booking.contract.noticePeriodViolation}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.deskType=='FixedDesk'">
+              <p class="text-black f-b mb-0">Monthly Free Credits</p>
+              <span class="">{{booking.contract.freeCredits || 10}} credits per month</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.sqFt">
+              <p class="text-black f-b mb-0">Total SqFt</p>
+              <span class="">{{booking.contract.sqFt}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2" *ngIf="booking.contract.sqFtPrice">
+              <p class="text-black f-b mb-0">SqFt Price</p>
+              <span class="">{{booking.contract.sqFtPrice | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+            </div>
+          </div>
+          <hr class="mb-1">
+          <h4 *ngIf="booking.futureContract">Upcoming '{{booking.futureContract.kind}}' Contract Information -
+            <small class="badge badge-light fs-10" *ngIf="booking.futureContract.status=='Draft'">{{booking.futureContract.status}}</small>
+            <small class="badge badge-info fs-10" *ngIf="booking.futureContract.status=='Approved'">{{booking.futureContract.status}}</small>
+            <small class="badge badge-success fs-10" *ngIf="booking.futureContract.status=='Confirmed'">{{booking.contract.status}}</small>
+          </h4>
+          <div class="row" *ngIf="booking.futureContract">
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Security Deposit</p>
+              <span class="">{{booking.futureContract.security | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Rent per Month</p>
+              <span class="">{{booking.futureContract.rent | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Booking Token Amount</p>
+              <span class="">{{booking.futureContract.token | inr}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Date</p>
+              <span class="">{{booking.futureContract.date | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Effective Date</p>
+              <span class="">{{booking.futureContract.effectiveDate | date : 'MMM dd, yyyy'}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Contract Period</p>
+              <span class="">{{booking.futureContract.contractPeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Period</p>
+              <span class="">{{booking.futureContract.lockIn}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty Type</p>
+              <span class="">{{booking.futureContract.lockInPenaltyType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">LockIn Penalty</p>
+              <span class="" *ngIf="booking.futureContract.lockInPenaltyType=='Fixed'">{{booking.futureContract.lockInPenalty | inr}}</span>
+              <span class="" *ngIf="booking.futureContract.lockInPenaltyType=='MonthRent'">{{booking.futureContract.lockInPenalty}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Period</p>
+              <span class="">{{booking.futureContract.noticePeriod}} months</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Type</p>
+              <span class="">{{booking.futureContract.noticePeriodViolationType}}</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Notice Violation Charge</p>
+              <span class="" *ngIf="booking.futureContract.noticePeriodViolationType=='Fixed'">{{booking.futureContract.noticePeriodViolation | inr}} </span>
+              <span class="" *ngIf="booking.futureContract.noticePeriodViolationType=='MonthRent'">{{booking.futureContract.noticePeriodViolation}} month(s) rent</span>
+            </div>
+            <div class="col-md-2 col-6 mb-2">
+              <p class="text-black f-b mb-0">Monthly Free Credits</p>
+              <span class="">{{booking.futureContract.freeCredits || 10}} credits per month</span>
+            </div>
+            <div class="col-md-4 col-6 mb-2">
+            </div>
+            <div class="col-md-6 col-6 mb-2">
+              <button class="btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" *ngIf="booking.futureContract.status=='Draft'||booking.futureContract.status=='Approved'" (click)="editContract(booking.futureContract)">
+                <i class="fa fa-pencil"></i> Edit Contract
+              </button>
+              <button class="btn btn-outline-warning btn-sm ml-10 btn-ico pull-right" *ngIf="booking.futureContract.status=='Draft'||booking.futureContract.status=='Approved'" (click)="cancelContract(booking.futureContract)">
+                <i class="fa fa-times"></i> Cancel Contract
+              </button>
+              <span *checkAccess="'bookings:cancelConfirmedFutureContract'">
+                <button class="btn btn-danger btn-sm ml-10 btn-ico pull-right" *ngIf="booking.futureContract.status=='Confirmed'" (click)="cancelContract(booking.futureContract)">
+                  <i class="fa fa-times"></i> Cancel Contract
+                </button>
+              </span>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Invoices" id="invoices">
+        <ng-template ngbTabContent>
+          <div style="margin-top: -30px" class="border-top">
+            <div class="float-left">
+              <div class="pull-left mr-10"> <strong>Deposit : </strong> {{deposit|inr}} <i *ngIf="liabilityPaid" class="fa fa-check fa-2x bg-success"></i></div>
+              <div class="pull-left mr-10"> <strong>Invoiced : </strong> {{invoiceAmount|inr}}</div>
+              <div class="pull-left mr-10"> <strong> Paid : </strong> {{paidAmount|inr}}</div>
+              <div class="pull-left mr-10" *ngIf="extraAmount<=0"> <strong>Due : </strong> {{dueAmount|inr}}</div>
+              <div class="pull-left mr-10" *ngIf="liabilityClearedAmount<=0 && extraAmount>0"> <strong>Extra Paid : </strong> {{extraAmount|inr}}</div>
+              <div class="pull-left mr-10" *ngIf="toRefund>0"> <strong>To Refund : </strong> {{toRefund|inr}}</div>
+              <div class="pull-left mr-10 mt-1 badge badge-success" *ngIf="booking.exitRequest?.fcpStatus=='Refunded'">Refunded ({{booking.exitRequest?.refund | inr}})</div>
+            </div>
+            <div class="clear"></div>
+          </div>
+          <!-- infiniteScroll (onScroll)="loadMoreInvoices()"  -->
+          <div class="list-horizontal tableBodyScroll" style="overflow:auto;height: calc(100vh - 250px);padding-top: 10px;">
+            <loading [loading]="loading"></loading>
+            <ul class="timeline  d-block d-md-none">
+              <li class="timeline-line"></li>
+              <li class="timeline-item" *ngFor="let month of invoiceGroups;">
+                <div class="timeline-group text-center">
+                  <button class="btn btn-icon-text btn-primary btn-sm">
+                    <i class="i-Calendar-4"></i> &nbsp; {{month.name}}</button>
+                </div>
+                <div class="timeline-card card mb-2" *ngFor="let item of month.invoices;">
+                  <div class="card-body">
+                    <div class="mb-1">
+                      <strong class="fs-16 d-b">{{item.name}}</strong>
+                      <div class="clear"></div>
+                      <p class="mb-0 text-primary float-left">{{item.date | date : 'MMM dd'}}</p>
+                      <p class="mb-0 text-danger float-right">Due by : {{item.dueDate | date : 'MMM dd, yy'}}</p>
+                      <div class="clear"></div>
+                    </div>
+                    <p class="mb-1 text-right">Total Charge : <strong>{{item.amount | inr}}</strong></p>
+                    <div>
+                      <p class="mb-0 text-danger float-left" *ngIf="item.due>0">Due : {{item.due |inr}}</p>
+                      <p class="mb-0 text-primary float-right">Paid : {{item.paid | inr}}</p>
+                      <div class="clear"></div>
+                    </div>
+                    <div class="mb-1 text-right">
+                      <span *ngIf="item.pdf?.file" class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf?.file" target="_blank">{{item.refNo}}</a></span>
+                      <span *ngIf="!item.pdf?.file" class="m-0 text-primary font-weight-bold">{{item.refNo}}</span>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div *ngFor="let item of invoices;let i=index" class="list-item d-none d-md-block">
+              <div class="card mb-2 d-flex flex-row ">
+                <div class="flex-grow-1 d-flex">
+                  <div class="card-body align-self-center d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+                    <div class="w-30 w-sm-100 d-b">
+                      <div class="m-0 text-muted text-small text-center w-20 float-left">
+                        <div class="text-primary">{{item.date | date : 'MMM'}}</div>
+                        <span class="text-secondary">{{item.date | date : 'yyyy'}}</span>
+                      </div>
+                      <div class="w-80 float-right">
+                        <div class="item-titl">{{item.name}}</div>
+                        <span *ngIf="item.pdf?.file" class="m-0 text-primary font-weight-bold" ngbTooltip="Click to view Invoice PDF"><a [href]="item.pdf?.file" target="_blank">{{item.refNo}}</a></span>
+                        <span *ngIf="!item.pdf?.file" class="m-0 text-primary font-weight-bold">{{item.refNo}}</span>
+                      </div>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100">
+                      <div class="d-b text-primary">
+                        <span class="text-secondary w-10 pull-left">I </span>
+                        <span class="d-b text-right pull-left pr-3"> : {{item.date | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                      <div class="clear"></div>
+                      <div class="d-b text-info">
+                        <span class="text-secondary w-10 pull-left">D </span>
+                        <span class="d-b text-right pull-left pr-3"> : {{item.dueDate | date : 'MMM dd, yyyy'}}</span>
+                      </div>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                      <div class="text-primary"><span class="text-secondary d-ib w-30">Charge </span> : {{item.taxableAmount | inr }}</div>
+                      <span class="text-info"><span class="text-secondary d-ib w-30">GST </span> : {{item.gst | inr}}</span>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                      <div class="text-primary"><span class="text-secondary d-ib w-30">TDS </span> : {{item.tds | inr }}</div>
+                      <span class="text-info"><span class="text-secondary d-ib w-30">Total </span> : {{item.amount | inr}}</span>
+                    </div>
+                    <div class="m-0 text-muted text-small w-15 w-sm-100 d-none d-md-block">
+                      <div class="text-primary"><span class="text-secondary d-ib w-30">Paid </span> : {{item.paid | inr }}</div>
+                      <span class="text-info"><span class="text-secondary d-ib w-30">Due </span> : <span>{{item.due | inr}}</span></span>
+                    </div>
+                    <div class="w-15 w-sm-100 d-none d-md-block">
+                      <div class="m-0 text-black f-b text-small w-30 item-actions float-left">
+                        <div class="badge badge-success" *ngIf="item.status=='Paid'">PAID</div>
+                        <div class="badge badge-warning" *ngIf="item.status=='Cancelled'">CANCELLED</div>
+                        <div class="badge badge-info" *ngIf="item.status=='Pending'">PENDING</div>
+                        <div class="badge badge-warning" *ngIf="item.status=='Due'">DUE</div>
+                        <div class="badge badge-success" *ngIf="item.status=='Cleared'">CLEARED</div>
+                      </div>
+                      <div class="m-0 text-black f-b text-small w-60 float-right item-actions">
+                        <button class="btn btn-icon btn-info" ngbTooltip="Pay Now" *ngIf="item.status=='Pending' || item.status=='Due'" (click)="openPaymentModal(item)">
+                          <i class="i-Dollar text-bold"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Payments" id="payments">
+        <ng-template ngbTabContent>
+          <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+          <ul class="timeline  d-block d-md-none" style="overflow:auto;height: calc(100vh - 250px);padding-top: 10px;">
+            <li class="timeline-line"></li>
+            <li class="timeline-item" *ngFor="let month of paymentGroups;">
+              <div class="timeline-group text-center">
+                <button class="btn btn-icon-text btn-primary  btn-sm">
+                  <i class="i-Calendar-4"></i> &nbsp; {{month.name}}</button>
+              </div>
+              <div class="timeline-card card mb-2" *ngFor="let item of month.payments;">
+                <div class="card-body">
+                  <div class="mb-1">
+                    <strong class="d-b">Paid by {{item.type}}</strong>
+                    <div class="clear"></div>
+                    <p class="mb-0 text-primary float-left">{{item.date | date : 'MMM dd'}}</p>
+                    <p class="mb-0 f-b text-info float-right">{{item.amount | inr}}</p>
+                    <div class="clear"></div>
+                  </div>
+                  <div class="mb-1 text-right">
+                    <span class="m-0 text-primary font-weight-bold">{{item.utr}}</span>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+          <div class="table-responsive d-none d-md-block">
+            <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="paymentsList.length">
+              <thead>
+                <tr>
+                  <th class="w-20">Type</th>
+                  <th class="w-20">Amount</th>
+                  <th class="w-20">UTR</th>
+                  <th class="w-20">Date</th>
+                </tr>
+              </thead>
+              <tbody style="overflow:auto;height: calc(100vh - 250px);">
+                <tr *ngFor="let item of paymentsList;">
+                  <td class="w-20">{{item.type}}</td>
+                  <td class="w-20">{{item.amount | inr}}</td>
+                  <td class="w-20">{{item.utr}}</td>
+                  <td class="w-20">{{item.date | date : 'MMM dd, yyyy'}}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-center f-b p-4" *ngIf="!paymentsList.length">No payments are done yet.</p>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+</div>
+<ng-template #employeeModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{payment.id ? 'Edit Employee' : 'New Employee'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="employeeForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Employee Name" [(ngModel)]="employee.name">
+        </div>
+        <!--  <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Department</label>
+          <ng-select [items]="departments" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Department" [(ngModel)]="employee.department" formControlName="department" name="department"> </ng-select>
+        </div> -->
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Email</label>
+          <input type="text" class="form-control" id="email" formControlName="email" placeholder="Enter Email" [(ngModel)]="employee.email">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="roles">Phone</label>
+          <input type="number" placeholder="Enter Phone number" class="form-control" name="phone" [(ngModel)]="employee.phone" formControlName="phone" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Contact Purposes</label>
+          <ng-select [items]="contactPurposes" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Contact Puposes" [(ngModel)]="employee.contactPurposes" formControlName="contactPurposes" name="contactPurposes"> </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1 pt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="employee.hasAccess" [ngModelOptions]="{standalone: true}">
+            <span>Has Account Access</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1" *ngIf="employee.hasAccess">
+          <label for="roles">Password</label>
+          <input type="password" placeholder="Enter Password for ERP" class="form-control" name="password" [(ngModel)]="employee.password" formControlName="password" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||employeeForm.invalid" (click)="saveEmployee()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #paymentModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Payment of {{paymentAmount | inr}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mt-4">
+      <div class="col-md-7 col-12">
+        <h5 class="text-center">Pay by Bank Transfer </h5>
+        <p class="text-muted f-b"> Login to your bank account and transfer the due amount to our account mentioned below using IMPS, NEFT or RTGS. </p>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">Account Holder Name </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{booking.company?.accountName}}</div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">Account Number </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{booking.company?.accountNumber}}</div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">IFSC Code </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{booking.company?.ifscCode}}</div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">Bank & Branch </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{booking.company?.bankName}}, {{booking.company?.branchName}}</div>
+        </div>
+        <div class="text-center" *ngIf="urnSubmitted">
+          <h4 class="text-success">URN Submitted Successfully .. !</h4>
+        </div>
+        <form [formGroup]="paymentForm" *ngIf="!urnSubmitted">
+          <div class="row">
+            <div class="col-12 col-md-6 form-group mb-1">
+              <label for="firstName">Amount</label>
+              <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter paid amount" [(ngModel)]="urn.amount">
+            </div>
+            <div class="col-12 col-md-6 form-group mb-1">
+              <label for="roles">Payment Date</label>
+              <input placeholder="Select payment date " class="form-control" name="date" ngbDatepicker #dp="ngbDatepicker" placement="top"  (dateSelect)="dp.close()" [(ngModel)]="urn.date" formControlName="date" (focus)="dp.toggle()" />
+            </div>
+            <div class="col-12 form-group mb-1">
+              <label for="roles">Payment Reference (UTR) Number</label>
+              <input placeholder="Enter UTR number" class="form-control" name="utr" [(ngModel)]="urn.urn" formControlName="utr" />
+            </div>
+            <div class="col-12 form-group mb-1">
+              <button class="btn btn-info m-3 btn-ico pull-right" [disabled]="!paymentForm.valid||booking.due<=0" (click)="saveUrnPayment()">
+                <i class="fa fa-check"></i> Submit URN Payment
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-5 col-12">
+        <h5 class="text-center">Pay Online by Credit / Debit Card </h5>
+        <p class="text-muted f-b">By paying online with Payment Gateway, PG charges of 2.75% of total amount is charged additionally.</p>
+        <button class="btn btn-info m-3 btn-ico pull-right" (click)="payNow()">
+          <i class="fa fa-check"></i> Pay {{booking.onlinePayment | inr}} Now
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

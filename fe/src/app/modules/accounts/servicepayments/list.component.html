@@ -1,0 +1,175 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">Provider Payments</h1>
+    <input type="text" placeholder="Search Provider Payment by provider name, service or office" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-1">
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openServicePaymentModal()">
+      <i class="fa fa-plus"></i> Add New Provider Payment
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/accounts/listServicePayments'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #servicePaymentModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{servicePayment.id ? 'Edit Provider Payment' : 'New Provider Payment'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Service</label>
+          <ng-select [items]="services" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select Payment Service" [(ngModel)]="servicePayment.serviceId" (ngModelChange)="listServiceProviders() " formControlName="serviceId">
+          </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Cities</label>
+          <ng-select [items]="cities" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchOffices()">
+          </ng-select>
+        </div>
+        <div class="col-md-5 form-group mb-1 pl-2 pr-2" *ngIf="selectedCity">
+          <label for="roles">Offices</label>
+          <ng-select [items]="offices" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Office" [(ngModel)]="servicePayment.office" formControlName="officeId">
+          </ng-select>
+        </div>
+      </div>
+      <div class="row" *ngIf="servicePayment.serviceId && servicePayment.office">
+        <div class="col-md-4 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Service Provider</label>
+          <ng-select [items]="serviceProviders" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Service Provider" [(ngModel)]="selectedServiceProvider" formControlName="serviceProviderId" (ngModelChange)="onServiceProviderSelected()">
+          </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Effective From</label>
+          <input class="form-control" placeholder="Select Effective From" [(ngModel)]="servicePayment.effectiveFrom" formControlName="effectiveFrom" name="dp" ngbDatepicker (dateSelect)="dp.close()" #dp="ngbDatepicker" (focus)="dp.toggle()">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 pl-2 pr-2">
+          <label for="roles">GST % </label>
+          <input type="number" class="form-control" placeholder="Enter GST%" [(ngModel)]="servicePayment.gst" formControlName="gst">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 pl-2 pr-2">
+          <label for="roles">TDS % </label>
+          <input type="number" class="form-control" placeholder="Enter TDS%" [(ngModel)]="servicePayment.tds" formControlName="tds">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="servicePayment.isAdvancePayment" [ngModelOptions]="{standalone: true}">
+            <span>Advance Payment</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Amount Type</label>
+          <ng-select [items]="['Fixed','Variable']" [closeOnSelect]="true" [hideSelected]="true" placeholder="Select Amount Type" [(ngModel)]="servicePayment.amountType" formControlName="amountType" (ngModelChange)="servicePayment.amount=0;servicePayment.minCharge=0;servicePayment.maxCharge=0">
+          </ng-select>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Amount </label>
+          <input type="number" class="form-control" placeholder="Enter Bill Amount" [(ngModel)]="servicePayment.amount" formControlName="amount" [attr.disabled]="servicePayment.amountType=='Variable'?true:null">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Min Amount</label>
+          <input type="number" name="minAmount" class="form-control" placeholder="Enter Min Amount" [(ngModel)]="servicePayment.minCharge" formControlName="minCharge" [attr.disabled]="servicePayment.amountType=='Fixed'?true:null">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Max Amount</label>
+          <input type="number" name="maxAmount" class="form-control" placeholder="Enter Max Amount" [(ngModel)]="servicePayment.maxCharge" formControlName="maxCharge" [attr.disabled]="servicePayment.amountType=='Fixed'?true:null">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="servicePayment.autoPay" [ngModelOptions]="{standalone: true}">
+            <span>Auto Pay</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Start Date</label>
+          <input class="form-control" placeholder="Month Date" [(ngModel)]="servicePayment.invoiceStartDay" formControlName="invoiceStartDay" type="number">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Date</label>
+          <input class="form-control" placeholder="Month Date" [(ngModel)]="servicePayment.invoiceDay" formControlName="invoiceDay" type="number">
+        </div>
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Due Date</label>
+          <input class="form-control" placeholder="Month Date" [(ngModel)]="servicePayment.invoiceDueDay" formControlName="invoiceDueDay" type="number">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Bill Frequency <small>(in months)</small></label>
+          <input type="number" name="invoiceFrequency" class="form-control" placeholder="Enter Bill Frequency" [(ngModel)]="servicePayment.invoiceFrequency" formControlName="invoiceFrequency">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 pl-2 pr-2">
+          <label for="roles">Remind Days</label>
+          <input type="number" name="remindBeforeDays" class="form-control" placeholder="Enter days to remind before" [(ngModel)]="servicePayment.remindBeforeDays" formControlName="remindBeforeDays">
+        </div>
+        <div class="col-md-1-5 form-group mb-1 pl-2 pr-2 pt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="servicePayment.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+      <strong class="border-bottom d-b mt-2 fs-14" *ngIf="selectedServiceProvider">Payment Method</strong>
+      <div class="row" *ngIf="selectedServiceProvider">
+        <div class="col-md-2 form-group mb-1 pl-2 pr-2">
+          <label class="d-b">Opted Method</label>
+          <strong>{{servicePayment.paymentMode}}</strong>
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-2 pr-2" *ngIf="servicePayment.paymentMode=='Online'">
+          <label>Online Portal URL</label>
+          <input type="text" name="portalUrl" class="form-control" placeholder="Enter Online Portal URL" [(ngModel)]="servicePayment.portalUrl" formControlName="portalUrl">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="servicePayment.paymentMode=='Online'">
+          <label>Online Portal Username</label>
+          <input type="text" name="portalUserName" class="form-control" placeholder="Enter Online Portal Username" [(ngModel)]="servicePayment.portalUserName" formControlName="portalUserName">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="servicePayment.paymentMode=='Online'">
+          <label>Online Portal Password</label>
+          <input type="text" name="portalPassword" class="form-control" placeholder="Enter Online Portal Password" [(ngModel)]="servicePayment.portalPassword" formControlName="portalPassword">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="servicePayment.paymentMode=='BankTransfer'">
+          <label>Bank Account Number</label>
+          <input type="number" name="bankAccountNumber" class="form-control" placeholder="Enter Bank Account Number" [(ngModel)]="servicePayment.bankAccountNumber" formControlName="bankAccountNumber">
+        </div>
+        <div class="col-md-3 form-group mb-1 pl-2 pr-2" *ngIf="servicePayment.paymentMode=='BankTransfer'">
+          <label>Bank IFSC Code</label>
+          <input type="text" name="bankIfscCode" class="form-control" placeholder="Enter Bank IFSC Code" [(ngModel)]="servicePayment.bankIfscCode" formControlName="bankIfscCode">
+        </div>
+        <div class="col-md-4 form-group mb-1 pl-2 pr-2" *ngIf="servicePayment.paymentMode=='BankTransfer'">
+          <label>Account Holder Name</label>
+          <input type="text" name="bankAccountName" class="form-control" placeholder="Enter Bank Name" [(ngModel)]="servicePayment.bankAccountName" formControlName="bankAccountName">
+        </div>
+      </div>
+      <strong class="border-bottom d-b mt-2 fs-14" *ngIf="selectedServiceProvider && selectedServiceProvider.hasContact">Contact Details</strong>
+      <div class="row" *ngIf="selectedServiceProvider && selectedServiceProvider.hasContact ">
+        <div class="col-md-4 form-group mb-4 pl-2 pr-2">
+          <label>Name</label>
+          <input type="text" name="contactName" class="form-control" placeholder="Enter Contact Name" [(ngModel)]="servicePayment.contactName" formControlName="contactName">
+        </div>
+        <div class="col-md-4 form-group mb-4 pl-2 pr-2">
+          <label>Email</label>
+          <input type="text" name="contactEmail" class="form-control" placeholder="Enter Contact Email" [(ngModel)]="servicePayment.contactEmail" formControlName="contactEmail">
+        </div>
+        <div class="col-md-4 form-group mb-4 pl-2 pr-2">
+          <label>Phone</label>
+          <input type="number" name="contactPhone" class="form-control" placeholder="Enter Contact Phone" [(ngModel)]="servicePayment.contactPhone" formControlName="contactPhone">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

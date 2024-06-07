@@ -1,0 +1,74 @@
+<div class="row">
+  <div class="col-md-11 col-12 m-auto">
+    <div class="breadcrumb">
+      <h1 class="pull-left" *ngIf="!data.bankAccount?.accountNumber">Request to Add Vendor Bank Account </h1>
+      <h1 class="pull-left" *ngIf="data.bankAccount?.accountNumber">Request to Verify Vendor Bank Account </h1>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="card  mb-1 d-b m-auto mt-4" *ngIf="!data">
+      <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+    </div>
+    <div class="card user-profile o-hidden mb-1 d-b" *ngIf="data">
+      <div class="card-body pt-1">
+        <loading [loading]="loading"></loading>
+        <h5 class="f-b">Vendor '{{data.vendor?.name}}' Information</h5>
+        <div class="row ">
+          <div class="col-md-3 col-6 mb-2">
+            <p class="text-black f-b mb-0">Contact Name : </p>
+            <span class="">{{data.vendor?.contact?.name}}</span>
+          </div>
+          <div class="col-md-3 col-6 mb-2">
+            <p class="text-black f-b mb-0">Email : </p>
+            <span class="">{{data.vendor?.contact?.email}}</span>
+          </div>
+          <div class="col-md-2 col-6 mb-2">
+            <p class="text-black f-b mb-0">Phone : </p>
+            <span class="">{{data.vendor?.contact?.phone}}</span>
+          </div>
+          <div class="col-md-4 col-6 mb-2">
+            <p class="text-black f-b mb-0">Address : </p>
+            <span class="">{{data.vendor?.address}}</span>
+          </div>
+        </div>
+        <div>
+          <h5 class="mt-2 f-b">Bank Account Details : </h5>
+          <form [formGroup]="form">
+            <div class="row">
+              <div class="col-md-3 form-group mb-1">
+                <label for="firstName">Benificiary Name</label>
+                <input type="text" class="form-control" id="benificiaryName" formControlName="benificiaryName" placeholder="Enter Benificiary Name" [(ngModel)]="data.bankAccount.benificiaryName">
+              </div>
+              <div class="col-md-2 form-group mb-1">
+                <label for="firstName">Account Number</label>
+                <input type="text" class="form-control" id="accountNumber" formControlName="accountNumber" placeholder="Enter Account Number" [(ngModel)]="data.bankAccount.accountNumber">
+              </div>
+              <div class="col-md-2 form-group mb-1">
+                <label for="firstName">IFSC Code</label>
+                <input type="text" class="form-control" id="ifscCode" formControlName="ifscCode" placeholder="Enter IFSC Code" [(ngModel)]="data.bankAccount.ifscCode">
+              </div>
+              <div class="col-md-3 form-group mb-1">
+                <label for="firstName">Bank Name</label>
+                <input type="text" class="form-control" id="bankName" formControlName="bankName" placeholder="Enter Bank Name" [(ngModel)]="data.bankAccount.bankName">
+              </div>
+              <div class="col-md-2 form-group mb-1">
+                <label for="firstName">Bank Branch</label>
+                <input type="text" class="form-control" id="bankBranch" formControlName="bankBranch" placeholder="Enter Bank BranchName" [(ngModel)]="data.bankAccount.bankBranch">
+              </div>
+              <div class="col-md-12 form-group mb-1 mt-4 pt-1" *ngIf="data.bankAccount.verified">
+                <strong class="text-success">Your Bank Account Details are verified .. !!</strong>
+              </div>
+              <div class="col-md-12 form-group mb-1 mt-4 pt-1" *ngIf="!otpSent && !data.bankAccount.verified">
+                <button class="btn btn-primary btn-sm ladda-button btn-ico float-right" [ladda]="loading" (click)="requestOTP()" [disabled]="form.invalid||loading"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Bank Details</button>
+              </div>
+              <div class="col-md-12 form-group mb-1 mt-4 pt-1" *ngIf="otpSent && !data.bankAccount.verified">
+                <button class="btn btn-primary btn-sm ladda-button btn-ico float-right" [ladda]="loading" (click)="confirm()" [disabled]="!otp||loading"><i class="fa fa-check" *ngIf="!loading"></i> Verify OTP</button>
+                <input type="number" class="form-control w-20 float-right mr-2" placeholder="Enter OTP here" [(ngModel)]="otp" [ngModelOptions]="{standalone:true}">
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

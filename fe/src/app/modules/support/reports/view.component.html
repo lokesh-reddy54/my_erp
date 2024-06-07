@@ -1,0 +1,314 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Support Tickets {{reportType}} Report</h4>
+    <input type="text" placeholder="Search by Client, Reference Number, Category, Context" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-10 mt--10" *ngIf="reportType=='Monthly'">
+    <div class="btn-group btn-group-toggle pull-right ml-10 mt--10 pt-1" data-toggle="buttons">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="reportType" (ngModelChange)="changeView();">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="Category"> Category
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="Assignee"> Assignee
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="Client"> Client
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="Monthly"> Monthly
+        </label>
+      </div>
+    </div>
+    <div class="mt--5 float-right" *ngIf="reportType=='Monthly'">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="buildingWise" (ngModelChange)="changeView();" [ngModelOptions]="{standalone: true}">
+        <span>Building Wise</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:Support'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <loading [loading]="loading"></loading>
+  <div class="w-70 row opex-ap-table m-auto" *ngIf="reportType=='Category'">
+    <div class="table border-bottom">
+      <div class="row">
+        <div class="cell f-b p-1 pl-0 pr-1 w-30 text-center">Category</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">New</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">Attended</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">ClientReply</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">TeamReply</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">Resolved</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">Closed</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">Total</div>
+      </div>
+    </div>
+    <div class="table border-bottom" *ngFor="let cat of categories">
+      <div class="row">
+        <div class="cell p-1 pl-0 pr-1 text-left w-30 cursor" (click)="toogleCategory(cat)">
+          <i class="fa fa-plus text-light mr-1" *ngIf="!cat.opened"></i>
+          <i class="fa fa-minus text-light mr-1" *ngIf="cat.opened"></i>
+          {{cat.name}}
+        </div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{cat.new}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{cat.attended}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{cat.clientReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{cat.internalReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{cat.resolved}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{cat.closed}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{cat.total}}</div>
+      </div>
+      <div class="row" *ngFor="let scat of cat.subCategories" [ngClass]="{'d-none': !cat.opened || selectedSubCategory?.name==scat?.name}">
+        <div (click)="selectedSubCategory=scat" class="cel p-1 pr-1 text-left w-100 cursor" style="padding-left:2.5rem !important;">
+          <span> <i class="fa fa-plus text-light mr-1" *ngIf="selectedSubCategory?.name!=scat.name"></i> {{scat.name}}</span>
+        </div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{scat.new}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{scat.attended}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{scat.clientReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{scat.internalReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{scat.resolved}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{scat.closed}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{scat.total}}</div>
+      </div>
+      <div class="row bg-info" *ngIf="selectedSubCategory && selectedSubCategory.cat==cat.name">
+        <div class="cell p-1 pr-1 text-left w-30 cursor" (click)="selectedSubCategory=null;" style="padding-left: 2.5rem !important;"><i class="fa fa-minus text-secondary mr-1"></i> {{selectedSubCategory.name}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{selectedSubCategory.new}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{selectedSubCategory.attended}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{selectedSubCategory.clientReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{selectedSubCategory.internalReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{selectedSubCategory.resolved}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{selectedSubCategory.closed}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{selectedSubCategory.total}}</div>
+      </div>
+      <div class="row" *ngFor="let context of selectedSubCategory?.contexts" [ngClass]="{'d-none':cat.name!=context.cat}">
+        <div class="cell p-1 pl-0 pr-1 text-left w-30" style="padding-left: 5rem !important;">{{context.name}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{context.new}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{context.attended}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{context.clientReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{context.internalReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{context.resolved}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{context.closed}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{context.total}}</div>
+      </div>
+    </div>
+    <div class="table  border-bottom">
+      <div class="row">
+        <div class="cell f-b p-1 pl-0 pr-1 text-center w-30">{{totals.name || 'Totals' }}</div>
+        <div class="cell f-b p-1 pl-0 pr-1 text-right w-10">{{totals.new}}</div>
+        <div class="cell f-b p-1 pl-0 pr-1 text-right w-10">{{totals.attended}}</div>
+        <div class="cell f-b p-1 pl-0 pr-1 text-right w-10">{{totals.clientReply}}</div>
+        <div class="cell f-b p-1 pl-0 pr-1 text-right w-10">{{totals.internalReply}}</div>
+        <div class="cell f-b p-1 pl-0 pr-1 text-right w-10">{{totals.resolved}}</div>
+        <div class="cell f-b p-1 pl-0 pr-1 text-right w-10">{{totals.closed}}</div>
+        <div class="cell f-b p-1 pl-0 pr-1 text-right w-10">{{totals.total}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="w-70 row opex-ap-table m-auto" *ngIf="reportType=='Client'">
+    <div class="table border-bottom">
+      <div class="row">
+        <div class="cell f-b p-1 pl-0 pr-1 w-30 text-center">Category</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">New</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">Attended</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">ClientReply</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">TeamReply</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">Resolved</div>
+        <div class="cell f-b p-1 pl-0 pr-1 w-10 text-right">Total</div>
+      </div>
+    </div>
+    <div class="table border-bottom" *ngFor="let client of clients">
+      <div class="row">
+        <div class="cell p-1 pl-0 pr-1 text-left w-30 cursor" (click)="openTickets(client.name, {bookingId: client.bookingId})">
+          {{client.name}}
+        </div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{client.new}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{client.attended}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{client.clientReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{client.internalReply}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{client.resolved}}</div>
+        <div class="cell p-1 pl-0 pr-1 text-right w-10">{{client.total}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="w-70 row opex-ap-table m-auto" *ngIf="reportType=='Assignee'">
+    <table class="table table-striped table-sm table-hover">
+      <thead>
+        <tr class="f-b">
+          <td class="text-right w-30">Assignee</td>
+          <td class="text-right w-10">New</td>
+          <td class="text-right w-10">Attended</td>
+          <td class="text-right w-10">ClientReply</td>
+          <td class="text-right w-10">InternalReply</td>
+          <td class="text-right w-10">Resolved</td>
+          <td class="text-right w-10">Closed</td>
+          <td class="text-right w-10">Total</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of assignees">
+          <td class="text-right w-30">{{row.name}}</td>
+          <td class="text-right w-10">{{row.new}}</td>
+          <td class="text-right w-10">{{row.attended}}</td>
+          <td class="text-right w-10">{{row.clientReply}}</td>
+          <td class="text-right w-10">{{row.internalReply}}</td>
+          <td class="text-right w-10">{{row.resolved}}</td>
+          <td class="text-right w-10">{{row.closed}}</td>
+          <td class="text-right w-10">{{row.total}}</td>
+        </tr>
+        <tr class="f-b">
+          <td class="text-right w-30">Totals</td>
+          <td class="text-right w-10">{{totals.new}}</td>
+          <td class="text-right w-10">{{totals.attended}}</td>
+          <td class="text-right w-10">{{totals.clientReply}}</td>
+          <td class="text-right w-10">{{totals.internalReply}}</td>
+          <td class="text-right w-10">{{totals.resolved}}</td>
+          <td class="text-right w-10">{{totals.closed}}</td>
+          <td class="text-right w-10">{{totals.total}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="row opex-ap-table" *ngIf="reportType=='Monthly'">
+    <div class="col-2 pr-0" *ngIf="selectedBuilding">
+      <h5 class="pull-left mt-2 mb-1 ml-2">Buildings</h5>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <tbody infiniteScroll class="tableBodyScroll">
+          <tr *ngFor="let building of buildings; trackBy: trackById;" [ngClass]="{'selected': building==selectedBuilding}">
+            <td class="w-80">{{building}}</td>
+            <td class="w-20">
+              <button class="btn btn-icon btn-primary" ngbTooltip="View Building Revenue" (click)="selectedBuilding=building;generateMonthly()"><i class="i-Blinklist"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pl-2 pr-0 row" [ngClass]="{'col-12':!selectedBuilding, 'col-10':selectedBuilding}">
+      <div class=" col-12 table">
+        <div class="row">
+          <div class="cell f-b p-1 pl-0 pr-1 w-40">
+            <div class="border-bottom text-center">Ticket Details</div>
+            <div>
+              <span class="w-30 d-b float-left">Assignee</span>
+              <span class="w-20 d-b float-left">Category</span>
+              <span class="w-20 d-b float-left">SubCategory</span>
+              <span class="w-30 d-b float-left">Context</span>
+            </div>
+          </div>
+          <div class="cell f-b pl-0 pr-1 text-right border-bottom" *ngFor="let month of months" [ngStyle]="{'width':colWidth+'%'}">
+            <div class="border-bottom">{{month.name}}</div>
+            <div>
+              <span class="item">N</span>
+              <span class="item">A</span>
+              <span class="item">R</span>
+              <span class="item">C</span>
+              <span class="item">T</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12" *ngFor="let assignee of assignees;let ai=index;">
+        <div *ngFor="let category of assignee.categories;let ci=index;">
+          <div class="table" *ngFor="let subCategory of category.subCategories;let sci=index;">
+            <div class="row" *ngFor="let context of subCategory.contexts;let cti=index;">
+              <div class="cell pr-1 w-40">
+                <div class="w-30 d-b float-left border-top" *ngIf="ci==0">{{assignee.name}}</div>
+                <div class="w-20 d-b float-left border-top" [ngClass]="{'ml-30':ci!=0}" *ngIf="sci==0">{{category.name}}</div>
+                <div class="w-20 d-b float-left border-top" [ngClass]="{'ml-50':sci!=0}" *ngIf="cti==0">{{subCategory.name}}</div>
+                <div class="w-30 d-b float-right border-top">{{context.name}}</div>
+              </div>
+              <div class="cell border-bottom border-to text-right" [ngStyle]="{'width':colWidth+'%'}" *ngFor="let ticket of context.values;">
+                <div class="float-right pr-1">
+                  <span class="item">{{ticket.n}}</span>
+                  <span class="item">{{ticket.a}}</span>
+                  <span class="item">{{ticket.r}}</span>
+                  <span class="item">{{ticket.c}}</span>
+                  <span class="item">{{ticket.t}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class=" col-12 table border-bottom">
+        <div class="row">
+          <div class="cell f-b p-1 pl-0 pr-1 w-40 text-center border-top">Totals</div>
+          <div class="cell f-b p-1 pl-0 pr-1 text-right f-b" *ngFor="let month of months" [ngStyle]="{'width':colWidth+'%'}">
+            <div class="float-right">
+              <span class="item">{{month.totals?.n}}</span>
+              <span class="item">{{month.totals?.a}}</span>
+              <span class="item">{{month.totals?.r}}</span>
+              <span class="item">{{month.totals?.c}}</span>
+              <span class="item">{{month.totals?.t}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br><br>
+</div>
+<ng-template #ticketsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ticketsTitle}} Tickets List</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body tableBodyScroll" style="height: calc(100vh - 140px);">
+    <div *ngFor="let item of ticketsList;let i=index" class="list-item col-md-12 pl-1 pr-1">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <a routerLink="/tickets/view/{{item.id}}" class="w-20 w-sm-100 pr-3" ngbTooltip="Ticket Details">
+              <div class="m-0 text-secondary text-smal">
+                <div>{{item.refNo}} <span class="pull-right">{{item.priority?.name}}</span></div>
+              </div>
+              <div>
+                <span ngbTooltip="Assigned To">{{item.assigned?.name}}</span>
+                <span class="pull-right"><small>{{item.date | date : 'MMM dd, yyyy'}}</small></span>
+              </div>
+            </a>
+            <div class="m-0 text-muted text-small w-20 w-sm-100 pr-3" ngbTooltip="{{item.booking?.client.company}}'s Booking">
+              <div><span class="text-primary"><strong>{{item.booking?.client.name}}</strong></span>
+                <span class="text-secondary pull-right">{{item.booking?.offices}}</span>
+              </div>
+              <div>
+                <span class="text-secondary"><i class="i-Telephone"></i> {{item.booking?.client?.phone}}</span>
+                <span class="text-secondary pull-right">{{item.booking?.refNo}}</span>
+              </div>
+            </div>
+            <div class="m-0 text-muted text-small w-20 w-sm-100" ngbTooltip="">
+              <div class="d-b text-info" ngbTooltip="Category & Context"> {{item.category}}, {{item.subCategory}}, {{item.context}}</div>
+              <div class="d-b text-primary">
+                <span class="fs-10 pl-1 pr-1 br-5 mr-1" [ngClass]="{'bg-success text-white':item.attendedInTime, 'bg-danger text-white':item.attendedInTime!=null && !item.attendedInTime}" ngbTooltip="Attend In">A : {{item.priority?.attendIn}} {{item.priority?.attendInType}}, </span>
+                <span class="fs-10 pl-1 pr-1 br-5 mr-1" [ngClass]="{'bg-success text-white':item.resolvedInTime, 'bg-danger text-white':item.resolvedInTime!=null && !item.resolvedInTime}" ngbTooltip="Resolve In">R : {{item.priority?.resolveIn}} {{item.priority?.resolveInType}}, </span>
+                <span class="fs-10 pl-1 pr-1 br-5 mr-1" [ngClass]="{'bg-success text-white':item.closedInTime, 'bg-danger text-white':item.closedInTime!=null && !item.closedInTime}" ngbTooltip="Close In">C : {{item.priority?.closeIn}} {{item.priority?.closeInType}} </span>
+              </div>
+            </div>
+            <div class="m-0 text-muted text-small w-35 w-sm-100 pl-1">
+              <!-- <div class="text-primary">{{item.issue}}</div> -->
+              <div class="d-b text-info">{{item.description | ellipses:170}}</div>
+            </div>
+            <div class="m-0 text-muted text-center text-small w-5 w-sm-100 d-none d-lg-block item-actions">
+              <span class="ticket-status {{item.status}}">{{item.status}}</span>
+              <a class="btn btn-icon btn-sm btn-info" ngbTooltip="View Ticket" target="_blank" href="#/support/view/{{item.id}}">
+                <i class="i-Magnifi-Glass1 text-bold"></i>
+              </a>
+              <button class="btn btn-icon btn-sm btn-secondary" *ngIf="!item.setAside" ngbTooltip="Set Aside" (click)="setAside(item)">
+                <i class="i-Blinklist text-bold"></i>
+              </button>
+              <button class="btn btn-icon btn-sm btn-info" *ngIf="item.setAside" ngbTooltip="UnSet Aside" (click)="setAside(item)">
+                <i class="i-Blinklist text-bold"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

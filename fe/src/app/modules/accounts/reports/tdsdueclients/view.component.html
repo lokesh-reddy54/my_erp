@@ -1,0 +1,28 @@
+<div class="row">
+  <div class="col-12">
+    <div class="breadcrumb">
+      <h5 class="pull-left mr-5 f-b">TDS Due Clients List</h5>
+      <input type="text" placeholder="Search by Booking RefNo, Client" [formControl]="search" class="form-control form-control-rounde pull-left w-25 ml-2">
+      <!-- <input class="form-control pull-left w-15 ml-10" autocomplete="off" placeholder="Invoices : Start - End Date" name="dp" id="daterangepicker"> -->
+      <!--  <div class="ml-10 d-ib mt-1">
+        <label class="checkbox checkbox-success">
+          <input type="checkbox" [(ngModel)]="invoicesFilters.cancelled" [ngModelOptions]="{standalone: true}">
+          <span class="d-ib mt--10">Show Client crossing 25% of Security Deport as TDS Due</span>
+          <span class="checkmark"></span>
+        </label>
+      </div> -->
+      <div class="float-right text-right pt-1 mr-4" *ngIf="clientsCount">Clients Count : <strong>{{clientsCount}}</strong></div>
+      <div class="clear"></div>
+      <help-notes [context]="'Reports:TdsDueClientsList'"></help-notes>
+    </div>
+    <div class="clear"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <loading [loading]="loading"></loading>
+          <data-list #clientsList [dataUrl]="'internal/reports/listTdsDueClients'" [filter]="invoicesFilters" [config]="clientsConfig" [limit]="500" (onLoadMore)="clientsCount = $event.count"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

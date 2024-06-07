@@ -1,0 +1,271 @@
+<div class="row">
+  <div class="col-3 pl-1 pr-1">
+    <div class="breadcrumb">
+      <h5 class="pull-left">Categories</h5>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="facilitySetSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openCategoryModal()">
+        <i class="fa fa-plus"></i> Category
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #categoriesList [dataUrl]="'internal/support/getCategories'" [config]="categoryConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-9 pt-4 mt-4" *ngIf="!selectedCategory.id">
+    <div class="mt-30 text-center font-weight-bold">Select Category to list specific subcategories</div>
+  </div>
+  <div class="col-3 pl-1 pr-1" *ngIf="selectedCategory.id">
+    <div class="breadcrumb">
+      <h5 class="pull-left">SubCategories</h5>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openSubCategoryModal()">
+        <i class="fa fa-plus"></i> SubCategory
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #subCategoriesList [items]="currentSubCategories" [config]="subCategoryConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 pt-4 mt-4" *ngIf="selectedCategory?.id && !selectedSubCategory.id">
+    <div class="mt-30 text-center font-weight-bold">Select subcategory to list specific contexts</div>
+  </div>
+  <div class="col-6 pl-1 pr-1" *ngIf="selectedSubCategory.id">
+    <div class="breadcrumb">
+      <h5 class="pull-left">Category Contexts</h5>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="locationSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openContextModal()">
+        <i class="fa fa-plus"></i> Context
+      </button>
+      <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right mr-2" (click)="openPrioritiesModal()">
+        <i class="fa fa-list"></i> View Priorities
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #contextsList [items]="currentContexts" [config]="contextConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #categoryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{category.id ? 'Edit Category' : 'New Category'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="categoryForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="category.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="category.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||categoryForm.invalid" (click)="saveTicketCategory()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #subCategoryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{subCategory.id ? 'Edit SubCategory' : 'New SubCategory'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="categoryForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="subCategory.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="subCategory.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||categoryForm.invalid" (click)="saveTicketSubCategory()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #contextModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{context.id ? 'Edit Context' : 'New Context'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="contextForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Context</label>
+          <input type="text" class="form-control" id="context" formControlName="context" placeholder="Enter context" [(ngModel)]="context.context">
+        </div>
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Priority</label>
+          <ng-select [items]="priorities" [hideSelected]="true" [bindLabel]="'name'" [bindValue]="'id'" placeholder="Select Priority" [(ngModel)]="context.priorityId" formControlName="priorityId" name="priorityId"> </ng-select>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="context.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Support Line Level</label>
+          <ng-select [items]="supportLevels" [hideSelected]="true" [bindLabel]="'name'" [bindValue]="'type'" placeholder="Select Support Line Level" [(ngModel)]="context.supportLevel" formControlName="supportLevel" name="supportLevel"> </ng-select>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Assignee Type</label>
+          <ng-select [items]="assigneeTypes" [hideSelected]="true" [bindLabel]="'name'" [bindValue]="'type'" placeholder="Select Assignee Type" [(ngModel)]="context.assigneeType" formControlName="assigneeType" name="assigneeType"> </ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||contextForm.invalid" (click)="saveTicketContext()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #priorityModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{priority.id ? 'Edit Priority' : 'New Priority'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="priorityForm" (validSubmit)="saveFacilitySet()">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="priority.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="priority.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Attend In</label>
+          <input type="text" class="form-control" id="attendIn" formControlName="attendIn" placeholder="Enter attend in" [(ngModel)]="priority.attendIn">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">In Duration</label>
+          <select class="form-control" id="attendInType" formControlName="attendInType" placeholder="Select AttendIn Type" [(ngModel)]="priority.attendInType">
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+          </select>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Resolve In</label>
+          <input type="text" class="form-control" id="resolveIn" formControlName="resolveIn" placeholder="Enter resolve in" [(ngModel)]="priority.resolveIn">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">In Duration</label>
+          <select class="form-control" id="resolveInType" formControlName="resolveInType" placeholder="Select ResolveIn Type" [(ngModel)]="priority.resolveInType">
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+          </select>
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Close In</label>
+          <input type="text" class="form-control" id="closeIn" formControlName="closeIn" placeholder="Enter close in" [(ngModel)]="priority.closeIn">
+        </div>
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">In Duration</label>
+          <select class="form-control" id="closeInType" formControlName="closeInType" placeholder="Select CloseIn Type" [(ngModel)]="priority.closeInType">
+            <option value="hours">Hours</option>
+            <option value="days">Days</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||priorityForm.invalid" (click)="savePriority()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #prioritiesListModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-b">
+    <h4 class="modal-title pull-left" id="modal-basic-title">Priorities List</h4>
+    <button type="button" class="close pull-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+    <button class="btn btn-outline-primar btn-primary btn-sm btn-ico pull-right mr-2" (click)="priority={};openPriorityModal()">
+      <i class="fa fa-plus"></i> Add New Priority
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- <data-list #prioritiesList [items]="priorities" [config]="priorityConfig" (onAction)="action($event)"></data-list> -->
+    <table class="tableBodyScroll table table-striped table-hover table-sm">
+      <thead>
+        <tr>
+          <th class="w-50">Name</th>
+          <th class="w-10">Attend In</th>
+          <th class="w-10">ResolveIn</th>
+          <th class="w-10">Close In</th>
+          <th class="w-10">Active</th>
+          <th class="w-10 text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody class="tableBodyScroll" style="max-height: 350px;">
+        <tr *ngFor="let priority of priorities;">
+          <td class="w-50">{{priority.name}}</td>
+          <td class="w-10">{{priority.attendIn}}</td>
+          <td class="w-10">{{priority.resolveIn}}</td>
+          <td class="w-10">{{priority.closeIn}}</td>
+          <td class="w-10">{{priority.active ? 'Yes' : 'No'}}</td>
+          <td class="w-10 text-center">
+            <button class="btn btn-icon btn-info" ngbTooltip="Edit Priority" (click)="editPriority(priority)"><i class="i-Pen-5"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

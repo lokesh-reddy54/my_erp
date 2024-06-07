@@ -1,0 +1,105 @@
+<div class="main-header">
+  <div class="logo" style="width: 160px !important;margin-left: 20px;">
+    <img [src]="user?.logo || './assets/images/flogo.png'" alt="" style="width: 160px !important">
+  </div>
+  <div class="d-flex align-items-center">
+    <!-- Mega menu -->
+    <div ngbDropdown class="mega-menu d-none d-md-block ml-10">
+      <button ngbDropdownToggle href="#" class="btn text-muted dropdown-toggle mr-3">Modules</button>
+      <div ngbDropdownMenu perfectScrollbar>
+        <div class="row m-0">
+          <div class="col-md-3 p-4 bg-img">
+            <h2 class="title">{{user.companyName}} ERP</h2>
+            <p>{{user.companyName}} make you to focus on facilities of your workspaces.
+            </p>
+          </div>
+          <div class="col-md-4 p-4">
+            <p class="text-primary text--cap border-bottom-primary d-inline-block">Modules</p>
+            <div class="menu-icon-grid w-auto p-0">
+              <a href="#"><i class="i-Bar-Chart"></i> Dashboards</a>
+              <a href="#"><i class="i-Library"></i> Bookings</a>
+              <a href="#"><i class="i-File-Horizontal-Text"></i> Resources</a>
+              <a href="#"><i class="i-Computer-Secure"></i> Admin</a>
+              <a href="#"><i class="i-MaleFemale"></i> Leads</a>
+              <a href="#"><i class="i-Support"></i> Support</a>
+            </div>
+          </div>
+          <div class="col-md-5 p-4">
+            <p class="text-primary text--cap border-bottom-primary d-inline-block">Quick Links</p>
+            <ul class="links">
+              <li><a href="lists.html">New Booking</a></li>
+              <li><a href="accordion.html">Desks Availibility Report</a></li>
+              <li><a href="alerts.html">Resources Booking</a></li>
+              <li><a href="buttons.html">Visits Calendar</a></li>
+              <li><a href="badges.html">Support Deadlines</a></li>
+              <li><a href="carousel.html">Leads Report</a></li>
+              <li><a href="lists.html">New Office</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="menu-toggle" (click)="toggelSidebar()">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <!-- Search bar -->
+    <div class="search-bar  d-none d-md-block ">
+      <input type="text" placeholder="Search" (focus)="searchService.searchOpen = true">
+      <i class="search-icon text-muted i-Magnifi-Glass1"></i>
+    </div>
+  </div>
+  <div style="margin: auto" class="d-none d-md-block"></div>
+  <div class="header-part-right ">
+    <i class="i-Magnifi-Glass1 header-icon d-none d-sm-inline-block" role="button" (click)="searchService.searchOpen = true" *ngIf="!user.clientId"></i>
+    <i fullScreenWindow class="i-Full-Screen header-icon d-none d-sm-inline-block" role="button"></i>
+    <div ngbDropdown [placement]="'bottom-right'" class="d-none d-sm-inline-block" *ngIf="!user.clientId">
+      <i ngbDropdownToggle class="i-Gear text-muted header-icon" role="button"></i>
+      <div ngbDropdownMenu class="menu-icon-grid-dropdown">
+        <div class="menu-icon-grid">
+          <a href="#"><i class="i-Bar-Chart"></i> Dashboards</a>
+          <a href="#"><i class="i-Library"></i> Bookings</a>
+          <a href="#"><i class="i-File-Horizontal-Text"></i> Resources</a>
+          <a href="#"><i class="i-Computer-Secure"></i> Admin</a>
+          <a href="#"><i class="i-MaleFemale"></i> Leads</a>
+          <a href="#"><i class="i-Support"></i> Support</a>
+        </div>
+      </div>
+    </div>
+    <div ngbDropdown [placement]="'bottom-right'" *ngIf="notifications.length">
+      <div class="badge-top-container">
+        <span class="badge badge-primary">{{notifications.length}}</span>
+        <i ngbDropdownToggle class="i-Bell text-muted header-icon" role="button"></i>
+      </div>
+      <div ngbDropdownMenu class="notification-dropdown rtl-ps-none" perfectScrollbar>
+        <div class="dropdown-item d-flex" *ngFor="let item of notifications">
+          <div class="notification-icon">
+            <i class="{{item.icon}} text-{{item.status}} mr-1"></i>
+          </div>
+          <a class="notification-details flex-grow-1" target="_blank" [href]="item.link">
+            <p class="m-0 d-flex align-items-center">
+              <span class="f-b">{{item.title}}</span>
+              <span *ngIf="item.badge" class="badge badge-pill badge-{{item.status}} ml-1 mr-1">{{item.badge}}</span>
+              <span class="flex-grow-1"></span>
+            </p>
+            <p class="text-small text-muted m-0">{{item.text | excerpt:30}}</p>
+            <span class="text-small text-muted ml-auto float-right">{{item.time | relativeTime}}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div ngbDropdown [placement]="'bottom-right'" class="user col align-self-end">
+      <img src="./assets/images/faces/default.png" id="userDropdown" ngbDropdownToggle alt="">
+      <div ngbDropdownMenu aria-labelledby="userDropdown" class="header-account-dropdown">
+        <div class="dropdown-header">
+          <i class="i-Lock-User mr-1"></i> {{user.name}}
+        </div>
+        <!-- 
+        <button class="dropdown-item">Account settings</button>
+        <button class="dropdown-item">Billing history</button> -->
+        <button class="dropdown-item" (click)="signout()">Sign out</button>
+      </div>
+    </div>
+  </div>
+</div>

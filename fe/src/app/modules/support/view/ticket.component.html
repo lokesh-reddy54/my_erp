@@ -1,0 +1,371 @@
+<div class="breadcrumb">
+  <div class="float-left">
+    <p class="m-0 text-14"><small>Assigned To : </small>
+      <strong *ngIf="ticket.assigned" [ngClass]="{'badge badge-danger':!ticket.assigned?.active}">{{ticket.assigned?.name}} &nbsp; <i class="cursor fa fa-refresh" *ngIf="ticket.status!='Closed'" [ngClass]="{'text-white':!ticket.assigned?.active,'text-info':ticket.assigned?.active}" (click)="openAssignTicket(true)" ngbTooltip="ReAssign Ticket"></i></strong>
+      <span *ngIf="!ticket.assigned" class="badge badge-light cursor" ngbTooltip="Click to Assign now" (click)="openAssignTicket()">Assign</span>
+    </p>
+    <p class="text-muted m-0 text-14">{{ticket.id}}, {{ticket.refNo}} -
+      <!-- <span class="ticket-status {{ticket.status}}">{{ticket.status}}</span> -->
+      <span class="badge" [ngClass]="{'badge-info':ticket.status=='New' || ticket.status=='Attended','badge-success':ticket.status=='Assigned' || ticket.status=='Resolved','badge-secondary':ticket.status=='Closed','badge-warning':ticket.status=='AwaitingInternalReply', 'badge-light':ticket.status=='AwaitingClientReply'}">{{ticket.status}}</span>
+    </p>
+  </div>
+  <div class="float-right text-right pr-3">
+    <p class="text-info d-ib float-right ml-1 text-14 m-0"><small>Priority : </small> <strong>{{ticket.priority?.name}}</strong></p>
+    <p class="text-secondary text-14 m-0"><small>Created : </small> <strong>{{ticket.date | date :'MMM dd, yyyy hh:mm a'}}</strong></p>
+    <p class="text-info  text-14 m-0"><small>Context : </small> <strong>{{ticket.category}}, {{ticket.subCategory}}, {{ticket.context}}</strong></p>
+  </div>
+  <h1 class="text-center pt-2">Ticket View</h1>
+  <div class="clear"></div>
+</div>
+<div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+<div class="card user-profile o-hidden mb-1 d-b tableBodyScroll" style="height: calc(100vh - 140px);">
+  <div class="card-body pt-1">
+    <div class="row">
+      <div class="col-md-10">
+        <div class="row mb-2 border-bottom">
+          <div class="" [ngClass]="{'col-md-9':ticket.attachments.length>0,'col-md-12':ticket.attachments.length==0}">
+            <div class="font-12"><strong>{{ticket.issue}}</strong></div>
+            <div class="font-12">{{ticket.description}}</div>
+          </div>
+          <div class="col-md-3" *ngIf="ticket.attachments.length>0">
+            <div class="lb-i text-muted">Attachments</div>
+            <p *ngFor="let attachment of ticket.attachments;"><a [href]="attachment.file" target="_blank">{{attachment.name}}</a></p>
+          </div>
+        </div>
+        <div style="margin-top: 0px" class="float-left">
+          <button class="float-left btn btn-outline-primary btn-sm ml-10 btn-ico" *ngIf="ticket.assigned?.id &&  ticket.status=='New'" (click)="changeStatus('Attended')">
+            <i class="fa fa-check"></i> Attended
+          </button>
+          <button class="float-left btn btn-outline-info btn-sm ml-10 btn-ico" *ngIf="ticket.status!='Resolved' && ticket.status!='New'&& ticket.status!='Closed'" (click)="changeStatus('Resolved')">
+            <i class="fa fa-thumbs-up"></i> Resolved
+          </button>
+          <button class="float-left btn btn-outline-success btn-sm ml-10 btn-ico" *ngIf="ticket.status=='Resolved'" (click)="changeStatus('Closed')">
+            <i class="fa fa-stop"></i> Close
+          </button>
+        </div>
+        <ngb-tabset class="nav-center">
+          <ngb-tab title="Messages">
+            <ng-template ngbTabContent>
+              <div style="margin-top: -80px">
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openMessageModal()">
+                  <i class="fa fa-plus"></i> New Message
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-3">
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-20">Message</th>
+                      <th class="w-10 pl-4">From</th>
+                      <th class="w-15 pl-4">By</th>
+                      <th class="w-15 pl-4">To</th>
+                      <th class="w-15 pl-4">User</th>
+                      <th class="w-15 text-center">DateTime</th>
+                      <th class="w-10 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll" *ngIf="ticket.messages?.length">
+                    <tr *ngFor="let msg of ticket.messages;">
+                      <td class="w-20" *ngIf="msg.read||msg.userId!=user.id">{{msg.reply|ellipses:20}}</td>
+                      <td class="w-20 f-b " *ngIf="!msg.read&&msg.userId==user.id"><a href="javascript:void(0)" (click)="message=msg;openViewMessageModal();">View Unread Message</a></td>
+                      <td class="w-10">{{(msg.from || '-') | capitalise}}</td>
+                      <td class="w-15">{{msg.by|| '-'}}</td>
+                      <td class="w-15">{{(msg.to || '-') | capitalise}}</td>
+                      <td class="w-15">{{msg.user || '-'}}</td>
+                      <td class="w-15 text-center fs-11">{{msg.date | date :'MMM dd, yyyy hh:mm a'}}</td>
+                      <td class="w-10 text-center">
+                        <button class="btn btn-info btn-sm btn-icon" (click)="message=msg;openViewMessageModal();"><i class="fa fa-search"></i></button>
+                        <a class="btn btn-primary btn-sm btn-icon" target="_blank" *ngIf="msg.attachment" [href]="msg.attachment.file"><i class="fa fa-paperclip"></i></a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div *ngIf="!ticket.messages?.length" class="fs-14 f-b text-center p-4 w-100">No messages are added yet .</div>
+              </div>
+              <div class="row fs-10 pt-2" style="margin-top:50px;border-top: 3px solid #ccc;">
+                <div class="" [ngClass]="{'col-md-3':ticket.setAside==0,'col-md-6':ticket.setAside==1}">
+                  <h5 class="fs-12 f-b">Assignment History</h5>
+                  <table class="tableBodyScroll table table-striped table-hover table-sm" style="margin: auto">
+                    <thead>
+                      <tr>
+                        <th class="w-50">Assigned To</th>
+                        <th class="w-50 text-center">DateTime</th>
+                      </tr>
+                    </thead>
+                    <tbody class="tableBodyScroll" style="max-height: 300px;">
+                      <tr *ngFor="let history of ticket.assignmentHistory;">
+                        <td class="w-50">{{history.user.name}}</td>
+                        <td class="w-50 text-center">{{history.date | date :'MMM dd, yyyy hh:mm a'}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="" [ngClass]="{'col-md-4':ticket.setAside==0,'col-md-6':ticket.setAside==1}">
+                  <h5 class="fs-12 f-b">Status Change History</h5>
+                  <table class="tableBodyScroll table table-striped table-hover table-sm" style="margin: auto">
+                    <thead>
+                      <tr>
+                        <th class="w-30 text-center">Status</th>
+                        <th class="w-30">By User</th>
+                        <th class="w-40 text-center">DateTime</th>
+                      </tr>
+                    </thead>
+                    <tbody class="tableBodyScroll" style="max-height: 300px;">
+                      <tr *ngFor="let status of ticket.statusHistory;">
+                        <td class="w-30 text-center">{{status.status}}</td>
+                        <td class="w-30">{{status.user}}</td>
+                        <td class="w-40 text-center">{{status.date | date :'MMM dd, yyyy hh:mm a'}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-5" *ngIf="ticket.setAside==0">
+                  <h5 class="fs-12 f-b">Ticket SLAs</h5>
+                  <table class="tableBodyScroll table table-striped table-hover table-sm w-90" style="margin: auto">
+                    <thead>
+                      <tr>
+                        <th class="w-25 text-center">Type</th>
+                        <th class="w-25 text-center">Expected Time</th>
+                        <th class="w-25 text-center">Actual Time</th>
+                        <th class="w-25 text-center">InTime</th>
+                      </tr>
+                    </thead>
+                    <tbody class="tableBodyScroll" style="max-height: 325px;">
+                      <tr *ngFor="let sla of ticket.priorities;">
+                        <td class="w-25 text-center">{{sla.type}}</td>
+                        <td class="w-25 text-center">{{sla.expectedTime | date :'MMM dd, yyyy hh:mm a'}}</td>
+                        <td class="w-25 text-center">{{sla.actualTime ? (sla.actualTime| date :'MMM dd, yyyy hh:mm a') : '-'}}</td>
+                        <td class="w-25 text-center text-white pr-3 pl-3" *ngIf="sla.inTime" [ngClass]="{'bg-danger':sla.inTime=='Not InTime','bg-success':sla.inTime=='InTime'}">{{sla.inTime}}</td>
+                        <td class="w-25 text-center" *ngIf="!sla.inTime">-</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Calls">
+            <ng-template ngbTabContent>
+              <div class="row" style="margin-top: -35px">
+                <data-list #callsList [dataUrl]="'internal/support/getTicketCalls/'+id" [config]="callsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Mails">
+            <ng-template ngbTabContent>
+              <div class="row" style="margin-top: -35px">
+                <data-list #mailsList [dataUrl]="'internal/support/getTicketMails/'+id" [config]="emailsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+        </ngb-tabset>
+      </div>
+      <div class="col-md-2">
+        <div class="row">
+          <div class="col-12 mb-3">
+            <p class="text-muted lb-i mb-1">Booking Details</p>
+            <div *ngIf="ticket.clientEmployee">
+              <div class="border-top pt-1"><strong>{{ticket.clientEmployee.name}}</strong></div>
+              <div><i class="i-Telephone"></i> {{ticket.clientEmployee.phone}}</div>
+              <div><i class="i-Email"></i> {{ticket.clientEmployee.email}}</div>
+            </div>
+            <div *ngIf="!ticket.clientEmployee">
+              <div class="border-top pt-1"><strong>{{ticket.booking.client.name}}</strong></div>
+              <div><i class="i-Telephone"></i> {{ticket.booking.client.phone}}</div>
+              <div><i class="i-Email"></i> {{ticket.booking.client.email}}</div>
+            </div>
+            <div><strong>RefNo : </strong> {{ticket.booking.refNo}}</div>
+            <div><strong>Status : </strong> {{ticket.booking.status}}</div>
+            <div><strong>Started : </strong> {{ticket.booking.started | date : 'MMM dd, yyyy'}}</div>
+            <div *ngIf="ticket.booking.status=='Ending'"><strong>Ending : </strong> {{ticket.booking.ended | date : 'MMM dd, yyyy'}}</div>
+            <div *ngIf="ticket.booking.status=='Ended'"><strong>Ended : </strong> {{ticket.booking.ended | date : 'MMM dd, yyyy'}}</div>
+            <div><strong>Office : </strong> {{ticket.booking.office?.name}} , {{ticket.booking.office?.address}} </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #messageModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{message.id ? 'Edit Message' : 'New Message'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="messageForm">
+      <div class="row" *ngIf="isSupportManager()">
+        <div class="col-md-2 form-group mb-1 mt-1 pl-2 pr-0 f-b text-center">To:</div>
+        <div class="col-md-10 form-group mb-1 mt-1 pl-2 pr-0">
+          <div class="btn-group btn-group-toggle mt--10" data-toggle="buttons">
+            <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="message.to" [ngModelOptions]="{standalone:true}" (ngModelChange)="clearOldSelections()">
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="InternalTeam"> Internal Team
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="OtherDepartment"> Other Department
+              </label>
+              <label ngbButtonLabel class="btn btn-sm btn-secondary">
+                <input ngbButton type="radio" value="Client"> Client
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="row" *ngIf="message.to == 'InternalTeam'">
+        <div class="col-md-8 form-group mb-1" style="margin: auto;">
+          <ng-select [items]="supportUsers" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Internal User" [(ngModel)]="message.toUser" [ngModelOptions]="{standalone: true}" (ngModelChange)="message.user=message.toUser?.name;message.userId=message.toUser.id;"></ng-select>
+        </div>
+      </div> -->
+      <div class="row mt-2" *ngIf="message.to == 'OtherDepartment'">
+        <div class="col-md-8 form-group mb-1">
+          <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="message.department" [ngModelOptions]="{standalone:true}" (ngModelChange)="getDepartmentManagers(message.department)">
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="PURCHASES"> Purchases
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="PROJECTS"> Projects
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="ACCOUNTS"> Accounts
+            </label>
+            <label ngbButtonLabel class="btn btn-sm btn-secondary">
+              <input ngbButton type="radio" value="BOOKING"> Booking
+            </label>
+          </div>
+        </div>
+        <!-- *ngIf="message.department" -->
+        <div class="col-md-4 form-group mb-1 pl-0 pr-0" >
+          <!-- <label class="d-b f-b">Other Department User:</label> -->
+          <ng-select [items]="departmentManagers" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select User" [(ngModel)]="message.toUser" [ngModelOptions]="{standalone: true}" (ngModelChange)="message.user=message.toUser?.name;message.userId=message.toUser.id;"></ng-select>
+        </div>
+      </div>
+      <div class="row" *ngIf="!isSupportManager() || message.userId || message.to == 'Client'">
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Message <strong *ngIf="message.to"><small class="fw-300">to</small> {{message.user || message.to || 'Client'}}</strong></label>
+          <textarea placeholder="Enter Message here " rows=10 class="form-control" name="comment" [(ngModel)]="message.reply" formControlName="comment"></textarea>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <div class="mb-1" *ngIf="message.attachment">
+            <a [href]="message.attachment.file" target="_blank">{{message.attachment.name}}</a>
+          </div>
+          <span class="input-group">
+            <div class="custom-file" *ngIf="!messageAttachmentFile">
+              <input class="custom-file-input" id="messageAttachmentId" (change)="messageAttachmentFileChange($event)" type="file">
+              <label class="custom-file-label" for="messageAttachmentId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="messageAttachmentFile">
+              <span class="float-left">{{messageAttachmentFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="messageAttachmentFile=null;message.docId=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="messageAttachmentFileError">
+                  {{ messageAttachmentFileError.message }}
+                </div>
+                <div *ngIf="messageAttachmentUploadResponse.status === 'error'">
+                  {{ messageAttachmentUploadResponse.message }}
+                </div>
+                <div *ngIf="messageAttachmentUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="messageAttachmentUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{messageAttachmentUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadMessageAttachmentFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <!-- <div class="col-md-12 form-group mb-1">
+          <label for="roles">File Attachment (if any)</label>
+          <input type="file" class="form-control" name="attachment" formControlName="attachment" (change)="onFileChange($event)" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <div *ngIf="error">
+            {{ error.message }}
+          </div>
+          <div *ngIf="uploadResponse.status === 'error'">
+            {{ uploadResponse.message }}
+          </div>
+          <div *ngIf="uploadResponse.status === 'progress'">
+            <div role="progressbar" [style.width.%]="uploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+              {{uploadResponse.message}}%
+            </div>
+          </div>
+        </div> -->
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||messageForm.invalid" (click)="saveTicketMessage()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #viewMessageModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">View Message</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p>{{message.reply}}</p>
+    <p *ngIf="message.attachment"><strong>Attachment : </strong><a [href]="message.attachment.file" target="_blank">{{message.attachment.name}}</a></p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #assignModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Assign Ticket</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b">User to Assign</label>
+        <ng-select [items]="supportUsers" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select User" [(ngModel)]="assignedTo" [ngModelOptions]="{standalone: true}" (ngModelChange)="assignTicket()"></ng-select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="btn btn-outline-light btn-sm float-right" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="!ticket.assignedTo" type="button" class="btn btn-outline-info float-left btn-sm" (click)="autoAssignTicket()">Auto Assign</button>
+  </div>
+</ng-template>
+<ng-template #viewEmailModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">View Email - <small>sent on {{email.date | date:'MMM dd, yyyy hh:mm a'}} <small>by</small> {{email.by}}</small></h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Subject : </label>
+        {{email.subject}}
+      </div>
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Body : </label>
+        <div [innerHTML]="email.body | safeHtml"></div>
+      </div>
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b f-b mb-0">Receipients : </label>
+        {{email.receivers}}
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

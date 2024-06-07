@@ -1,0 +1,47 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">SMS</h1>
+    <input type="text" placeholder="Search sms by name, phone, email" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2">
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openSMSModal(smsModal)">
+      <i class="fa fa-plus"></i> SMS
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/api/listPendrives'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #smsModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{sms.id ? 'Edit SMS' : 'New SMS'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{sms|json}} -->
+    <form [formGroup]="form" (validSubmit)="save()">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">SMS</label>
+          <textarea class="form-control" id="sms" formControlName="sms" placeholder="Enter SMS here" [(ngModel)]="sms.sms"></textarea>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="receivers">Receivers</label>
+          <ng-select [items]="receivers" [multiple]="true" [closeOnSelect]="false" [hideSelected]="true" bindLabel="receivers" placeholder="Select Receivers" [(ngModel)]="sms.receivers" (change)="onSMSRolesChange()" [ngModelOptions]="{standalone: true}">
+          </ng-select>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

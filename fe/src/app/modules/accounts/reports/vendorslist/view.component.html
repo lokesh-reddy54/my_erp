@@ -1,0 +1,90 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Vendors and Providers List</h4>
+    <input type="text" class="form-control w-40 ml-20 float-left" placeholder="Search by Vendor or ServiceProvider Name or Phone or Email" [(ngModel)]="searchClient" (ngModelChange)="loadData()">
+    <div class="ml-20 d-ib mt-1">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="filters.itLedgerNotAdded" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadData()">
+        <span class="d-ib mt--10">Ledger NotAdded</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <div class="pl-1 d-ib mt-1 float-right fs-14 mr-1">
+      ServiceProviders : <strong>{{providers.length}}</strong>
+    </div>
+    <div class="pl-1 d-ib mt-1 float-right fs-14 mr-4">
+      Vendors : <strong>{{vendors.length}}</strong>
+    </div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:VendorsList'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+  <div class="card">
+    <loading [loading]="loading"></loading>
+    <ngb-tabset class="nav-center">
+      <ngb-tab title="Vendors">
+        <ng-template ngbTabContent>
+          <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+          <div class="card o-hidden">
+            <table class="tableBodyScroll table table-stripe table-hover table-sm">
+              <thead>
+                <tr class="bg-primary text-white">
+                  <th class="text-center w-20" (click)="sortVendorsBy('name')">Vendor Name <i *ngIf="vendorsSort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="vendorsSort.name?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10" (click)="sortVendorsBy('type')">Type <i *ngIf="vendorsSort.type?.asc" class="fa fa-caret-up"></i><i *ngIf="vendorsSort.type?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-15" (click)="sortVendorsBy('gst')">GST <i *ngIf="vendorsSort.gst?.asc" class="fa fa-caret-up"></i><i *ngIf="vendorsSort.gst?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10" (click)="sortVendorsBy('pan')">PAN <i *ngIf="vendorsSort.pan?.asc" class="fa fa-caret-up"></i><i *ngIf="vendorsSort.pan?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-15" (click)="sortVendorsBy('contact')">Contact <i *ngIf="vendorsSort.contact?.asc" class="fa fa-caret-up"></i><i *ngIf="vendorsSort.contact?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10" (click)="sortVendorsBy('phone')">Phone <i *ngIf="vendorsSort.phone?.asc" class="fa fa-caret-up"></i><i *ngIf="vendorsSort.phone?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-20" (click)="sortVendorsBy('email')">Email <i *ngIf="vendorsSort.email?.asc" class="fa fa-caret-up"></i><i *ngIf="vendorsSort.email?.desc" class="fa fa-caret-down"></i></th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let row of vendors;">
+                  <td class="w-20">{{row.name}}</td>
+                  <td class="w-10">{{row.type}}</td>
+                  <td class="w-15">{{row.gst || '-'}}</td>
+                  <td class="w-10">{{row.pan || '-'}}</td>
+                  <td class="w-15">{{row.contact || '-'}}</td>
+                  <td class="w-10">{{row.phone}}</td>
+                  <td class="w-20">{{row.email}} <button class="float-right btn btn-sm btn-icon btn-primary" *ngIf="!row.itLedgerAdded" (click)="vendorLedgerAdded(row)" ngbTooltip="Vendor Ledger Added"><i class="fa fa-check"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Service Providers">
+        <ng-template ngbTabContent>
+          <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+          <div class="card o-hidden">
+            <table class="tableBodyScroll table table-stripe table-hover table-sm">
+              <thead>
+                <tr class="bg-primary text-white">
+                  <th class="text-center w-20" (click)="sortProvidersBy('name')">Vendor Name <i *ngIf="sort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.name?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10" (click)="sortProvidersBy('type')">Type <i *ngIf="sort.type?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.type?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-15" (click)="sortProvidersBy('gst')">GST <i *ngIf="sort.gst?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.gst?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10" (click)="sortProvidersBy('pan')">PAN <i *ngIf="sort.pan?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.pan?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-15" (click)="sortProvidersBy('contact')">Contact <i *ngIf="sort.contact?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.contact?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-10" (click)="sortProvidersBy('phone')">Phone <i *ngIf="sort.phone?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.phone?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="w-20" (click)="sortProvidersBy('email')">Email <i *ngIf="sort.email?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.email?.desc" class="fa fa-caret-down"></i></th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let row of providers;">
+                  <td class="w-20">{{row.name}}</td>
+                  <td class="w-10">{{row.type}}</td>
+                  <td class="w-15">{{row.gst || '-'}}</td>
+                  <td class="w-10">{{row.pan || '-'}}</td>
+                  <td class="w-15">{{row.contact || '-'}}</td>
+                  <td class="w-10">{{row.phone}}</td>
+                  <td class="w-20">{{row.email}} <button class="float-right btn btn-sm btn-icon btn-primary" *ngIf="!row.itLedgerAdded" (click)="providerLedgerAdded(row)" ngbTooltip="ServiceProvider Ledger Added"><i class="fa fa-check"></i></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+</div>

@@ -1,0 +1,216 @@
+<div class="">
+  <div class="breadcrumb">
+    <h3 class="pull-left">WorkOrders
+      <i class="fa fa-question-circle-o cursor pl-1" (click)="openHelpNotes()" ngbTooltip="Help"></i>
+    </h3>
+    <input type="text" placeholder="Search purchase order by vendor, building" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-1">
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Quick Filters" *ngIf="!moreFilters" (click)="moreFilters=true;loadBuildingWorkOrders()"><i class="fa fa-caret-square-o-down"></i></button>
+    <button class="btn btn-outline-primary btn-icon float-left" ngbTooltip="Hide Filters" *ngIf="moreFilters" (click)="moreFilters=false;"><i class="fa fa-caret-square-o-up"></i></button>
+    <ng-select class="w-30 float-left ml-10" [items]="['Raised','Approved','Deleted','PORaised','Rejected']" [multiple]="true" [closeOnSelect]="true" [hideSelected]="true" placeholder="Statuses" [(ngModel)]="filter.statuses" [ngModelOptions]="{standalone: true}" (ngModelChange)="resetList()"></ng-select>
+    <div class="w-10 ml-10 mt-2 float-right">
+      <label class="checkbox checkbox-success">
+        <input type="checkbox" [(ngModel)]="filter.isOpex" (ngModelChange)="resetList()" [ngModelOptions]="{standalone: true}">
+        <span>Is Opex</span>
+        <span class="checkmark"></span>
+      </label>
+    </div>
+    <!-- <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openWorkOrderModal()">
+      <i class="fa fa-plus"></i> WorkOrder
+    </button> -->
+    <div class="clear"></div>
+  </div>
+  <div class="row" *ngIf="moreFilters">
+    <div class="col-md-6 pt-2">
+      <span class="badge fs-12 mr-2 cursor" *ngFor="let building of buildingWorkOrders;" [ngClass]="{'badge-outline-primary':selectedBuilding?.id!=building?.id,'badge-primary':selectedBuilding?.id==building?.id}" (click)="selectBuilding(building)">{{building?.name}} ({{building?.count}})</span>
+    </div>
+    <div class="col-md-6 pt-2">
+      <span class="badge fs-14 mr-2 cursor" *ngIf="totalWorkOrdersCount>0">Total - {{totalWorkOrdersCount}} </span>
+      <span class="badge fs-12 mr-2 cursor badge-outline-primary" *ngFor="let status of wosByStatuses;" (click)="filter.statuses=[status.status];resetList();">{{status?.status}} ({{status?.count}})</span>
+    </div>
+  </div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <!-- <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/purchases/listWorkOrders'" [config]="config" (onAction)="action($event)"></data-list>
+      </div> -->
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-15" (click)="sortColBy('project.title')">Project/Building &nbsp; <i *ngIf="sort['project.title']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['project.title']?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-15" (click)="sortColBy('vendor.name')">Vendor &nbsp; <i *ngIf="sort['vendor.name']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['vendor.name']?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-15" (click)="sortColBy('refNo')">RefNo &nbsp; <i *ngIf="sort['refNo']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['refNo']?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-10" (click)="sortColBy('proposedBy')">ProposedBy &nbsp; <i *ngIf="sort['proposedBy']?.asc" class="fa fa-caret-up"></i><i *ngIf="sort['proposedBy']?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-10" (click)="sortColBy('date')">ProposedOn &nbsp; <i *ngIf="sort.date?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.date?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-10 text-right" (click)="sortColBy('budget')">Budget &nbsp; <i *ngIf="sort.budget?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.budget?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-15" (click)="sortColBy('status')">Status &nbsp; <i *ngIf="sort.status?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.status?.desc" class="fa fa-caret-down"></i></th>
+            <th class="w-10 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="tableBodyScroll" infiniteScroll (onScroll)="loadMore()">
+          <tr *ngFor="let wo of items;">
+            <td class="w-15" *ngIf="!wo.project">{{wo.building?.name}}</td>
+            <td class="w-15" *ngIf="wo.project">{{wo.project?.title}}</td>
+            <td class="w-15">{{wo.vendor?.name}}</td>
+            <td class="w-15">{{wo.refNo}}</td>
+            <td class="w-10">{{wo.proposedBy}}</td>
+            <td class="w-10">{{wo.proposedOn | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-10 text-right">{{wo.budget | inr}}</td>
+            <td class="w-15">
+              <ng-select class="mini" [items]="['Raised','Approved','PORaised','Closed','Deleted']" [hideSelected]="true" [(ngModel)]="wo.status" [ngModelOptions]="{standalone: true}" (ngModelChange)="updateWOStatus(wo)" placeholder="Status"></ng-select>
+            </td>
+            <td class="w-10 text-center">
+              <button class="btn btn-sm btn-icon btn-primary" (click)="viewWO(wo)" ngbTooltip="View"><i class="fa fa-search"></i></button>
+              <button class="btn btn-sm btn-icon btn-info" *ngIf="!filter.isOpex && !wo.projectId" (click)="openProjectAssignModal(wo)" ngbTooltip="Assign to Project"><i class="fa fa-check"></i></button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<ng-template #workOrderModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{workOrder.id ? 'Edit WorkOrder' : 'New WorkOrder'}}
+      <small *ngIf="selectedBuildings.length"> for {{selectedBuildings[0]?.name}}</small></h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mb-10" *ngIf="selectedItems.length">
+      <strong class="pl-4">Selected SKU Items</strong>
+      <div class="row col-12 border-bottom ml-0 mb-1">
+        <div class="f-b col-2">SKU</div>
+        <div class="f-b col-3">Vendor</div>
+        <div class="f-b col-4">PaymentTerm</div>
+        <div class="f-b col-1 pl-0 pr-0 text-center">Quantity</div>
+        <div class="f-b col-2 pr-0 pl-0 text-center">Price</div>
+      </div>
+      <div class="row col-12 ml-0 border-bottom" *ngFor="let item of selectedItems;">
+        <div class="col-2">{{item.skuName}}</div>
+        <div class="col-3">{{item.vendor}}</div>
+        <div class="col-4 pl-0 pr-0">{{item.paymentTerm}} <small>{{item.paymentTermTag}}</small></div>
+        <div class="col-1 pl-0 pr-0 text-center">{{item.quantity}}</div>
+        <div class="col-2 pr-0 pl-0 text-center">{{item.price | inr}}
+          <i class="fa fa-times d-b fa-2x text-danger pull-right" ngbTooltip="Remove Item" (click)="removeSelectedItem(item)"></i></div>
+      </div>
+    </div>
+    <form [formGroup]="workOrderForm">
+      <div class="row">
+        <div class="form-group col-md-4" *ngIf="!selectedBuildings[0]?.id">
+          <label for="firstName">Select Building</label>
+          <tag-input [formControl]="selectedBuilding" theme='primary' [(ngModel)]="selectedBuildings" secondaryPlaceholder="Type Building name to search" (onTextChange)="onBuildingSearch($event)" maxItems="1" [onlyFromAutocomplete]="true">
+            <tag-input-dropdown [autocompleteItems]="autocompleteBuildings" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+              <ng-template let-item="item" let-index="index">
+                {{item.name}}, {{item.location.name}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="form-group col-md-4" *ngIf="selectedBuildings.length && !selectedSkus[0]?.id">
+          <label for="firstName">Select SKU</label>
+          <tag-input [formControl]="selectedSku" theme='primary' [(ngModel)]="selectedSkus" secondaryPlaceholder="Type SKU name to search" (onTextChange)="onSKuSearch($event)" maxItems="1" [onlyFromAutocomplete]="true">
+            <tag-input-dropdown [autocompleteItems]="autocompleteSkus" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'sku'" [identifyBy]="skuId">
+              <ng-template let-item="item" let-index="index">
+                {{item.sku}}, {{item.type}}, {{item.category}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="form-group row" *ngIf="selectedSkus.length" [ngClass]="selectedSkus[0]?.id?'col-md-12':'col-md-8'">
+          <div class="col-3 pl-0 pr-0">
+            <label for="firstName">SKU Category</label>
+            <div>{{selectedSkus[0]?.category}}</div>
+          </div>
+          <div class="col-3 pl-0 pr-0">
+            <label for="firstName">SKU Type</label>
+            <div>{{selectedSkus[0]?.type}}</div>
+          </div>
+          <div class="col-4 pl-0 pr-0">
+            <label for="firstName">SKU Item</label>
+            <div>{{selectedSkus[0]?.sku}}</div>
+          </div>
+          <div class="col-2 p-0">
+            <label for="firstName">Quantity</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedSkus[0].quantity" placeholder="Enter Qty" [ngModelOptions]="{standalone: true}" (ngModelChange)="searchVendorSkus()">
+          </div>
+        </div>
+      </div>
+      <div class="row" *ngIf="vendors.length && selectedSkus.length">
+        <div class="row col-12 border-bottom ml-0 mb-1">
+          <div class="col-3">Vendor Name</div>
+          <div class="col-5">Payment Term</div>
+          <div class="col-2 pl-0">Quantity Range</div>
+          <div class="col-2">Price</div>
+        </div>
+        <div class="row col-12 ml-0 border-bottom" *ngFor="let vendor of vendors;">
+          <div class="col-3 p-1">{{vendor.vendorName}}</div>
+          <div class="col-9 p-1">
+            <div class="row col-12 p-0 mb-1" *ngFor="let paymentTerm of vendor.paymentTerms;">
+              <div class="col-7 p-0 pr-3">{{paymentTerm.name}} <small>{{paymentTerm.tagName}}</small></div>
+              <div class="col-5 p-0">
+                <div class="col-12 row p-0" *ngFor="let pricing of paymentTerm.pricings;" [ngClass]="pricing.inRange?'selected-light':''" (click)="selectVendorPrice(paymentTerm, pricing)">
+                  <div class="col-7 text-center">{{pricing.minQty}} - {{pricing.maxQty}}</div>
+                  <div class="col-5 text-center">{{pricing.price | inr}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!selectedItems.length" (click)="raiseWorkOrders()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #assignModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Assign Project</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row">
+      <div class="col-md-12 form-group mb-1">
+        <label class="d-b">Select Project</label>
+        <ng-select [items]="projectsToAssign" [closeOnSelect]="true" [hideSelected]="true" bindLabel="title" placeholder="Select Project to assign" [(ngModel)]="assignedProject" [ngModelOptions]="{standalone: true}" (ngModelChange)="assignProject()"></ng-select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer d-b">
+    <button type="button" class="btn btn-outline-light btn-sm float-right" (click)="modal.close()">Close</button>
+    <!--  <button type="button" class="btn btn-outline-info float-left btn-sm" [disabled]="!po.projectId" (click)="assignProject()">Assign Project</button> -->
+  </div>
+</ng-template>
+<ng-template #helpNotesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Help Notes</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body p-0">
+    <ngb-tabset class="nav-center">
+      <ngb-tab title="WorkOrders Status Definition">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:WOStatusDefinition'" [type]="'notes'" class="text-center"></help-notes>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="WorkOrders Status Flow">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:WOStatusFlow'" [type]="'notes'" class="text-center"></help-notes>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

@@ -1,0 +1,72 @@
+<div class="">
+  <div class="breadcrumb row">
+    <h1 class="mb-2 d-ib col-md-2 float-left">Bookings</h1>
+    <div class="clear"></div>
+  </div>
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="clear"></div>
+  <div class="list-horizontal tableBodyScroll" infiniteScroll (onScroll)="loadMore()" style="overflow:auto;max-height: calc(100vh - 140px);margin-top: 10px;">
+    <!-- SINGLE LIST ITEM -->
+    <loading [loading]="loading"></loading>
+    <div *ngFor="let item of items;let i=index" class="list-item col-md-12">
+      <div class="card mb-2 d-flex flex-row">
+        <div class="flex-grow-1 d-flex">
+          <div class="card-body align-self-center pl-2 d-flex flex-column justify-content-between align-items-lg-center flex-lg-row p-1">
+            <a href="" class="w-35 w-sm-100">
+              <div class="f-b">{{item.client?.company || item.client?.name}}</div>
+              <span class="m-0 text-secondary text-smal">{{item.refNo}}</span>
+              <span class="mr-20 text-secondary text-smal pull-right d-ib">Rent: <span class="m-0 text-primary">{{item.contract?.rent | inr}}</span></span>
+            </a>
+            <div class="m-0 text-muted text-small w-20 w-sm-100">
+              <div class="text-primary"><i class="i-Building"></i> {{item.offices}}</div>
+              <span class="text-secondary">Cabins - {{item.cabins}}, Desks - {{item.desks}}</span>
+            </div>
+            <div class="m-0 text-muted text-small w-30 w-sm-100 d-b">
+              <div class="w-50 float-left">
+                <div class="d-b text-primary"> <span class="text-secondary">R :</span> {{item.reserved | date : 'MMM dd, yyyy'}}</div>
+                <span class="d-b text-info"> <span class="text-secondary">M :</span> {{item.started | date : 'MMM dd, yyyy'}}</span>
+              </div>
+              <div class="m-0 text-muted text-small w-40 item-actions  mr-1 ml-5 float-right">
+                <div class="badge float-right" [ngClass]="{'badge-dark':item.status=='Reserved','badge-info':item.status=='Booked','badge-success':item.status=='Active','badge-warning':item.status=='Cancelled','badge-secondary':item.status=='Exiting','badge-light':item.status=='Exited','badge-light':item.status=='Settled'}">{{item.status}}</div>
+                <div class="clear"></div>
+                <button class="btn btn-outline-info btn-sm m-1 ml-10 btn-ico pull-right" *ngIf=" item.status=='Active'" ngbTooltip="Request for Exit" (click)="openExitRequest(item)">
+                  <i class="fa fa-sign-out"></i> Request Exit
+                </button>
+                <button class="btn btn-outline-warning btn-sm m-1 ml-10 btn-ico pull-right" *ngIf="item.status=='Exiting' && item.exitRequest?.fcpStatus!='Approved'" ngbTooltip="Cancel Exit Request" (click)="cancelExitRequest(item)" [ladda]="loading" [disabled]="loading">
+                  <i class="fa fa-times" *ngIf="!loading"></i> Cancel Exit
+                </button>
+                <button class="btn btn-outline-info btn-sm m-1 ml-10 btn-ico pull-right" *ngIf=" item.exitRequest?.fcpStatus=='Approved'" routerLink="/client/exit/{{item.id}}">
+                  View Final Statement
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #exitRequestModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Request for Exit</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="exitForm">
+      <div class="row">
+        <div class="col-md-12 form-group">
+          <input placeholder="Select Exit date " class="form-control" name="exitDate" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="exitDate" formControlName="exitDate" (focus)="dp.toggle()" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-primary btn-sm ml-10 btn-ico pull-right" (click)="requestExit()" [ladda]="loading" [disabled]="loading||!exitForm.valid">
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm Exit
+    </button>
+  </div>
+</ng-template>

@@ -1,0 +1,179 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Account Receivables (AR) Report</h4>
+    <input type="text" placeholder="Search by office or location" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2 mt--10">
+    <button *checkAccess="'accounts:addARComments'" type="button" class="btn btn-outline-primary pull-right btn-ico btn-sm mt--10" (click)="openARComments()"><i class="fa fa-comments"></i> Open AR Comments</button>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:AR'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row p-1 ml-0 mr-0 w-50">
+          <div class="form-group pl-1 col-md-4 mb-1">
+            <label for="roles">Select Country</label>
+            <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-4 mb-1" *ngIf="selectedCountry?.id">
+            <label for="roles">Select City</label>
+            <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-4 mb-1" *ngIf="selectedCity?.id">
+            <label for="roles">Select Location</label>
+            <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (ngModelChange)="onLocationSelected()">
+            </ng-select>
+          </div>
+        </div>
+        <!--     <div style="margin-top: -20px">
+           <div class="pull-right mr-10">Highly Due </div>
+          <div class="desk pull-right m-1">
+            <div class="p-2 bg-danger" ngbTooltip="More Due"></div>
+          </div>
+          <div class="pull-right mr-10">Little Due </div>
+          <div class="desk pull-right m-1">
+            <div class="p-2 bg-warning" ngbTooltip="Little Due"></div>
+          </div>
+          <div class="pull-right mr-10">No Dues </div>
+          <div class="desk pull-right m-1">
+            <div class="p-2 bg-light" ngbTooltip="Full Paid"></div>
+          </div>
+        </div> -->
+        <div style="margin-top: -10px" *ngIf="buildings.length">
+          <div class="pull-right mr-20 fs-14 mt--10">Total Due : <strong>{{totalDue | inr}}</strong></div>
+        </div>
+        <div class="row">
+          <div class="table-responsive pl-4 pr-1" *ngIf="buildings.length" [ngClass]="officesFilters.buildingId ? 'col-3':'col-12'">
+            <h5 class="pull-left mb-1">Buildings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th [ngClass]="officesFilters.buildingId ? 'w-60':'w-30'">Name</th>
+                  <th class="w-10 text-right pr-3" *ngIf="!officesFilters.buildingId">Invoiced</th>
+                  <th class="w-10 text-right pr-3" *ngIf="!officesFilters.buildingId">Paid</th>
+                  <th class="text-right pr-3" [ngClass]="officesFilters.buildingId ? 'w-20':'w-10'">Due</th>
+                  <th class="text-center" [ngClass]="officesFilters.buildingId ? 'w-20':'w-10'">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings;" [ngClass]="{ 'selected':building.selected,'bg-light':building.available==0 , 'bg-danger':building.available>building.total/2,
+                      'bg-warning':(building.available<building.total/2 && building.available>10), 'bg-success':building.available>0&&building.available<10}">
+                  <td [ngClass]="officesFilters.buildingId ? 'w-60':'w-30'">{{building.building}}</td>
+                  <td class="w-10 text-right" *ngIf="!officesFilters.buildingId">{{building.invoiced |inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!officesFilters.buildingId">{{building.paid | inr}}</td>
+                  <td class="text-right" [ngClass]="officesFilters.buildingId ? 'w-50':'w-10'">{{building.due | inr}}</td>
+                  <td class="text-center" [ngClass]="officesFilters.buildingId ? 'w-20':'w-10'">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Floors" (click)="loadOffices(building)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-responsive pl-1 pr-1" *ngIf="offices.length" [ngClass]="officesFilters.officeId ? 'col-3':'col-9'">
+            <h5 class="pull-left mb-1">'{{selectedBuilding.building}}' Floors</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th [ngClass]="officesFilters.officeId ? 'w-60':'w-30'">Name</th>
+                  <th class="w-10 text-right pr-3" *ngIf="!officesFilters.officeId">Invoiced</th>
+                  <th class="w-10 text-right pr-3" *ngIf="!officesFilters.officeId">Paid</th>
+                  <th class="text-right pr-3" [ngClass]="officesFilters.officeId ? 'w-20':'w-10'">Due</th>
+                  <th class="text-center" [ngClass]="officesFilters.officeId ? 'w-20':'w-10'">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let office of offices;" [ngClass]="{ 'selected':office.selected,'bg-light':office.available==0 , 'bg-danger':office.available>office.total/2,
+                      'bg-warning':(office.available<office.total/2 && office.available>10), 'bg-success':office.available>0&&office.available<10}">
+                  <td [ngClass]="officesFilters.officeId ? 'w-60':'w-30'">{{office.office}}</td>
+                  <td class="w-10 text-right" *ngIf="!officesFilters.officeId">{{office.invoiced |inr}}</td>
+                  <td class="w-10 text-right" *ngIf="!officesFilters.officeId">{{office.paid | inr}}</td>
+                  <td class="text-right" [ngClass]="officesFilters.officeId ? 'w-50':'w-10'">{{office.due | inr}}</td>
+                  <td class="text-center" [ngClass]="officesFilters.officeId ? 'w-20':'w-10'">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Bookings" (click)="loadBookings(office)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-6 p-1 pr-4" *ngIf="officesFilters.officeId">
+            <h5 class="text-left mb-1 border-bottom w-100">'{{selectedOffice.office}}' Bookings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-40">Name</th>
+                  <th class="w-15 text-right pr-2">Invoiced</th>
+                  <th class="w-15 text-right pr-2">Paid</th>
+                  <th class="w-15 text-right pr-2">Due</th>
+                  <th class="w-15 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let booking of selectedOffice.bookings;" [ngClass]="booking.selected ? 'selected':''">
+                  <td class="w-40">{{booking.client}}</td>
+                  <td class="w-15 text-right">{{booking.invoiced | inr}}</td>
+                  <td class="w-15 text-right">{{booking.paid | inr}}</td>
+                  <td class="w-15 text-right">{{booking.due | inr}}</td>
+                  <td class="w-15 text-center">
+                    <a class="btn btn-icon btn-primary" ngbTooltip="AR Comments" (click)="openARComments(booking)">
+                      <i class="fa fa-comments"></i></a>
+                    <a class="btn btn-icon btn-primary" ngbTooltip="View Booking" target="_blank" href="#/bookings/view/{{booking.bookingId}}"><i class="i-Blinklist"></i></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="m-auto">
+              <loading [loading]="loading"></loading>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #commentsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">AR Comments</h4>
+    <input *ngIf="!comment.bookingId" type="text" placeholder="Search by client" class="form-control form-control-rounde pull-left w-50 ml-1" [(ngModel)]="commentsSearch" (ngModelChange)="listARComments(commentsSearch)">
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="commentForm" class="mt--10" *ngIf="comment.bookingId">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label>New Comment</label>
+          <textarea class="form-control" id="comments" formControlName="comments" placeholder="Enter comments" [(ngModel)]="comment.comments"></textarea>
+        </div>
+      </div>
+    </form>
+    <table class="tableBodyScroll table table-striped table-hover table-sm">
+      <thead>
+        <tr>
+          <th class="w-20">Client</th>
+          <th class="w-10">Amount</th>
+          <th class="w-40">Comment</th>
+          <th class="w-15 text-center">Updated</th>
+          <th class="w-15 text-center">By</th>
+        </tr>
+      </thead>
+      <tbody infiniteScroll class="tableBodyScroll" (onScroll)="listARComments()">
+        <tr *ngFor="let comment of comments;" class="fs-12">
+          <td class="w-20">{{comment?.booking?.client?.company}}</td>
+          <td class="w-10">{{comment?.amount | inr}}</td>
+          <td class="w-40">{{comment?.comments}}</td>
+          <td class="w-15 text-center">{{comment?.updated | date:'MMM dd, yy HH:mm'}}</td>
+          <td class="w-15 text-center">{{comment?.updatedBy}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button *ngIf="comment.bookingId" class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||commentForm.invalid" (click)="saveComment()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

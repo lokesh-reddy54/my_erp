@@ -1,0 +1,271 @@
+<div class="row">
+  <div class="col-md-12 col-12 m-auto">
+    <div class="breadcrumb">
+      <h1 class="pull-left">Accept Final Statement</h1>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="card  mb-1 d-b m-auto mt-4" *ngIf="!booking">
+      <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+    </div>
+    <div class="card user-profile o-hidden mb-1 d-b" *ngIf="booking">
+      <div class="float-right w-60 text-right pr-3 pt-1">
+        <p class="text-info  text-14 m-0 float-right">MoveIn : <strong>{{booking.started | date : 'MMM dd, yyyy'}}</strong></p>
+        <p class="text-secondary text-14 m-0 pr-2 float-right">Booked : <strong>{{booking.reserved | date :'MMM dd, yyyy'}}</strong></p>
+      </div>
+      <div class="card-body pt-1">
+        <h4 class=" border-bottom pb-2">Booking Information</h4>
+        <div class="row">
+          <div class="col-md-5 col-12 mb-2">
+            <p class="m-0 text-14">{{booking.client.company}} </p>
+            <p class="m-0 text-12">{{booking.refNo}} </p>
+          </div>
+          <div class="col-md-3 col-12 mb-2">
+            <p class="m-0 text-14">{{booking.client.name}} </p>
+            <p class="m-0 text-12">{{booking.client.phone}} </p>
+          </div>
+          <div class="col-md-2 col-12 mb-2">
+            <p class="text-muted mb-0">Status : </p>
+            <span class="badge" [ngClass]="{'badge-info':booking.status=='Booked','badge-success':booking.status=='Active','badge-warning':booking.status=='Cancelled','badge-secondary':booking.status=='Exiting','badge-light':booking.status=='Exited'}">{{booking.status}}</span>
+          </div>
+          <div class="col-md-2 col-12 mb-2">
+            <p class="text-muted mb-0">Contract Type : </p>
+            <span class="">{{booking.contract.type}}</span>
+          </div>
+          <div class="col-md-8 col-12 mb-2">
+            <p class="text-muted mb-0">Office : </p>
+            <span class="text-bold">{{booking.offices}}, {{booking.location}}</span>
+          </div>
+          <div class="col-md-2 col-6 mb-2">
+            <p class="text-muted mb-0">Total Desks : </p>
+            <span class="">{{booking.desks}}</span>
+          </div>
+        </div>
+        <h4 class=" border-bottom pb-2">Final Statement</h4>
+        <div class="row pr-0 pl-0">
+          <div class="col-md-6 col-12">
+            <ngb-accordion #acc="ngbAccordion" [activeIds]="['panel-0','panel-1','panel-2','panel-3']">
+              <ngb-panel id="panel-0">
+                <ng-template ngbPanelTitle>
+                  <span class="pull-left d-ib f-b fs-14">Exit Charges and Penality Calculation</span>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                  <div class="mb-0">
+                    <div class="w-50 w-sm-100 float-left">
+                      <span class="f-b d-block d-md-inline">Exit Requested Date : </span> <span>{{booking.exitRequest.requestedDate | date}}</span>
+                    </div>
+                    <div class="w-50 w-sm-100 float-left">
+                      <span class="f-b d-block d-md-inline">Exit Date : </span> <span>{{booking.exitRequest.exitDate | date}}</span>
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <div class="w-50 w-sm-100 float-left">
+                      <span class="f-b d-block d-md-inline">Exit Requested : </span> before {{exitCalculations.requestedBeforeDays}} days<span></span>
+                    </div>
+                    <div class="w-50 w-sm-100 float-left">
+                      <span class="f-b d-block d-md-inline">Stay Duration : </span> <span>{{exitCalculations.stayDuration}} days</span>
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <h5 class="border-bottom mb-2">Early Exit Charge</h5>
+                    <p class="mb-0"><span class="f-b w-30">Statement : </span> {{exitCalculations.earlyExitCharge.statement}}</p>
+                    <p class="mb-0" *ngIf="exitCalculations.earlyExitCharge.charge && booking.contract.lockInPenaltyType!='Fixed'">
+                      <span class="f-b w-30">Penality Type : </span> Charge of {{booking.contract.lockInPenalty}} month(s) rent on prorata basis for remaining days </p>
+                    <p class="mb-0" *ngIf="exitCalculations.noticePeriodPenality.charge && booking.contract.lockInPenaltyType=='Fixed'">
+                      <span class="f-b w-30">Penality Type : </span> Fixed amount of {{booking.contract.lockInPenalty | inr}} </p>
+                    <p class="mb-0"><span class="f-b w-30">Penality Charge : </span> {{exitCalculations.earlyExitCharge.charge | inr}}</p>
+                  </div>
+                  <div class="mb-0">
+                    <h5 class="border-bottom  mb-2">Notice Period Penality</h5>
+                    <p class="mb-0"><span class="f-b w-30">Statement : </span> {{exitCalculations.noticePeriodPenality.statement}}</p>
+                    <p class="mb-0" *ngIf="exitCalculations.noticePeriodPenality.charge && booking.contract.noticePeriodViolationType!='Fixed'">
+                      <span class="f-b w-30">Penality Type : </span> Charge of {{booking.contract.noticePeriodViolation}} month(s) rent on prorata basis for remaining days </p>
+                    <p class="mb-0" *ngIf="exitCalculations.noticePeriodPenality.charge && booking.contract.noticePeriodViolationType=='Fixed'">
+                      <span class="f-b w-30">Penality Type : </span> Fixed amount of {{booking.contract.noticePeriodViolation | inr}} </p>
+                    <p class="mb-0"><span class="f-b w-30">Penality Charge : </span> {{exitCalculations.noticePeriodPenality.charge | inr}}</p>
+                  </div>
+                </ng-template>
+              </ngb-panel>
+              <ngb-panel id="panel-1">
+                <ng-template ngbPanelTitle>
+                  <span class="pull-left d-ib f-b fs-14">Asset Damage Charges</span>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                  <h5 *ngIf="booking.exitRequest.acrs?.length==0" class="">No Asset Damage Charges recorded</h5>
+                  <table class="tableBodyScroll table table-striped table-hover table-sm mb-0" *ngIf="booking.exitRequest.acrs?.length">
+                    <thead>
+                      <tr>
+                        <th class="w-75">Damage</th>
+                        <th class="w-15">Charge</th>
+                        <th class="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody style="overflow:auto;max-height: 400px;">
+                      <tr *ngFor="let acr of booking.exitRequest.acrs;">
+                        <td class="w-75"> {{acr.damage}}</td>
+                        <td class="w-15">{{acr.charge | inr}}</td>
+                        <td class="w-10"><button class="btn btn-icon btn-outline-danger btn-sm" (click)="deleteAcr(acr)" ngbTooltip="Delete Charge" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-times"></i></button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </ng-template>
+              </ngb-panel>
+              <ngb-panel id="panel-2">
+                <ng-template ngbPanelTitle>
+                  <span class="pull-left d-ib f-b fs-14">Other Deductions</span>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                  <h5 *ngIf="booking.exitRequest.deductions?.length==0" class="">No Other Deductions recorded</h5>
+                  <table class="tableBodyScroll table table-striped table-hover table-sm mb-0" *ngIf="booking.exitRequest.deductions?.length">
+                    <thead>
+                      <tr>
+                        <th class="w-75">Description</th>
+                        <th class="w-15">Deduction</th>
+                        <th class="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody style="overflow:auto;max-height: 400px;">
+                      <tr *ngFor="let deduction of booking.exitRequest?.deductions;">
+                        <td class="w-75"> {{deduction.description}}</td>
+                        <td class="w-15">{{deduction.charge | inr}}</td>
+                        <td class="w-10"><button class="btn btn-icon btn-outline-danger btn-sm" (click)="deleteDeduction(deduction)" ngbTooltip="Delete Deduction" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-times"></i></button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </ng-template>
+              </ngb-panel>
+              <ngb-panel id="panel-3">
+                <ng-template ngbPanelTitle>
+                  <span class="pull-left d-ib f-b fs-14">Comments</span>
+                </ng-template>
+                <ng-template ngbPanelContent>
+                  <h5 *ngIf="!booking.exitRequest.comments?.length" class="">No comments added</h5>
+                  <table class="tableBodyScroll table table-striped table-hover table-sm mb-0" *ngIf="booking.exitRequest.comments?.length">
+                    <thead>
+                      <tr>
+                        <th class="w-90">Comment</th>
+                        <th class="w-10"></th>
+                      </tr>
+                    </thead>
+                    <tbody style="overflow:auto;max-height: 400px;">
+                      <tr *ngFor="let comment of booking.exitRequest?.comments;">
+                        <td class="w-90"> {{comment.comment}}</td>
+                        <td class="w-10"><button class="btn btn-icon btn-outline-danger btn-sm" (click)="deleteComment(comment)" ngbTooltip="Delete Comment" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'"><i class="fa fa-times"></i></button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </ng-template>
+              </ngb-panel>
+            </ngb-accordion>
+          </div>
+          <div class="col-md-6 col-12 accordion">
+            <div class="card">
+              <div class="card-header" role="tab">
+                <button class="btn btn-link" type="button"><span class="f-b fs-14">Exit Final Statement</span></button>
+              </div>
+              <div class="card-body">
+                <loading [loading]="loading"></loading>
+                <table class="tableBodyScroll table table-striped table-hover table-sm mb-3">
+                  <thead>
+                    <tr>
+                      <th class="w-70">Item</th>
+                      <th class="w-30 text-right">Charge</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="w-70">Monthly payments till exit date</td>
+                      <td class="w-30 text-right">{{booking.exitRequest.monthlyInvoices | inr}}</td>
+                    </tr>
+                    <tr>
+                      <td class="w-70">Early Exit Charge</td>
+                      <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.earlyExitCharge | inr}}</td>
+                      <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                        <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.earlyExitCharge" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="w-70">Notice Penalty Charge</td>
+                      <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.noticePeriodPenalty | inr}}</td>
+                      <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                        <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.noticePeriodPenalty" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="w-70">Asset Damage Charges</td>
+                      <td class="w-30 text-right">{{booking.exitRequest.assetDamages | inr}}</td>
+                    </tr>
+                    <tr>
+                      <td class="w-70">Other Deductions</td>
+                      <td class="w-30 text-right">{{booking.exitRequest.otherDeductions | inr}}</td>
+                    </tr>
+                    <tr>
+                      <td class="w-70">TDS Liability</td>
+                      <td class="w-30 text-right">{{booking.exitRequest.tdsLiability | inr}}</td>
+                    </tr>
+                    <tr>
+                      <td class="w-70">De-Registration Liability</td>
+                      <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.deregistrationLiability | inr}}</td>
+                      <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                        <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.deregistrationLiability" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="w-70">TDS Penality</td>
+                      <td class="w-30 text-right" *ngIf="booking.exitRequest.fcpStatus && booking.exitRequest.fcpStatus!='Rejected'">{{booking.exitRequest.tdsPenalty | inr}}</td>
+                      <td class="w-30 text-right" *ngIf="!booking.exitRequest.fcpStatus || booking.exitRequest.fcpStatus=='Rejected'">
+                        <span class="float-left pr-1 pt-2">Rs.</span> <input type="number" class="d-ib form-control float-left w-70 text-right" [(ngModel)]="booking.exitRequest.tdsPenalty" [ngModelOptions]="standalone" (ngModelChange)="calculateExpectedAmount()" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="w-70 f-b">Total Expected Amount</td>
+                      <td class="w-30 text-right">{{booking.exitRequest.expectedAmount | inr}}</td>
+                    </tr>
+                    <tr>
+                      <td class="w-70 f-b">Total Paid (including Security Deposit)</td>
+                      <td class="w-30 text-right f-b ">{{booking.paid | inr}}</td>
+                    </tr>
+                    <tr *ngIf="booking.exitRequest.due" class="">
+                      <td class="w-70 f-b">Total Due</td>
+                      <td class="w-30 text-right f-b" style="background: #d22346;color:#fff;">{{booking.exitRequest.due | inr}}</td>
+                    </tr>
+                    <tr *ngIf="booking.exitRequest.refund" class="">
+                      <td class="w-70 f-b">To Refund</td>
+                      <td class="w-30 text-right f-b" style="background: #82A0DF;color:#fff;">{{booking.exitRequest.refund | inr}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <h3 *ngIf="booking.exitRequest.fcpStatus=='Accepted'" class="text-center f-b text-success mt-2">Final statement accepted ..!! </h3>
+                <div *ngIf="booking.exitRequest.fcpStatus!='Accepted'">
+                  <button class="btn btn-info btn-sm ladda-button btn-ico float-right" [disabled]="showBankDetail" (click)="booking.exitRequest.refund > 0 ? showBankDetail=true : acceptFinalStatement()"><i class="fa fa-check" *ngIf="!loading"></i> Accept Final Statement</button>
+                  <div class="clear"></div>
+                  <div *ngIf="showBankDetail">
+                    <h5 class="border-bottom mb-2">Client Refund Bank Detail : </h5>
+                    <form [formGroup]="form">
+                      <div class="row">
+                        <div class="col-12 form-group mb-1">
+                          <label for="firstName">Benificiary Name</label>
+                          <input type="text" class="form-control" id="benificiaryName" formControlName="benificiaryName" placeholder="Enter Account Benificiary Name here" [(ngModel)]="booking.client.benificiaryName">
+                        </div>
+                        <div class="col-12 form-group mb-1">
+                          <label for="firstName">Account Number</label>
+                          <input type="text" class="form-control" id="accountNumber" formControlName="accountNumber" placeholder="Enter Account Number here" [(ngModel)]="booking.client.accountNumber">
+                        </div>
+                        <div class="col-12 form-group mb-1">
+                          <label for="firstName">IFSC Code</label>
+                          <input type="text" class="form-control" id="ifscCode" formControlName="ifscCode" placeholder="Enter IFSC Code" [(ngModel)]="booking.client.ifscCode">
+                        </div>
+                      </div>
+                    </form>
+                    <button type="button" class="btn btn-outline-light float-left" (click)="showBankDetail=false;">Cancel</button>
+                    <button class="btn btn-info btn-sm ladda-button btn-ico float-right" [ladda]="loading" (click)="acceptFinalStatement()"><i class="fa fa-check" *ngIf="!loading"></i> Confirm Final Statement</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

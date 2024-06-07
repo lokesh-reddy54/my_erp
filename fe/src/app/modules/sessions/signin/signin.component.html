@@ -1,0 +1,62 @@
+<div class="card o-hidden" [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="p-4">
+        <div class="auth-logo text-center mb-4">
+          <img [src]="company?.logo || './assets/images/flogo.png'" alt="" style="width:100% !important;">
+        </div>
+        <div *ngIf="!emailLogin">
+          <!-- <h1 class="mb-3 text-18 float-left">Sign In</h1> -->
+          <span (click)="emailLogin=true;" class="cursor float-right">Login with Password</span>
+          <div class="clear"></div>
+          <form [formGroup]="otpForm">
+            <div class="row">
+              <div class="form-group col-12">
+                <!-- <label for="phone">Phone Number</label> -->
+                <input id="phone" class="text-center form-control form-control-rounded" formControlName="phone" type="phone" placeholder="Enter your valid registered Phone Number" [(ngModel)]="form.phone">
+              </div>
+              <div class="col-12 mt-4" *ngIf="otpForm.controls.phone.valid && !otpSent">
+                <btn-loading btnClass="btn-primary btn-rounded btn-block mt-3" [loadingText]="loadingText" [loading]="loading" (click)="requestOtp()">
+                  Request OTP
+                </btn-loading>
+              </div>
+              <div class="col-12" *ngIf="otpSent">
+                <!-- <label for="phone">Enter OTP</label> -->
+                <input type="number" class="text-center form-control form-control-rounded" formControlName="otp" placeholder="Enter valid OTP" [(ngModel)]="form.otp">
+              </div>
+              <div class="col-12 mt-4" *ngIf="otpSent">
+                <button class="btn btn-info btn-sm btn-ico btn-rounded btn-block" [disabled]="otpForm.invalid" (click)="verifyOtp()" [ladda]="loading"><i class="fa fa-check" *ngIf="!loading"></i> Verify Now</button>
+              </div>
+            </div>
+            <div class="mt-3 text-center" *ngIf="otpSent">
+              <a href="javascript:void(0)" class="text-muted" (click)="requestOtp()"><u>Resend OTP</u></a>
+            </div>
+          </form>
+        </div>
+        <div *ngIf="emailLogin">
+          <h1 class="mb-3 text-18 float-left">Login</h1>
+          <span (click)="emailLogin=false;" class="cursor float-right">Login with OTP</span>
+          <div class="clear"></div>
+          <form [formGroup]="signinForm">
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+              </div>
+              <input class="form-control" placeholder="Enter Email" formControlName="email" type="email">
+            </div>
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fa fa-lock" style="font-size: 1.1rem !important;"></i></span>
+              </div>
+              <input class="form-control" placeholder="Enter Password" formControlName="password" type="password">
+            </div>
+            <button class="btn btn-primary btn-sm btn-block ladda-button btn-ico" [ladda]="loading" [disabled]="signinForm.invalid" (click)="signin()"><i class="fa fa-check" *ngIf="!loading"></i> Login</button>
+          </form>
+          <div class="mt-3 text-center">
+            <a class="text-muted cursor f-b" routerLink="/sessions/forgot"> Forgot Password?</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

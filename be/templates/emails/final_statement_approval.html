@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title></title>
+  <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+  <style type="text/css">
+  body {
+    font-family: Nunito, sans-serif;
+    letter-spacing: .3px;
+    line-height: 1.6;
+    font-size: .813rem;
+    font-weight: 400;
+    color: #47404f;
+  }
+
+  .h4,
+  h4 {
+    font-size: 1.21625rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 0;
+  }
+
+  .h5,
+  h5 {
+    font-size: 1.01625rem;
+    margin-bottom: .5rem;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .card {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px 1px rgba(0, 0, 0, .06), 0 1px 4px rgba(0, 0, 0, .08);
+    border: 0;
+  }
+
+  .card {
+    position: relative;
+    display: block;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+  }
+
+  .card-body {
+    flex: 1 1 auto;
+    padding: 1.25rem;
+  }
+
+  .row {
+    display: block;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+  }
+
+  .col-md-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .invoice-summary {
+    width: 220px;
+    text-align: right;
+  }
+
+  .float-right {
+    float: right !important;
+  }
+
+  .invoice-summary h5,
+  .invoice-summary p {
+    display: block;
+    justify-content: flex-end;
+  }
+
+  .account-summary p {
+    display: block;
+    justify-content: flex-start;
+  }
+
+  .invoice-summary h5 span,
+  .invoice-summary p span {
+    width: 120px;
+  }
+
+  .account-summary p span {
+    width: 120px;
+  }
+
+
+
+  dl,
+  ol,
+  p,
+  ul {
+    margin-top: 0;
+    margin-bottom: 0rem;
+  }
+
+  p {
+    margin-bottom: 0.3rem !important;
+  }
+
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  .table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .bg-gray-300 {
+    background-color: #dee2e6 !important;
+  }
+
+  .table td,
+  .table th {
+    padding: .3rem;
+    vertical-align: center;
+    text-align: left;
+    border-top: 1px solid #dee2e6;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="card-body">
+      <div class="row mb-4">
+        <div class="col-12">
+          Dear ${clientName},<br><br>
+          <p>As you have intimated, here is full and final settlement statement from ${companyName} for your office booking with reference number ${refNo} in our premises at ${office} , ${location} during period of ${from} to ${to}. </p>
+          <p>Please accept or reject this final statement by visiting this link.
+            <a href="${link}" target="_blank">Accept Final Statement</a></p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <table border="0" style="width:70%;margin:auto;border-collapse: collapse;">
+            <tr>
+              <td style="padding: 5px 10px"><b>Charge Item</b></td>
+              <td style="padding: 5px 10px;text-align: right;"><b>Amount</b></td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 10px">Monthly Payments till MoveOut date (including penalties)</td>
+              <td style="padding: 5px 10px;text-align: right;">INR ${monthlyInvoices}</td>
+            </tr>
+            <#if earlyExitCharge gt 0>
+              <tr>
+                <td style="padding: 5px 10px">Early Move Out Charges</td>
+                <td style="padding: 5px 10px;text-align: right;">INR ${earlyExitCharge}</td>
+              </tr>
+            </#if>
+            <#if noticePeriodPenalty gt 0>
+              <tr>
+                <td style="padding: 5px 10px">Notice period penalty</td>
+                <td style="padding: 5px 10px;text-align: right;">INR ${noticePeriodPenalty}</td>
+              </tr>
+            </#if>
+            <tr>
+              <td style="padding: 5px 10px">Asset Damage Charges</td>
+              <td style="padding: 5px 10px;text-align: right;">INR ${assetDamages}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px 10px">Other Deductions</td>
+              <td style="padding: 5px 10px;text-align: right;">INR ${otherDeductions}</td>
+            </tr>
+            <#if tdsLiability gt 0>
+              <tr>
+                <td style="padding: 5px 10px">TDS Liability</td>
+                <td style="padding: 5px 10px;text-align: right;">INR ${tdsLiability}</td>
+              </tr>
+            </#if>
+            <#if tdsPenality gt 0>
+              <tr>
+                <td style="padding: 5px 10px">TDS Penalty</td>
+                <td style="padding: 5px 10px;text-align: right;">INR ${tdsPenality}</td>
+              </tr>
+            </#if>
+            <#if deregistrationLiability gt 0>
+              <tr>
+                <td style="padding: 5px 10px">Address Deregistration Charge</td>
+                <td style="padding: 5px 10px;text-align: right;">INR ${deregistrationLiability}</td>
+              </tr>
+            </#if>
+          </table>
+          <table border="0" style="width:70%;margin:auto;border-collapse: collapse;">
+            <tr>
+              <td class="text-right" width="80%" valign="top">
+                <b>Total Expected Amount</b>
+              </td>
+              <td class="invoice-info text-right" valign="top">
+                <b>INR ${expectedAmount}</b>
+              </td>
+            </tr>
+            <tr>
+              <td class="text-right" width="80%" valign="top">
+                <b>Total Paid (including Security Deposit)</b>
+              </td>
+              <td class="invoice-info text-right" valign="top">
+                <b>INR ${totalPaid}</b>
+              </td>
+            </tr>
+            <#if refund gt 0>
+              <tr>
+                <td class="text-right" width="80%" valign="top">
+                  <b>To Refund</b>
+                </td>
+                <td class="invoice-info text-right" valign="top" style="font-size: 18px;">
+                  <b>INR ${refund}</b>
+                </td>
+              </tr>
+            </#if>
+            <#if due gt 0>
+              <tr>
+                <td class="text-right" width="80%" valign="top">
+                  <b>Total Due</b>
+                </td>
+                <td class="invoice-info text-right" valign="top" style="font-size: 18px;">
+                  <b>INR ${due}</b>
+                </td>
+              </tr>
+            </#if>
+          </table>
+        </div>
+        <div style="clear:both;"></div>
+      </div>
+      <div style="clear:both;" class="mb-4"></div>
+      <p>
+        <center>You can reach us for any of your assistance on <strong>${supportPhone} </strong> and write us at <strong>${supportEmail}</strong>.</center>
+      </p>
+    </div>
+  </div>
+</body>
+
+</html>

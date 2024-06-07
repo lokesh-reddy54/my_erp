@@ -1,0 +1,571 @@
+<div class="breadcrumb" *ngIf="lead?.id">
+  <div class="float-left">
+    <p class="m-0 font-weight-bold text-14">{{lead.company}}</p>
+    <p class="text-muted m-0 text-14">{{id}} - {{lead.source}}, {{lead.attribute}}</p>
+  </div>
+  <div class="float-right text-right pr-3">
+    <p class="text-secondary text-14 m-0">Created : <strong>{{lead.createdOn | date :'MMM dd, yyyy hh:mm a'}}</strong></p>
+    <p class="text-info  text-14 m-0">Status :
+      <span *ngIf="lead.status=='New'" class="badge badge-info"><strong>New</strong></span>
+      <span *ngIf="lead.status=='Hot'" class="badge badge-warning"><strong>Hot</strong></span>
+      <span *ngIf="lead.status=='Closed'" class="badge badge-success"><strong>Closed</strong></span>
+      <span *ngIf="lead.status=='Dead'" class="badge badge-danger"><strong>Dead</strong></span>
+      <strong> , {{lead.info}}</strong></p>
+  </div>
+  <h1 class="text-center pt-2">Lead View</h1>
+  <div class="clear"></div>
+</div>
+<div class="separator-breadcrumb border-top mt-1 mb-1"></div>
+<div class="card user-profile o-hidden mb-1 d-b" style="height: calc(100vh - 140px);">
+  <div class="card-body pt-1">
+    <div class="row">
+      <div class="col-md-10 pr-0 pl-0">
+        <div style="margin-top: 0px;margin-right: -120px;" class="float-left">
+          <button class="float-left btn btn-outline-danger btn-sm btn-ico m-2" *ngIf="lead.status!='Dead'" (click)="openDeadReason()">
+            <i class="fa fa-stop"></i> Mark as Dead
+          </button>
+          <button class="float-left btn btn-outline-info btn-sm btn-ico mt-2 ml-0" (click)="sendLeadPropositions()" [ladda]="sendingLeadPropositions" [disabled]="sendingLeadPropositions">
+            <i class="fa fa-envelope" *ngIf="!sendingLeadPropositions"></i> Send Propositions
+          </button>
+          <button class="float-left btn btn-outline-info btn-sm btn-icon mt-2 mr-0" ngbTooltip="Edit Mail before Sending" (click)="editPropositionsMail()" placement="right">
+            <i class="fa fa-pencil"></i>
+          </button>
+        </div>
+        <ngb-tabset class="nav-center">
+          <ngb-tab title="Proposed Offices">
+            <ng-template ngbTabContent>
+              <div style="margin-top: -80px">
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico" (click)="updatePropositions()" [ladda]="updatingAvailability" [disabled]="updatingAvailability">
+                  <i class="fa fa-refresh" *ngIf="!updatingAvailability"></i> Update Availability
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-3">
+                <loading [loading]="loading"></loading>
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-30 text-center">Office</th>
+                      <th class="w-10 text-center">Availability</th>
+                      <th class="w-25 text-center">Comments</th>
+                      <th class="w-15 text-center">Visit</th>
+                      <th class="w-15 text-center">Status</th>
+                      <th class="w-15 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll" style="max-height: 325px;">
+                    <tr *ngFor="let prop of leadPropositions;">
+                      <td class="w-30 text-center">
+                        <span>{{prop.office}}</span> <span *ngIf="prop.location">@ {{prop.location}}</span>
+                      </td>
+                      <td class="w-10 text-center">{{prop.desksAvailable}} desks</td>
+                      <td class="w-25 text-center" *ngIf="!prop.comment">
+                        <span class="text-primary cursor font-weight-bold" (click)="openLeadComment(prop.id)">Add Comment</span>
+                      </td>
+                      <td class="w-25 text-center" *ngIf="prop.comment">{{prop.comment ? (prop.comment.length > 40 ? (prop.comment|ellipses:40) : prop.comment) : '-'}} <span *ngIf="prop.comment && prop.comment.length > 40" class="text-primary cursor" (click)="viewComment(prop.comment)"><strong>Full Comment</strong> </span></td>
+                      <td class="w-15 text-center" *ngIf="prop.visit">
+                        <span class="d-b">
+                          <strong class="badge badge-info" *ngIf="prop.visit.status=='Scheduled'">Scheduled</strong>
+                          <strong class="badge badge-success" *ngIf="prop.visit.status=='Visited'">Visited</strong> on
+                        </span>
+                        <span class="d-b"><small>{{prop.visit.date | date :'MMM dd, yyyy hh:mm a'}}</small></span>
+                      </td>
+                      <td class="w-15 text-center" *ngIf="!prop.visit">
+                        <span class="text-center text-primary cursor" (click)="openScheduleVisit(prop)">Schedule for this Office</span>
+                      </td>
+                      <td class="w-15 text-center">
+                        <strong *ngIf="prop.status=='Available'">Available</strong>
+                        <strong class="badge badge-light" *ngIf="prop.status=='Proposed'">Proposed</strong>
+                        <strong class="badge badge-secondary" *ngIf="prop.status=='Interested'">Interested</strong>
+                        <strong class="badge badge-info" *ngIf="prop.status=='Agreed'">Agreed</strong>
+                        <strong class="badge badge-success" *ngIf="prop.status=='Signed'">Signed</strong>
+                      </td>
+                      <td class="w-5 text-center">
+                        <button class="btn btn-info btn-icon btn-sm" ngbTooltip="Interest Shown" *ngIf="prop.status!='Interested'" (click)="saveLeadProposition({id:prop.id, leadId:prop.leadId, office:prop.office, isInterested:1})">
+                          <i class="fa fa-thumbs-up"></i>
+                        </button>
+                        <button class="btn btn-primary btn-icon btn-sm" ngbTooltip="View Quotes" (click)="viewPropositionQuotes(prop)" *ngIf="prop.status=='Interested'">
+                          <i class="fa fa-database"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Calls">
+            <ng-template ngbTabContent>
+              <div style="margin-top: -80px">
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openScheduleCall()">
+                  <i class="fa fa-phone"></i> Schedule Call
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-3">
+                <!-- <data-list #scheduleCallsList [dataUrl]="'internal/leads/getLeadCalls/'+id" [config]="scheduleCallsConfig" (onAction)="action($event)"></data-list> -->
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-10 text-center">Type</th>
+                      <th class="w-10 text-center">From</th>
+                      <th class="w-10 text-center">To</th>
+                      <th class="w-15 text-center">DateTime</th>
+                      <th class="w-10 text-center">Duration</th>
+                      <th class="w-10 text-center">Status</th>
+                      <th class="w-20 text-center">Comment</th>
+                      <th class="w-15 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll" style="max-height: 325px;">
+                    <tr *ngFor="let call of leadCalls;">
+                      <td class="w-10 text-center">{{call.type}}</td>
+                      <td class="w-10 text-center">{{call.from}}</td>
+                      <td class="w-10 text-center">{{call.to}}</td>
+                      <td class="w-15 text-center"><small>{{call.started | date : 'MMM dd, yyyy hh:mm a'}}</small></td>
+                      <td class="w-10 text-center">{{call.duration}}</td>
+                      <td class="w-10 text-center">{{call.status}}</td>
+                      <td class="w-20 text-center">{{call.comment ? (call.comment.length > 35 ? (call.comment|ellipses:35) : call.comment) : '-'}} <span *ngIf="call.comment && call.comment.length > 35" class="text-primary cursor" (click)="viewComment(call.comment)"><strong>Full Comment</strong> </span></td>
+                      <td class="w-15 text-center">
+                        <button class="btn btn-danger btn-icon btn-sm" ngbTooltip="Cancel Call" (click)="saveLeadCall({id:call.id, status:'Cancelled'})">
+                          <i class="fa fa-times"></i>
+                        </button>
+                        <button class="btn btn-info btn-icon btn-sm" ngbTooltip="Reschedule Call" (click)="openScheduleCall(call)">
+                          <i class="fa fa-refresh"></i>
+                        </button>
+                        <button class="btn btn-success btn-icon btn-sm" *ngIf="call.type=='OutBound'" ngbTooltip="Call Now" (click)="callNow(call)">
+                          <i class="fa fa-phone"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Visits">
+            <ng-template ngbTabContent>
+              <div style="margin-top: -50px">
+              </div>
+              <div class="row mt-3">
+                <!--  <data-list #scheduleVisitsList [dataUrl]="'internal/leads/getLeadVisits/'+id" [config]="scheduleVisitsConfig" (onAction)="action($event)"></data-list> -->
+                <table class="tableBodyScroll table table-striped table-hover table-sm">
+                  <thead>
+                    <tr>
+                      <th class="w-30 text-center">Office</th>
+                      <th class="w-20 text-center">Status</th>
+                      <th class="w-30 text-center">Comments</th>
+                      <th class="w-15 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="tableBodyScroll" style="max-height: 325px;">
+                    <tr *ngFor="let visit of leadVisits;">
+                      <td class="w-30 text-center">
+                        <span>{{visit.office}}</span> <span *ngIf="visit.location">@ {{visit.location}}</span>
+                      </td>
+                      <td class="w-20 text-center">
+                        <span class="d-b">
+                          <strong class="badge badge-warning" *ngIf="visit.status=='Cancelled'">Cancelled</strong>
+                          <strong class="badge badge-info" *ngIf="visit.status=='Scheduled'">Scheduled</strong>
+                          <strong class="badge badge-success" *ngIf="visit.status=='Visited'">Visited</strong> on
+                        </span>
+                        <span class="d-b"><small>{{visit.date | date :'MMM dd, yyyy hh:mm a'}}</small></span>
+                      </td>
+                      <td class="w-30 text-center" *ngIf="!visit.comment">-</td>
+                      <td class="w-30 text-center" *ngIf="visit.comment">{{visit.comment ? (visit.comment.length > 40 ? (visit.comment|ellipses:40) : visit.comment) : '-'}} <span *ngIf="visit.comment && visit.comment.length > 40" class="text-primary cursor" (click)="viewComment(visit.comment)"><strong>Full Comment</strong> </span></td>
+                      <td class="w-15 text-center">
+                        <div *ngIf="visit.status=='Scheduled'">
+                          <button class="btn btn-danger btn-icon btn-sm" ngbTooltip="Cancel Visit" (click)="saveLeadVisit({id:visit.id, status:'Cancelled'})">
+                            <i class="fa fa-times"></i>
+                          </button>
+                          <button class="btn btn-info btn-icon btn-sm" ngbTooltip="Reschedule Visit" (click)="openScheduleVisit(visit)">
+                            <i class="fa fa-refresh"></i>
+                          </button>
+                          <button class="btn btn-success btn-icon btn-sm" ngbTooltip="Mark Visited" (click)="saveLeadVisit({id:visit.id, status:'Visited'})">
+                            <i class="fa fa-check"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Comments">
+            <ng-template ngbTabContent>
+              <div style="margin-top: -80px">
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openLeadComment()">
+                  <i class="fa fa-plus"></i> Add Comment
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-3">
+                <data-list #commentsList [dataUrl]="'internal/leads/getLeadComments/'+id" [config]="commentsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Mails">
+            <ng-template ngbTabContent>
+              <div style="margin-top: -80px">
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openNewMail()">
+                  <i class="fa fa-plus"></i> New Email
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-3">
+                <data-list #emailsList [dataUrl]="'internal/leads/getLeadMails/'+id" [config]="emailsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+        </ngb-tabset>
+      </div>
+      <div class="col-md-2">
+        <div class="row">
+          <div class="col-12 mb-3">
+            <p class="text-muted lb-i mb-1">Contact Details</p>
+            <div class="border-top pt-1"><strong>{{lead.name}}</strong></div>
+            <div><i class="i-Telephone"></i> {{lead.phone}}</div>
+            <div><i class="i-Email"></i> {{lead.email}}</div>
+          </div>
+          <div class="col-12 mb-3">
+            <p class="text-muted lb-i mb-1">Client Requirement</p>
+            <div class="border-top pt-1"><strong>Desks : </strong> {{lead.desks}}</div>
+            <div class="pt-1"><strong>Expected Start Date : </strong> {{lead.startDate | date}}</div>
+            <div><strong>DeskType : </strong> {{lead.deskType}}</div>
+            <div><strong>Price : </strong> {{lead.price|inr}}</div>
+            <div><strong>Location : </strong> {{lead.location}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #scheduleCallModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{schedule.id ? 'Edit Schedule' : 'Schedule Call'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="scheduleCallForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles" class="d-b">Call Date Time</label>
+          <input placeholder="Select schedule date " class="form-control w-40 d-ib" name="date" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="schedule.date" formControlName="date" (focus)="dp.toggle()" />
+          <input placeholder="Time" type="time" class="form-control w-30 d-ib" name="time" [(ngModel)]="schedule.time" formControlName="time" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Comments</label>
+          <textarea placeholder="Enter Comments " class="form-control" name="comments" [(ngModel)]="schedule.comment" formControlName="comment"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||scheduleCallForm.invalid" (click)="saveLeadCall()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #commentModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title" *ngIf="!comment.disabled">{{comment.id ? 'Edit Comment' : 'Add Comment'}}</h4>
+    <h4 class="modal-title" id="modal-basic-title" *ngIf="comment.disabled">View Comment</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="commentForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Comments</label>
+          <textarea placeholder="Enter Comments" rows="8" class="form-control" name="comment" [(ngModel)]="comment.comment" formControlName="comment"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||commentForm.invalid" (click)="saveLeadComment()" *ngIf="!comment.disabled"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #scheduleVisitModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{visit.id ? 'Edit Visit Schedule' : 'Schedule Visit'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="visitForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles" class="d-b">Proposed Office</label>
+          <span>{{proposition.office}}</span>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles" class="d-b">Visit Date Time</label>
+          <input placeholder="Select visit date " class="form-control w-40 d-ib" name="date" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="visit.date" formControlName="date" (focus)="dp.toggle()" />
+          <input placeholder="Time" type="time" class="form-control w-30 d-ib" name="time" [(ngModel)]="visit.time" formControlName="time" />
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Comments</label>
+          <textarea placeholder="Enter Comments " class="form-control" name="comments" [(ngModel)]="visit.comment" formControlName="comment"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||visitForm.invalid" (click)="saveLeadVisit()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #deadModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Mark Lead as Dead</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="deadForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles" class="d-b">Dead Reason</label>
+          <ng-select [items]="deadReasons" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Dead Reason" [(ngModel)]="dead.reason" formControlName="reason" name="reason"> </ng-select>
+        </div>
+        <div class="col-md-12 form-group mb-1">
+          <label for="roles">Comments</label>
+          <textarea placeholder="Enter Comments " class="form-control" name="comments" [(ngModel)]="comment.comment" formControlName="comment"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||deadForm.invalid" (click)="saveDeadReason()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #quotesModal let-modal>
+  <loading [loading]="loading"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Proposition Quotes for '{{selectedProposition.office}}'</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <button class="btn btn-outline-info btn-sm btn-ico float-right mt--10" (click)="createQuote=true" *ngIf="quotes.length==0 && !createQuote">
+      <i class="fa fa-plus"></i> New Quote</button>
+    <div class="clear"></div>
+    <div class="row" *ngIf="createQuote">
+      <div class="col-10" *ngIf="!duplicate">
+        <input type="text" class="form-control" [(ngModel)]="quoteName" placeholder="Enter Quote Name here" />
+      </div>
+      <div class="col-10" *ngIf="duplicate">
+        <input type="text" class="form-control" [(ngModel)]="duplicate.name" placeholder="Enter Quote Name here" />
+      </div>
+      <div class="col-2" *ngIf="!duplicate">
+        <button class="btn btn-sm btn-info btn-ico" (click)="createPropositionQuote(quoteName)">
+          <i class="fa fa-check"></i> Create Quote</button>
+      </div>
+      <div class="col-2" *ngIf="duplicate">
+        <button class="btn btn-sm btn-info btn-ico" (click)="copyPropositionQuote(duplicate)">
+          <i class="fa fa-check"></i> Copy Quote</button>
+      </div>
+    </div>
+    <div class="text-center mt-2" *ngIf="quotes.length==0">
+      <strong>No price quotes are created for this proposition yet .</strong>
+    </div>
+    <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="quotes.length">
+      <thead>
+        <tr>
+          <th class="w-75 text-left">Name</th>
+          <th class="w-10 text-center">Status</th>
+          <th class="w-15 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="tableBodyScroll" style="max-height: 325px;">
+        <tr *ngFor="let quote of quotes;">
+          <td class="w-75">{{quote.name}}</td>
+          <td class="w-10 text-center">{{quote.status}}</td>
+          <td class="w-15 text-center">
+            <button class="btn btn-sm btn-info btn-icon" (click)="viewPrices(quote)" ngbTooltip="View Price Quotes">
+              <i class="fa fa-search"></i></button>
+            <button class="btn btn-sm btn-info btn-icon" *ngIf="quote.status!='Draft'" (click)="copyQuote(quote)" ngbTooltip="Copy Quotation">
+              <i class="fa fa-files-o"></i></button>
+            <button class="btn btn-sm btn-primary btn-icon" *ngIf="quote.status=='Draft'" (click)="sendQuotationMail(quote)" ngbTooltip="Send Quotation Mail">
+              <i class="fa fa-envelope"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #pricesModal let-modal>
+  <loading [loading]="loading"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Price Quotes for '{{selectedQuote.name}}'</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <table class="tableBodyScroll table table-striped table-hover table-sm">
+      <thead>
+        <tr>
+          <th class="w-10 text-center">DeskType</th>
+          <th class="w-45 text-center">Facilities</th>
+          <th class="w-10 text-center">Desks</th>
+          <th class="w-10 text-center">LockIn</th>
+          <th class="w-15 text-center">Price</th>
+          <th class="w-10 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="tableBodyScroll" style="max-height: 325px;">
+        <tr *ngFor="let price of prices;">
+          <td class="w-10">{{price.deskType}}</td>
+          <td class="w-45">{{price.facilities}}</td>
+          <td class="w-10 text-center">{{price.min}} - {{price.max}}</td>
+          <td class="w-10 text-center" *ngIf="selectedQuote.status!='Draft'">{{price.lockIn}} month(s)</td>
+          <td class="w-10 text-center" *ngIf="selectedQuote.status=='Draft'">
+            <input type="number" class="form-control" [(ngModel)]="price.lockIn"> month(s)</td>
+          <td class="w-15 text-center" *ngIf="selectedQuote.status!='Draft'">{{price.price | inr}}</td>
+          <td class="w-15 text-center" *ngIf="selectedQuote.status=='Draft'">
+            <input type="number" class="form-control" [(ngModel)]="price.price"> INR.</td>
+          <td class="w-10 text-center">
+            <button class="btn btn-sm btn-info btn-icon" *ngIf="selectedQuote.status=='Draft'" (click)="savePriceQuote(price)" ngbTooltip="Save Price Quote">
+              <i class="fa fa-check"></i></button>
+            <button class="btn btn-sm btn-primary btn-icon" *ngIf="selectedQuote.status!='Draft'" (click)="openContract(price)" ngbTooltip="Create Contract for this Quotation">
+              <i class="fa fa-dollar"></i></button>
+            <button class="btn btn-sm btn-primary btn-icon" *ngIf="price.contracts?.length" (click)="showContracts(price)" ngbTooltip="Show All Contracts">
+              <i class="fa fa-list"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #contractModal let-modal>
+  <loading [loading]="loading"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{contract.id ? 'Edit Contract' : 'New Contract'}} for {{contract.type}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="contractForm">
+      <div class="row p-2">
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="security">Security Deposit</label>
+          <input type="number" class="form-control" id="security" placeholder="Enter Security Deposit amount" formControlName="security" [(ngModel)]="contract.security">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="security">Monthly Rent</label>
+          <div><strong>{{contract.rent | inr}}</strong></div>
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="Token">Token Amount</label>
+          <input type="number" class="form-control" id="token" placeholder="Token to pay" formControlName="token" [(ngModel)]="contract.token">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="lockin">LockIn Period</label>
+          <div><strong>{{contract.lockIn}} month(s)</strong></div>
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="lockin">Penalty Type</label>
+          <select class="form-control" id="lockinPenaltyType" placeholder="Type" formControlName="lockinPenaltyType" [(ngModel)]="contract.lockInPenaltyType">
+            <option value="Fixed">Fixed</option>
+            <option value="MonthRent">Month's Rent</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="lockin">LockIn Penalty</label>
+          <input type="number" class="form-control" id="lockInPenalty" placeholder="LockIn Penalty" formControlName="lockInPenalty" [(ngModel)]="contract.lockInPenalty">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="lockin">Notice Period</label>
+          <input type="number" class="form-control" id="noticePeriod" placeholder="months " formControlName="noticePeriod" [(ngModel)]="contract.noticePeriod">
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="lockin">Penalty Type</label>
+          <select class="form-control" id="noticePeriodViolationType" placeholder="Type" formControlName="noticePeriodViolationType" [(ngModel)]="contract.noticePeriodViolationType">
+            <option value="Fixed">Fixed</option>
+            <option value="MonthRent">Month's Rent</option>
+          </select>
+        </div>
+        <div class="col-md-4 form-group mb-1 p-1">
+          <label for="lockin">Notice Period Penalty</label>
+          <input type="number" class="form-control" id="noticePeriodViolation" placeholder="Notice Period Violation" formControlName="noticePeriodViolation" [(ngModel)]="contract.noticePeriodViolation">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <!-- <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||contractForm.invalid" (click)="saveContract(false)"><i class="fa fa-check" *ngIf="!loading"></i> Save</button> -->
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||contractForm.invalid" (click)="savePriceContract(true)"><i class="fa fa-check" *ngIf="!loading"></i> Confirm & Send</button>
+  </div>
+</ng-template>
+<ng-template #showContractsModal let-modal>
+  <loading [loading]="loading"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Contracts List</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <table class="tableBodyScroll table table-striped table-hover table-sm">
+      <thead>
+        <tr>
+          <th class="w-10 text-center">Deposit</th>
+          <th class="w-10 text-center">Rent</th>
+          <th class="w-10 text-center">Token</th>
+          <th class="w-10 text-center">LockIn</th>
+          <th class="w-10 text-center">LockIn Penality</th>
+          <th class="w-10 text-center">NoticePeriod</th>
+          <th class="w-15 text-center">NoticePeriod Penality</th>
+          <th class="w-15 text-center">Sent On</th>
+          <th class="w-10 text-center"></th>
+        </tr>
+      </thead>
+      <tbody class="tableBodyScroll" style="max-height: 325px;">
+        <tr *ngFor="let contract of contracts;">
+          <td class="w-10 text-center">{{contract.security | inr}}</td>
+          <td class="w-10 text-center">{{contract.rent | inr}}</td>
+          <td class="w-10 text-center">{{contract.token | inr}}</td>
+          <td class="w-10 text-center">{{contract.lockIn}} month(s)</td>
+          <td class="w-10 text-center" *ngIf="contract.lockInPenalityType!='Fixed'">{{(contract.lockInPenalty * contract.rent) | inr }}</td>
+          <td class="w-10 text-center" *ngIf="contract.lockInPenalityType=='Fixed'">{{contract.lockInPenalty | inr}}</td>
+          <td class="w-10 text-center">{{contract.noticePeriod}} month(s)</td>
+          <td class="w-15 text-center" *ngIf="contract.noticePeriodViolationType!='Fixed'">{{(contract.noticePeriodViolation*contract.rent) | inr }}</td>
+          <td class="w-15 text-center" *ngIf="contract.noticePeriodViolationType=='Fixed'">{{contract.noticePeriodViolation | inr}}</td>
+          <td class="w-15 text-center">{{contract['price_contracts']?.mailSent | date : 'MMM dd, yyyy hh:mm a'}}</td>
+          <td class="w-10 text-center">
+            <button class="btn btn-sm btn-primary btn-icon" (click)="createBooking(contract)" ngbTooltip="Create Booking with this Contract">
+              <i class="fa fa-flash"></i></button>
+            <button class="btn btn-sm btn-info btn-icon" (click)="openMail(contract['price_contracts'].mailId)" ngbTooltip="View Mail">
+              <i class="fa fa-envelope"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

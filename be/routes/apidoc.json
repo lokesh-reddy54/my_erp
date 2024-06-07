@@ -1,0 +1,12 @@
+{
+  "name": "EzeeCloud Documentation",
+  "version": "1.0.0",
+  "description": "All API calls documentations for EzeeCloud ERP Backend",
+  "title": "EzeeCloud API Documentation",
+  "url": "https://api.github.com/v1",
+  "template":
+  {
+    "withCompare": true,
+    "withGenerator": true
+  }
+}

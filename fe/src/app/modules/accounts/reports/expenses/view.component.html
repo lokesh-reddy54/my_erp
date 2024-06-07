@@ -1,0 +1,77 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Expenses Report</h4>
+    <!-- <input type="text" placeholder="Search by name" [formControl]="buildingSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+    <div class="row p-1 ml-10 mr-0 w-70 float-left mt--20" *ngIf="!isHq">
+      <div class="form-group col-md-2 mb-1 pl-1 pr-0">
+        <label for="roles">Select Country</label>
+        <ng-select class="mini" [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCountrySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-2 mb-1 pl-1 pr-0" *ngIf="selectedCountry?.id">
+        <label for="roles">Select City</label>
+        <ng-select class="mini" [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCitySelected()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-2 mb-1 pl-1 pr-0" *ngIf="selectedCity?.id">
+        <label for="roles">Select Location</label>
+        <ng-select class="mini" [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (ngModelChange)="loadBuildings()">
+        </ng-select>
+      </div>
+      <div class="form-group col-md-6 mb-1 pl-1 pr-0" *ngIf="selectedCity?.id">
+        <label for="roles">Select Buildings</label>
+        <ng-select class="mini" [multiple]="true" [items]="buildings" [hideSelected]="true" bindLabel="name" bindValue="id" placeholder="Select Buildings" [(ngModel)]="selectedBuildings" [ngModelOptions]="{standalone: true}" (ngModelChange)="generateReport()"></ng-select>
+      </div>
+    </div>
+    <div class="btn-group btn-group-toggle pull-right ml-5" data-toggle="buttons">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="buildingsFilters.type" (ngModelChange)="generateReport()">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value=""> All
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="POs"> POs
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary">
+          <input ngbButton type="radio" value="Bills"> Bills
+        </label>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:BuildingExpenses'" *ngIf="!isHq"></help-notes>
+    <help-notes [context]="'Reports:HOExpenses'" *ngIf="isHq"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <loading [loading]="loading"></loading>
+        <div class="row">
+          <div class="pl-0 col-md-12">
+            <h5 class="mt-2 pl-4">{{isHq ? 'HO':'Building'}} {{buildingsFilters.type}} Expenses</h5>
+            <div class="table-responsive pl-4 pr-4" [ngClass]="{'fs-12':selectedBuilding}">
+              <p class="text-center pt-4 mt-4 f-b" *ngIf="!loading && monthlyReport.rows.length<2">No {{buildingsFilters.type}} are raised.</p>
+              <table class="revenueTable table table-stripe table-hover table-sm" *ngIf="monthlyReport.rows.length>1">
+                <thead>
+                  <tr class="bg-primary text-white">
+                    <th *ngFor="let month of monthlyReport.months;trackBy: trackById;" style="text-align: center;" [ngStyle]="{'width':colWidth+'%'}">{{month}}</th>
+                  </tr>
+                </thead>
+                <tbody class="revenueTable" *ngFor="let row of monthlyReport.rows;">
+                  <tr (click)="getTypes(row)" class="cursor first-td-left" [ngClass]="{'bg-info':row.types&&row.selected,'bg-light':row.types&&selectedRow,'f-b':!row.types}">
+                    <td *ngFor="let col of row.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                  <tr [ngClass]="{'d-none':!row.selected}" *ngFor="let type of row?.types;">
+                    <td *ngFor="let col of type.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,766 @@
+<div class="card user-profile o-hidden mb-1 d-b" style="height: calc(100vh - 90px);">
+  <div class="card-body pt-1">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="float-left pt-2">
+          <h3 class="fs-16">Vendor - <span class="f-b">{{vendor.name}}</span>
+            <i class="fa fa-question-circle-o cursor pl-1" (click)="openHelpNotes()" ngbTooltip="Help"></i>
+          </h3>
+        </div>
+        <ngb-tabset class="nav-right">
+          <ngb-tab title="Overview">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <loading [loading]="loading"></loading>
+              <h5>Basic Information</h5>
+              <div class="row mt-1">
+                <div class="col-md-1-5 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Vendor Type : </p>
+                  <span class="">{{vendor.vendorType}}</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Vendor Name : </p>
+                  <span class="fs-14 fw-600">{{vendor.name}}</span>
+                </div>
+                <div class="col-md-7 col-12 mb-2 pl-0">
+                  <p class="text-black f-b mb-0">Address : </p>
+                  <span class="">{{vendor.address}}</span>
+                </div>
+                <div class="col-md-1-5 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Status : </p>
+                  <span *ngIf="vendor.active">
+                    <span class="badge badge-light" *ngIf="vendor.status=='New'">New</span>
+                    <span class="badge badge-success" *ngIf="vendor.status=='Empanelled'">Empanelled</span>
+                    <span class="badge badge-info" *ngIf="vendor.status=='Approved'">Approved</span>
+                  </span>
+                  <span class="badge badge-light" *ngIf="!vendor.active">InActive</span>
+                </div>
+                <div class="col-md-1-5 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Verification : </p>
+                  <span class="badge badge-success" *ngIf="vendor.verified">Verified</span>
+                  <span class="badge badge-light" *ngIf="!vendor.verified">Pending</span>
+                  <i class="fa fa-refresh ml-10 fa-2x" *ngIf="!vendor.verified" ngbTooltip="Resend Verification Mail" (click)="sendVendorVerificationMail()"></i>
+                </div>
+                <div class="col-md-1-5 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Payment Mode : </p>
+                  <span class="">{{vendor.paymentMode}}</span>
+                </div>
+                <div class="col-md-2 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Referred By : </p>
+                  <span class="">{{vendor.referredBy || '-'}}</span>
+                </div>
+                <div class="col-md-2 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Referred On : </p>
+                  <span class="">{{vendor.referredOn | date : 'MMM dd, yyyy'}}</span>
+                </div>
+                <!-- <div class="col-md-2 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Verified By : </p>
+                  <span class="">{{vendor.verifiedBy || '-'}}</span>
+                </div> -->
+                <div class="col-md-2 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Verified On : </p>
+                  <span class="">{{vendor.verifiedOn | date : 'MMM dd, yyyy'}}</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">GST : </p>
+                  <span class="">{{vendor.gst || '-'}}
+                    <a [href]="vendor.gstFile?.file" target="_blank" *ngIf="vendor.gstFile?.file" class="f-b">View</a>
+                  </span>
+                  <span class="input-group" *ngIf="vendor.gst && !vendor?.gstFile?.file">
+                    <div class="custom-file" *ngIf="!gstFile">
+                      <input class="custom-file-input" id="gstId" (change)="gstFileChange($event)" type="file">
+                      <label class="custom-file-label" for="gstId">Choose file</label>
+                    </div>
+                    <div class="custom-file" *ngIf="gstFile">
+                      <span class="float-left">{{gstFile?.name}}</span>
+                      <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="gstFile=null;"></i>
+                      <div class="mb-1">
+                        <div *ngIf="gstFileError">
+                          {{ gstFileError.message }}
+                        </div>
+                        <div *ngIf="gstUploadResponse.status === 'error'">
+                          {{ gstUploadResponse.message }}
+                        </div>
+                        <div *ngIf="gstUploadResponse.status === 'progress'">
+                          <div role="progressbar" [style.width.%]="gstUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                            {{gstUploadResponse.message}}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="input-group-append">
+                      <span class="input-group-text cursor" (click)="uploadGstFile()">Upload</span>
+                    </div>
+                  </span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">PAN : </p>
+                  <span class="">{{vendor.pan || '-'}}
+                    <a [href]="vendor.panFile?.file" class="f-b" *ngIf="vendor.panFile?.file">View</a>
+                  </span>
+                  <span class="input-group" *ngIf="vendor.pan && !vendor?.panFile?.file">
+                    <div class="custom-file" *ngIf="!panFile">
+                      <input class="custom-file-input" id="panId" (change)="panFileChange($event)" type="file">
+                      <label class="custom-file-label" for="panId">Choose file</label>
+                    </div>
+                    <div class="custom-file" *ngIf="panFile">
+                      <span class="float-left">{{panFile?.name}}</span>
+                      <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="panFile=null;"></i>
+                      <div class="mb-1">
+                        <div *ngIf="panFileError">
+                          {{ panFileError.message }}
+                        </div>
+                        <div *ngIf="panUploadResponse.status === 'error'">
+                          {{ panUploadResponse.message }}
+                        </div>
+                        <div *ngIf="panUploadResponse.status === 'progress'">
+                          <div role="progressbar" [style.width.%]="panUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                            {{panUploadResponse.message}}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="input-group-append">
+                      <span class="input-group-text cursor" (click)="uploadPanFile()">Upload</span>
+                    </div>
+                  </span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">CIN : </p>
+                  <span class="">{{vendor.cin || '-'}}
+                    <a [href]="vendor.cinFile?.file" class="f-b" *ngIf="vendor.cinFile?.file">View</a>
+                  </span>
+                  <span class="input-group" *ngIf="vendor.cin && !vendor?.cinFile?.file">
+                    <div class="custom-file" *ngIf="!cinFile">
+                      <input class="custom-file-input" id="cinId" (change)="cinFileChange($event)" type="file">
+                      <label class="custom-file-label" for="cinId">Choose file</label>
+                    </div>
+                    <div class="custom-file" *ngIf="cinFile">
+                      <span class="float-left">{{cinFile?.name}}</span>
+                      <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="cinFile=null;"></i>
+                      <div class="mb-1">
+                        <div *ngIf="cinFileError">
+                          {{ cinFileError.message }}
+                        </div>
+                        <div *ngIf="cinUploadResponse.status === 'error'">
+                          {{ cinUploadResponse.message }}
+                        </div>
+                        <div *ngIf="cinUploadResponse.status === 'progress'">
+                          <div role="progressbar" [style.width.%]="cinUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                            {{cinUploadResponse.message}}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="input-group-append">
+                      <span class="input-group-text cursor" (click)="uploadCinFile()">Upload</span>
+                    </div>
+                  </span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">MSME : </p>
+                  <span class="">{{vendor.msme || '-'}}
+                    <a [href]="vendor.msmeFile?.file" class="f-b" *ngIf="vendor.msmeFile?.file">View</a>
+                  </span>
+                  <span class="input-group" *ngIf="vendor.msmeFile && !vendor?.msmeFile?.file">
+                    <div class="custom-file" *ngIf="!msmeFile">
+                      <input class="custom-file-input" id="msmeId" (change)="msmeFileChange($event)" type="file">
+                      <label class="custom-file-label" for="msmeId">Choose file</label>
+                    </div>
+                    <div class="custom-file" *ngIf="msmeFile">
+                      <span class="float-left">{{msmeFile?.name}}</span>
+                      <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="msmeFile=null;"></i>
+                      <div class="mb-1">
+                        <div *ngIf="msmeFileError">
+                          {{ msmeFileError.message }}
+                        </div>
+                        <div *ngIf="msmeUploadResponse.status === 'error'">
+                          {{ msmeUploadResponse.message }}
+                        </div>
+                        <div *ngIf="msmeUploadResponse.status === 'progress'">
+                          <div role="progressbar" [style.width.%]="msmeUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                            {{msmeUploadResponse.message}}%
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="input-group-append">
+                      <span class="input-group-text cursor" (click)="uploadMsmeFile()">Upload</span>
+                    </div>
+                  </span>
+                </div>
+              </div>
+              <hr class="mb-1 mt-1 ">
+              <h5>Main Contact Information</h5>
+              <div class="row ">
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Name : </p>
+                  <span class="">{{vendor.contact.name}}</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Email : </p>
+                  <span class="">{{vendor.contact.email}}</span>
+                </div>
+                <div class="col-md-2 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Phone : </p>
+                  <span class="">{{vendor.contact.phone}}</span>
+                </div>
+                <div class="col-md-3 col-6 mb-2">
+                  <p class="text-black f-b mb-0">Designation : </p>
+                  <span class="">{{vendor.contact.designation}}</span>
+                </div>
+              </div>
+              <hr class="mb-1 mt-1 ">
+              <h5>Current WorkOrders</h5>
+              <div class="text-center  f-b">No current workorders</div>
+              <!-- <hr class="mb-1 mt-1 ">
+              <h5>Pending Payments</h5>
+              <div class="text-center f-b">No pending payments</div> -->
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Contacts">
+            <ng-template ngbTabContent>
+              <hr class="mt-0 mb-1" style="margin-top: -10px !important">
+              <div>
+                <span *checkAccess="'purchases:editVendorContactDetails'">
+                  <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openVendorContact({})">
+                    <i class="fa fa-plus"></i> Contact
+                  </button>
+                </span>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-1">
+                <data-list #vendorContactsList [filter]="vendorContactsFilters" [dataUrl]="'internal/purchases/listVendorContacts'" [config]="vendorContactsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Bank Accounts" *ngIf="vendor.paymentMode=='BankTransfer'">
+            <ng-template ngbTabContent>
+              <div>
+                <span *checkAccess="'purchases:editVendorBankDetails'">
+                  <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openVendorBankAccount({})">
+                    <i class="fa fa-plus"></i> Bank Account
+                  </button>
+                </span>
+                <span *checkAccess="'purchases:requestVendorBankDetails'">
+                  <button class="float-right btn btn-primary ladda-button btn-sm ml-10 btn-ico pull-right" [ladda]="loading" (click)="saveVendorBankAccount()">
+                    <i class="fa fa-check" *ngIf="!loading"></i> Request Bank Details
+                  </button>
+                </span>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-1">
+                <data-list #vendorBankAccountsList [filter]="vendorBankAccountsFilters" [dataUrl]="'internal/purchases/listVendorBankAccounts'" [config]="vendorBankAccountsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Payment Terms">
+            <ng-template ngbTabContent>
+              <div>
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openVendorPaymentTerm({})">
+                  <i class="fa fa-plus"></i> Payment Term
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-1">
+                <data-list #vendorPaymentTermsList [filter]="vendorPaymentTermsFilters" [dataUrl]="'internal/purchases/listVendorPaymentTerms'" [config]="vendorPaymentTermsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="SKUs">
+            <ng-template ngbTabContent>
+              <div>
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openVendorSku()">
+                  <i class="fa fa-plus"></i> SKU
+                </button>
+                <button *ngIf="hasPendingSkuAcceptance" class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right ladda-button" [ladda]="loading" (click)="sendVendorSKUsPricingMail()">
+                  <i class="fa fa-check" *ngIf="!loading"></i> Send Vendor SKU Price Acceptance Mail
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-1">
+                <data-list #vendorSkusList [filter]="vendorSkusFilters" [dataUrl]="'internal/purchases/listVendorSkus'" [config]="vendorSkusConfig" (onLoadMore)="onSkuPricingsUpdates()" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Building Services">
+            <ng-template ngbTabContent>
+              <div>
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openVendorServices(false)">
+                  <i class="fa fa-plus"></i> Service
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-1">
+                <data-list #vendorSkusList [filter]="vendorServicesFilters" [dataUrl]="'internal/purchases/listVendorSkus'" [config]="vendorSkusConfig" (onLoadMore)="onSkuPricingsUpdates()" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="HO Services">
+            <ng-template ngbTabContent>
+              <div>
+                <button class="float-right btn btn-outline-primary btn-sm ml-10 btn-ico pull-right" (click)="openVendorServices(true)">
+                  <i class="fa fa-plus"></i> Service
+                </button>
+                <div class="clear"></div>
+              </div>
+              <div class="row mt-1">
+                <data-list #vendorSkusList [filter]="vendorHOServicesFilters" [dataUrl]="'internal/purchases/listVendorSkus'" [config]="vendorSkusConfig" (onLoadMore)="onSkuPricingsUpdates()" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <ngb-tab title="Ledger">
+            <ng-template ngbTabContent>
+              <div class="row mt-1">
+                <data-list #vendorPaymentsList [filter]="vendorPaymentsFilters" [dataUrl]="'internal/purchases/listVendorPayments'" [config]="vendorPaymentsConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+          <!-- <ngb-tab title="Work Orders">
+            <ng-template ngbTabContent>
+              <div class="row mt-1">
+                <data-list #vendorWorkOrdersList [filter]="vendorWorkOrdersFilters" [dataUrl]="'internal/purchases/listWorkOrders'" [config]="vendorWorkOrdersConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab> -->
+          <ngb-tab title="Purchase Orders / Bills">
+            <ng-template ngbTabContent>
+              <div class="row mt-1">
+                <data-list #vendorPurchaseOrdersList [filter]="vendorPurchaseOrdersFilters" [dataUrl]="'internal/purchases/listPurchaseOrders'" [config]="vendorPurchaseOrdersConfig" (onAction)="action($event)"></data-list>
+              </div>
+            </ng-template>
+          </ngb-tab>
+        </ngb-tabset>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #vendorContactModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendorContact.id ? 'Edit' : 'New'}} Vendor Contact</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{vendor|json}} -->
+    <form [formGroup]="vendorContactForm">
+      <div class="row pl-2 pr-2">
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter vendor name" [(ngModel)]="vendorContact.name">
+        </div>
+        <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+          <label for="phone">Phone</label>
+          <input class="form-control" id="phone" placeholder="Enter vendor phone" formControlName="phone" [(ngModel)]="vendorContact.phone">
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="exampleInputEmail1">Email</label>
+          <input type="email" class="form-control" id="email" placeholder="Enter email" formControlName="email" [(ngModel)]="vendorContact.email">
+        </div>
+        <div class="col-md-2 form-group pl-1 pr-1 mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorContact.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="roles">Designation</label>
+          <ng-select [items]="vendorContactDesignations" [hideSelected]="true" placeholder="Select Vendor Designation" [(ngModel)]="vendorContact.designation" formControlName="designation">
+          </ng-select>
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="roles" class="d-b">ID Proof</label>
+          <a class="f-b badge badge-ligh fs-12 d-ib" *ngIf="vendorContact?.idProof?.file" [href]="vendorContact?.idProof?.file" target="_blank" ngbTooltip="Click to View">{{vendorContact?.idProof.name}}</a>
+          <span class="input-group" *ngIf="!vendorContact?.idProof?.file">
+            <div class="custom-file" *ngIf="!idProofFile">
+              <input class="custom-file-input" id="idProofFileId" (change)="idProofFileChange($event)" type="file">
+              <label class="custom-file-label" for="idProofFileId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="idProofFile">
+              <span class="float-left">{{idProofFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="idProofFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="idProofFileError">
+                  {{ idProofFileError.message }}
+                </div>
+                <div *ngIf="idProofUploadResponse.status === 'error'">
+                  {{ idProofUploadResponse.message }}
+                </div>
+                <div *ngIf="idProofUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="idProofUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{idProofUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadIdProofFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="roles" class="d-b">Address Proof</label>
+          <a class="f-b badge badge-ligh fs-12 d-ib" *ngIf="vendorContact?.addressProof?.file" [href]="vendorContact?.addressProof?.file" target="_blank" ngbTooltip="Click to View">{{vendorContact.addressProof.name}}</a>
+          <span class="input-group" *ngIf="!vendorContact?.addressProof?.file">
+            <div class="custom-file" *ngIf="!addressProofFile">
+              <input class="custom-file-input" id="addressProofFileId" (change)="addressProofFileChange($event)" type="file">
+              <label class="custom-file-label" for="addressProofFileId">Choose file</label>
+            </div>
+            <div class="custom-file" *ngIf="addressProofFile">
+              <span class="float-left">{{addressProofFile?.name}}</span>
+              <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="addressProofFile=null;"></i>
+              <div class="mb-1">
+                <div *ngIf="addressProofFileError">
+                  {{ addressProofFileError.message }}
+                </div>
+                <div *ngIf="addressProofUploadResponse.status === 'error'">
+                  {{ addressProofUploadResponse.message }}
+                </div>
+                <div *ngIf="addressProofUploadResponse.status === 'progress'">
+                  <div role="progressbar" [style.width.%]="addressProofUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    {{addressProofUploadResponse.message}}%
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="input-group-append">
+              <span class="input-group-text cursor" (click)="uploadAddressProofFile()">Upload</span>
+            </div>
+          </span>
+        </div>
+        <div class="col-md-12 form-group pl-1 pr-1 mb-0 mt-1">
+          <label for="roles" class="d-b">Contact Purposes</label>
+        </div>
+        <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorContact.relationshipManagement" [ngModelOptions]="{standalone: true}">
+            <span>Relationship Management</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group pl-1 pr-1 mb-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorContact.salesManagement" [ngModelOptions]="{standalone: true}">
+            <span>Sales Management</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorContact.projectManager" [ngModelOptions]="{standalone: true}">
+            <span>Project Manager</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorContact.siteManager" [ngModelOptions]="{standalone: true}">
+            <span>Site Manager</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-2 form-group pl-1 pr-1 mb-1">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorContact.siteExecutive" [ngModelOptions]="{standalone: true}">
+            <span>Site Executive</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||vendorContactForm.invalid" (click)="saveVendorContact()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #vendorBankAccountModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendorBankAccount.id ? 'Edit Vendor Bank Account' : 'New Vendor Bank Account'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- {{vendor|json}} -->
+    <form [formGroup]="vendorBankAccountForm">
+      <div class="row pl-2 pr-2">
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="firstName">Bank Name</label>
+          <input type="text" class="form-control" id="name" formControlName="bankName" placeholder="Enter Bank Name" [(ngModel)]="vendorBankAccount.bankName">
+        </div>
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="exampleInputEmail1">Bank Branch</label>
+          <input type="text" class="form-control" id="bankBranch" placeholder="Enter Bank Branch" formControlName="bankBranch" [(ngModel)]="vendorBankAccount.bankBranch">
+        </div>
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="phone">Account Number</label>
+          <input type="number" class="form-control" id="accountNumber" placeholder="Enter Account Number" formControlName="accountNumber" [(ngModel)]="vendorBankAccount.accountNumber">
+        </div>
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="exampleInputEmail1">IFSC Code</label>
+          <input type="text" class="form-control" id="ifscCode" placeholder="Enter Ifsc Code" formControlName="ifscCode" [(ngModel)]="vendorBankAccount.ifscCode">
+        </div>
+        <div class="col-md-10 form-group pl-1 pr-1 mb-1">
+          <label for="phone">Account Holder Name</label>
+          <input type="text" class="form-control" id="benificiaryName" placeholder="Enter Account Holder Name" formControlName="benificiaryName" [(ngModel)]="vendorBankAccount.benificiaryName">
+        </div>
+        <div class="col-md-2 form-group pl-1 pr-1 mb-1 mt-4" *ngIf="vendorBankAccount.verified">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorBankAccount.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||vendorBankAccountForm.invalid" (click)="saveVendorBankAccount()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #vendorPaymentTermModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendorPaymentTerm.id ? 'Edit' : 'New'}} Payment Term</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="vendorPaymentTermForm">
+      <div class="row pl-2 pr-2">
+        <div class="col-md-9 form-group pl-1 pr-1 mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Name" [(ngModel)]="vendorPaymentTerm.name">
+        </div>
+        <div class="col-md-3 form-group pl-1 pr-1 mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="vendorPaymentTerm.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="phone">On Advance Payment %</label>
+          <input class="form-control" type="number" id="onAdvance" placeholder="Enter On Advance % of payment" formControlName="onAdvance" [(ngModel)]="vendorPaymentTerm.onAdvance" (ngModelChange)="checkPaymentTermValidity()">
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="phone">On Delivery Payment %</label>
+          <input class="form-control" type="number" id="onDelivery" placeholder="Enter On Delivery % of payment" formControlName="onDelivery" [(ngModel)]="vendorPaymentTerm.onDelivery" (ngModelChange)="checkPaymentTermValidity()">
+        </div>
+        <div class="col-md-4 form-group pl-1 pr-1 mb-1">
+          <label for="phone">On Finish Payment %</label>
+          <input class="form-control" type="number" id="onFinish" placeholder="Enter On Finish % of payment" formControlName="onFinish" [(ngModel)]="vendorPaymentTerm.onFinish" (ngModelChange)="checkPaymentTermValidity()">
+        </div>
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="phone">In Progress Payment %</label>
+          <input class="form-control" type="number" id="inProgress" placeholder="Enter In Progress % of payment" formControlName="inProgress" [(ngModel)]="vendorPaymentTerm.inProgress" (ngModelChange)="checkPaymentTermValidity()">
+          <div *ngIf="inProgressStages.length">
+            <table class="table table-sm">
+              <thead>
+                <th>Payment %</th>
+                <th>WorkDone %</th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let stage of inProgressStages">
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.payment" [ngModelOptions]="{standalone:true}" (ngModelChange)="checkPaymentTermValidity()" /></td>
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.workProgress" [ngModelOptions]="{standalone:true}" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-6 form-group pl-1 pr-1 mb-1">
+          <label for="phone">After Finish Payment %</label>
+          <input class="form-control" type="number" id="afterFinish" placeholder="Enter After Finish % of payment" formControlName="afterFinish" [(ngModel)]="vendorPaymentTerm.afterFinish" (ngModelChange)="checkPaymentTermValidity()">
+          <div *ngIf="afterFinishStages.length">
+            <table class="table table-sm">
+              <thead>
+                <th>Payment %</th>
+                <th>Days After</th>
+              </thead>
+              <tbody>
+                <tr *ngFor="let stage of afterFinishStages">
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.payment" [ngModelOptions]="{standalone:true}" /></td>
+                  <td><input type="number" class="form-control" [(ngModel)]="stage.days" [ngModelOptions]="{standalone:true}" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||vendorPaymentTermForm.invalid||!validPaymentTerm" (click)="saveVendorPaymentTerm()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #vendorSkuModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{vendorSku.id ? 'Edit' : 'New'}} Sku Pricing</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="vendorSkuForm">
+      <div class="row">
+        <div class="form-group col-md-4" *ngIf="!selectedSkus[0]?.id">
+          <label for="firstName">Select SKU</label>
+          <tag-input [formControl]="selectedSku" theme='primary' [(ngModel)]="selectedSkus" secondaryPlaceholder="Type SKU name to search" (onTextChange)="onSKuSearch($event)" maxItems="1" [onlyFromAutocomplete]="true">
+            <tag-input-dropdown [autocompleteItems]="autocompleteSkus" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'sku'" [identifyBy]="skuId">
+              <ng-template let-item="item" let-index="index">
+                {{item.sku}}, {{item.type}}, {{item.category}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="form-group row" *ngIf="selectedSkus.length" [ngClass]="selectedSkus[0]?.id?'col-md-12':'col-md-8'">
+          <div class="col-3">
+            <label for="firstName">SKU Category</label>
+            <div>{{selectedSkus[0]?.category}}</div>
+          </div>
+          <div class="col-3">
+            <label for="firstName">SKU Type</label>
+            <div>{{selectedSkus[0]?.type}}</div>
+          </div>
+          <div class="col-4">
+            <label for="firstName">SKU Item</label>
+            <div>{{selectedSkus[0]?.sku}}</div>
+          </div>
+          <div class="col-2">
+            <label class="checkbox checkbox-success">
+              <input type="checkbox" [(ngModel)]="selectedSkus[0].active" [ngModelOptions]="{standalone: true}">
+              <span>Active</span>
+              <span class="checkmark"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="row mb-1">
+        <div class="col-md-6"><label>Select Payment Term</label></div>
+        <div class="col-md-6">
+          <div class="row" *ngIf="selectedSkus.length">
+            <div class="col-md-3 p-0">Min Qty</div>
+            <div class="col-md-3 p-0">Max Qty</div>
+            <div class="col-md-3 p-0">Qty Price</div>
+          </div>
+        </div>
+      </div>
+      <div class="row pr-0" *ngIf="selectedSkus.length">
+        <!-- {{paymentTerms|json}} -->
+        <div class="row col-md-12" *ngFor="let paymentTerm of paymentTerms">
+          <div class="col-md-6" *ngIf="paymentTerm.done">
+            <strong>{{paymentTerm.paymentTerm?.name}}</strong>
+          </div>
+          <div class="col-md-6" *ngIf="!paymentTerm.done && vendorPaymentTerms.length">
+            <ng-select [items]="vendorPaymentTerms" [hideSelected]="true" placeholder="Select Vendor Payment Term" [(ngModel)]="paymentTerm.paymentTerm" bindLabel="name" [ngModelOptions]="{standalone: true}"></ng-select>
+          </div>
+          <div class="col-md-6" *ngIf="paymentTerm.paymentTerm">
+            <div class="row mb-1" *ngFor="let price of paymentTerm.prices; let i=index;">
+              <div class="col-md-3 pl-1 pr-1">
+                <input type="number" class="form-control" [(ngModel)]="price.minQty" placeholder="Min Qty" [ngModelOptions]="{standalone: true}" [disabled]="true">
+              </div>
+              <div class="col-md-3 pl-1 pr-1">
+                <input type="number" class="form-control" [(ngModel)]="price.maxQty" placeholder="Max Qty" [ngModelOptions]="{standalone: true}">
+              </div>
+              <div class="col-md-3 pl-1 pr-1">
+                <input type="number" class="form-control" [(ngModel)]="price.price" placeholder="Price" [ngModelOptions]="{standalone: true}">
+              </div>
+              <div class="col-md-3 pl-1 pr-1">
+                <button class="btn btn-outline-info btn-icon" ngbTooltip="Add Price" (click)="paymentTerm.prices.push({minQty: price.maxQty+1})" *ngIf="i+1==paymentTerm.prices.length && price.price>0&&!paymentTerm.done"><i class="fa fa-plus"></i></button>
+                <button class="btn btn-outline-danger btn-sm btn-ico" ngbTooltip="Delete Pricing" (click)="deletePricing(paymentTerm)" *ngIf="paymentTerm.done && i==0"><i class="fa fa-times"></i> Delete</button>
+                <button class="btn btn-outline-info btn-sm btn-ico" ngbTooltip="Finish" (click)="finishPaymentPricing(paymentTerm)" *ngIf="i!=0&&i+1==paymentTerm.prices.length&&!price.price&&!paymentTerm.done"><i class="fa fa-check"></i> Done</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!priceAdded" (click)="saveVendorSku()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #rejectedMessageModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">View Rejected Message</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    {{rejectedMessage}}
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #expensesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New {{isHO ? 'HO' : 'Building'}} Expense Code</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row mt-2">
+      <div class="col-md-12 form-group mb-1">
+        <label for="roles">Expense Category</label>
+        <ng-select [items]="opexCategories" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Expense Category" [(ngModel)]="opexCategory" [ngModelOptions]="{standalone: true}">
+        </ng-select>
+      </div>
+      <div class="col-md-12 form-group mb-1" *ngIf="opexCategory?.types.length">
+        <label for="roles">Expense Type</label>
+        <ng-select [items]="opexCategory.types" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Expense Type" [(ngModel)]="opexType" (ngModelChange)="opexItem=null;" [ngModelOptions]="{standalone: true}">
+        </ng-select>
+      </div>
+      <div class="col-md-12 form-group mb-1" *ngIf="opexType?.items.length">
+        <label for="roles">Expense Item</label>
+        <ng-select [items]="opexType.items" [closeOnSelect]="true" [hideSelected]="true" bindLabel="name" placeholder="Select Expense Item" [(ngModel)]="opexItem" [ngModelOptions]="{standalone: true}">
+        </ng-select>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="!opexType" (click)="saveVendorService()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #helpNotesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Help Notes</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <ngb-tabset class="nav-right">
+      <ngb-tab title="Vendor Status Definition">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:VendorStatusDefinition'" [type]="'popup'" [placement]="'bottom'" class="ml-10"></help-notes>
+        </ng-template>
+      </ngb-tab>
+      <ngb-tab title="Vendor Status Flow">
+        <ng-template ngbTabContent>
+          <help-notes [context]="'Purchases:VendorStatusFlow'" [type]="'popup'" [placement]="'bottom'" class="ml-10"></help-notes>
+        </ng-template>
+      </ngb-tab>
+    </ngb-tabset>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

@@ -1,0 +1,155 @@
+<!--begin: Datatable -->
+<div class="table-responsive" [ngStyle]="{'min-height' : autoHeightAdjust?'300px':null}">
+  <!-- <div class="loading" *ngIf="loading" style="position: absolute;background: #82A0DF33;width: 100%;height: 100%;padding: 17% 47%;">
+    <span class="spinner-glow spinner-glow-info" style="padding: 15px;"></span>
+  </div> -->
+  <loading [loading]="loading"></loading>
+  <table class="tableBodyScroll table table-striped table-hover table-sm">
+    <thead *ngIf="!config.options || !config.options['hideHeader']">
+      <tr>
+        <th *ngIf="config.options && config.options.selection && config.options.selection" style="width: 30px;">
+          <div class="m-checkbox-list" *ngIf="config.options.selection == 'multi'">
+            <label class="m-checkbox">
+              <input type="checkbox" [(ngModel)]="allRows" (ngModelChange)="selectAll()">
+              <span></span>
+            </label>
+          </div>
+        </th>
+        <th *ngFor="let column of config.columns; let colIdx = index;" [ngClass]="column.styleClass" (click)="columnClicked(colIdx);">
+          {{column.label}}
+          <span class="sorting" *ngIf="column.field == sortBy">
+            <i [ngClass]="sortOrder == 'desc' ? 'fa fa-chevron-up sort-arrow' : 'fa fa-chevron-down sort-arrow'"></i>
+          </span>
+        </th>
+        <th *ngIf="config.actions && config.actions.length > 0" [ngClass]="(config.options && config.options.actionStyleClass) ? config.options.actionStyleClass : ''">
+          Action
+        </th>
+      </tr>
+    </thead>
+    <tbody infiniteScroll [autoHeightAdjust]="autoHeightAdjust" (onScroll)="loadMore()" [hidden]="(data && data.length==0)" class="tableBodyScroll">
+      <tr *ngFor="let item of data;trackBy:identify; let rowIdx=index;" [ngClass]="calculateRowStyleClass(item)">
+        <td *ngIf="config.options && config.options.selection && config.options.selection" style="width: 30px; vertical-align: top;">
+          <div class="m-checkbox-list" *ngIf="config.options.selection == 'multi'">
+            <label class="m-checkbox">
+              <input type="checkbox" [(ngModel)]="item['_selected']" (ngModelChange)="rowSelected(rowIdx)">
+              <span></span>
+            </label>
+          </div>
+          <div class="m-radio-list" *ngIf="config.options.selection == 'single'">
+            <label class="m-radio">
+              <input type="radio" [value]="item" [(ngModel)]="item['_selected']" (ngModelChange)="rowSelected(rowIdx)">
+              <span></span>
+            </label>
+          </div>
+        </td>
+        <td *ngFor="let column of config.columns;" [ngClass]="column.styleClass" style="vertical-align: top;text-align: {{column.align}}">
+          <span *ngIf="!column.editable && !objVal(item, column.field) && column.defaultValue">
+            {{column.defaultValue}}
+          </span>
+          <span *ngIf="!column.editable" [ngClass]="{'bg-light-red':objVal(item, column.lightRed), 'bg-warning':objVal(item, column.warning), 'bg-light':objVal(item, column.light), 'p-1':(objVal(item, column.lightRed) || objVal(item, column.warning) || objVal(item, column.light))}">
+            <span *ngIf="column.type == 'text'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              {{objVal(item, column.field) || objVal(item, column.ifNull) || objVal(item, column.ifDblNull) || column.ifValueNull || '-'}}
+            </span>
+            <span *ngIf="column.type == 'link'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              <a href="{{column.href}}{{objVal(item, column.id)}}" target="_blank" *ngIf="objVal(item, column.id)">{{objVal(item, column.field) || '-'}}</a>
+              <span *ngIf="!objVal(item, column.id)">{{objVal(item, column.field) || '-'}}</span>
+            </span>
+            <span *ngIf="column.type == 'url'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              <a *ngIf="objVal(item, column.url)" href="{{objVal(item, column.url)}}" target="_blank">{{objVal(item, column.field) || '-'}}</a>
+              <span *ngIf="!objVal(item, column.url)">{{objVal(item, column.field) || '-'}}</span>
+            </span>
+            <span *ngIf="column.type == 'number'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              {{objVal(item, column.field) || '-'}}
+            </span>
+            <span *ngIf="column.type == 'percent'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              {{objVal(item, column.field) || '0'}}<small>%</small>
+            </span>
+            <span *ngIf="column.type == 'inr'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              {{(objVal(item, column.field) || '-')|inr}}
+            </span>
+            <span *ngIf="column.type == 'selection'">
+              {{objVal(item, column.field) || '-'}}
+            </span>
+            <span *ngIf="column.type == 'email'">
+              <a [attr.href]="objVal(item, column.field)">{{(objVal(item, column.field) ||'-')}}</a>
+            </span>
+            <div *ngIf="column.type == 'boolean'">
+              <span class="checkbox checkbox-success toggle-sm" style="margin: 0 20%;">
+                <input type="checkbox" id="checkbox_{{item.id}}" name="checkbox_{{item.id}}" [(ngModel)]="item[column.field]" (ngModelChange)="itemValueChanged(item, column.field);" disabled="true">
+                <label for="checkbox_{{item.id}}"></label>
+                <span class="checkmark"></span>
+              </span>
+              <!--  <span class="switch switch-success checkbox-sm">
+                <input type="checkbox" id="checkbox_{{item.id}}" name="checkbox_{{item.id}}" [(ngModel)]="item[column.field]" (ngModelChange)="itemValueChanged(item, column.field);" disabled="true">
+                <span class="slider"></span>
+              </span> -->
+            </div>
+            <span *ngIf="column.type == 'image'">
+              <img *ngIf="objVal(item, column.field)" src="{{baseUrl}}resource/{{objVal(item, column.field)}}" style="width:100%;">
+            </span>
+            <span *ngIf="column.type == 'date'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              {{(objVal(item, column.field) | date:'mediumDate') || '-'}}
+            </span>
+            <span *ngIf="column.type == 'time'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              {{(objVal(item, column.field) | date:'mediumTime') || '-'}}
+            </span>
+            <span *ngIf="column.type == 'dateTime'" ngbTooltip="{{objVal(item, column.tooltip)}}">
+              <small>{{(objVal(item, column.field) | date:'MMM dd, yyyy hh:mm aa') || '-'}}</small>
+            </span>
+            <span *ngIf="column.type == 'currency'">
+              {{(objVal(item, column.field) | currency:column.currency) || '-'}}
+            </span>
+            <div *ngIf="column.type == 'custom'">
+              <ng-template [ngTemplateOutlet]="column.template" [ngTemplateOutletContext]="{item: convertItem(item, column)}"></ng-template>
+            </div>
+          </span>
+          <span *ngIf="column.editable">
+            <span *ngIf="column.type == 'text'">
+              <input type="text" [(ngModel)]="item[column.field]" class="form-control" (ngModelChange)="itemValueChanged(item, column.field);">
+            </span>
+            <span *ngIf="column.type == 'number'">
+              <input type="number" [(ngModel)]="item[column.field]" [attr.min]="column.minValue" [attr.max]="column.maxValue" class="form-control" (ngModelChange)="itemValueChanged(item, column.field);">
+            </span>
+            <span *ngIf="column.type == 'selection'">
+              <select class="form-control" [(ngModel)]="item[column.field]" (ngModelChange)="itemValueChanged(item, column.field);">
+                <option [ngValue]="null">Please select</option>
+                <option *ngFor="let selectionItem of item[column.selection.valuesField]" [ngValue]="selectionItem[column.selection.keyField]">{{selectionItem[column.selection.labelField]}}</option>
+              </select>
+            </span>
+            <span *ngIf="column.type == 'boolean'">
+              <span class="toggle-checkbox checkbox-inline toggle-sm">
+                <input type="checkbox" id="checkbox_{{item.id}}" name="checkbox_{{item.id}}" [(ngModel)]="item[column.field]" (ngModelChange)="itemValueChanged(item, column.field);" disabled="true">
+                <label for="checkbox_{{item.id}}"></label>
+              </span>
+            </span>
+          </span>
+          <p *ngIf="column.descriptionField" class="description">
+            {{objVal(item, column.descriptionField)}}
+          </p>
+        </td>
+        <td *ngIf="config.actions && config.actions.length > 0" [ngClass]="(config.options && config.options.actionStyleClass) ? config.options.actionStyleClass : ''" style="vertical-align: top;">
+          <span *ngFor="let action of config.actions;">
+            <!-- <span *checkAccess="action['role']"> -->
+            <span *ngIf="!action.condition || (action.condition.value && item[action.condition['label']]==action.condition['value']) || (action.condition.not && item[action.condition['label']]!=action.condition['not']) ">
+              <span *ngIf="!action.also || (action.also.value && item[action.also['label']]==action.also['value']) || (action.also.not && item[action.also['label']]!=action.also['not']) ">
+                <span *ngIf="!action.and || (action.and.value && item[action.and['label']]==action.and['value']) || (action.and.not && item[action.and['label']]!=action.and['not']) ">
+                  <button *ngIf="(!action.type || action.type == 'icon') && (!action.hideField || !objVal(item, action.hideField)) && (!action.roles || user.role==action.roles)" ngbTooltip="{{action.hint || objVal(item, action.tooltip) }}" class="btn btn-icon btn-{{action.style}}" [disabled]="item.disabled" (click)="actionClicked(rowIdx, action.code,item)">
+                    <i [ngClass]="action.icon"></i>
+                  </button>
+                  <button *ngIf="(action.type && action.type == 'button') && (!action.hideField || !objVal(item, action.hideField))" [ngClass]="action.styleClass ? action.styleClass : 'btn btn-primary btn-sm'" (click)="actionClicked(rowIdx, action.code,item)" [disabled]="(action.disableField && objVal(item, action.disableField))" ngbTooltip="{{action.hint || objVal(item, action.tooltip)}}" [disabled]="item.disabled" style="margin-bottom: 2px;">{{action['label']}}</button>
+                </span>
+              </span>
+            </span>
+            <!-- </span> -->
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="data && !data.length && !loading" class="text-center p-4">
+    <strong> No items were found</strong>
+  </div>
+  <!--  <div *ngIf="dataUrl && !loading && !noMoreData">
+    <button class="btn btn-primary btn-sm" (click)="loadMore();">Load more...</button>
+  </div> -->
+</div>

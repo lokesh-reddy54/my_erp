@@ -1,0 +1,52 @@
+/* jshint indent: 2 */
+
+module.exports = function(sequelize, DataTypes, dbTableOptions) {
+  return sequelize.define('ticket_contexts', {
+    id: {
+      type: DataTypes.INTEGER(9),
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    subCategoryId: {
+      type: DataTypes.INTEGER(9),
+      allowNull: true,
+      references: {
+        model: 'ticket_sub_categories',
+        key: 'id'
+      }
+    },
+    priorityId: {
+      type: DataTypes.INTEGER(9),
+      allowNull: true,
+      references: {
+        model: 'ticket_priorities',
+        key: 'id'
+      }
+    },
+    context: {
+      type: DataTypes.STRING(200),
+      allowNull: true
+    },
+    supportLevel: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    assigneeType: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    active: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    },
+    updated: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    updatedBy: {
+      type: DataTypes.STRING(20),
+      allowNull: true
+    }
+  }, dbTableOptions);
+};

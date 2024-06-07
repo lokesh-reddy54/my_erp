@@ -1,0 +1,174 @@
+<div class="row">
+  <div [ngClass]="typeFilters.catId ? 'col-6':'col-12'" class="p-1">
+    <div class="breadcrumb">
+      <h5 class="pull-left pl-2">{{isHq ? "HeadOffice" : "Building"}} Expenses Categories</h5>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="typeSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button *checkAccess="'accounts:manageExpenseCodes'" class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openCategoryModal()">
+        <i class="fa fa-plus"></i> Category
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #categoryList [filter]="categoryFilters" [dataUrl]="'internal/accounts/listOpexCategories'" [config]="categoryConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div [ngClass]="opexFilters.typeId ? 'col-3':'col-6'" class="p-1" *ngIf="typeFilters.catId">
+    <div class="breadcrumb">
+      <h5 class="pull-left">Expense Types</h5>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="typeSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button *checkAccess="'accounts:manageExpenseCodes'" class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openTypeModal()">
+        <i class="fa fa-plus"></i> Type
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #typeList [filter]="typeFilters" [dataUrl]="'internal/accounts/listOpexTypes'" [config]="typeConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-3 p-1" *ngIf="opexFilters.typeId">
+    <div class="breadcrumb">
+      <h5 class="pull-left">Expense Items</h5>
+      <!-- <input type="text" placeholder="Search by name" [formControl]="opexSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+      <button *checkAccess="'accounts:manageExpenseCodes'" class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openOpexModal(opexModal)">
+        <i class="fa fa-plus"></i> Item
+      </button>
+    </div>
+    <div class="clear"></div>
+    <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card  o-hidden">
+          <data-list #opexList [filter]="opexFilters" [dataUrl]="'internal/accounts/listOpexTypes'" [config]="opexConfig" (onAction)="action($event)"></data-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #categoryModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{category.id ? 'Edit Category' : 'New Category'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="categoryForm">
+      <div class="row">
+        <div class="col-md-12 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="category.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="category.default" [ngModelOptions]="{standalone: true}">
+            <span>Default</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="category.recurring" [ngModelOptions]="{standalone: true}">
+            <span>Recurring</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <!--   <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="category.office" [ngModelOptions]="{standalone: true}">
+            <span>Office Expense</span>
+            <span class="checkmark"></span>
+          </label>
+      </div> -->
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="category.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||categoryForm.invalid" (click)="saveCategory()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #typeModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{type.id ? 'Edit Type' : 'New Type'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form" (validSubmit)="saveType()">
+      <div class="row">
+        <div class="col-md-6 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="type.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="type.default" [ngModelOptions]="{standalone: true}">
+            <span>Default</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="type.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="saveType()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #opexModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{opex.id ? 'Edit Opex Item' : 'New Opex Item'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="opexForm">
+      <div class="row">
+        <div class="col-md-9 form-group mb-1">
+          <label for="firstName">Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter name" [(ngModel)]="opex.name">
+        </div>
+        <div class="col-md-3 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="opex.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light float-right" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico  float-right" [ladda]="loading" [disabled]="loading||opexForm.invalid" (click)="saveOpex()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

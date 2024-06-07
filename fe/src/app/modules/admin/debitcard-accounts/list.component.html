@@ -1,0 +1,91 @@
+<div class="">
+  <div class="breadcrumb">
+    <h1 class="pull-left">DebitCard Accounts</h1>
+    <input type="text" placeholder="Search DebitCard Account by UserName" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2">
+    <button class="btn btn-outline-primar btn-primary btn-rounde btn-ico pull-right" (click)="openAccountModal()">
+      <i class="fa fa-plus"></i> DebitCard Account
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10 mt-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden">
+        <data-list #list [filter]="filter" [dataUrl]="'internal/admin/listDebitCardAccounts'" [config]="config" (onAction)="action($event)"></data-list>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #accountModal let-modal class="modal-lg">
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{account.id ? 'Edit DebitCard Account' : 'New DebitCard Account'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="form">
+      <div class="row">
+        <div class="col-md-4 form-group mb-1">
+          <label for="firstName">Account Name</label>
+          <input type="text" class="form-control" id="name" formControlName="name" placeholder="Enter Account name" [(ngModel)]="account.name">
+        </div>
+        <div class="col-md-3 form-group mb-1">
+          <label for="firstName">CardId</label>
+          <input type="text" class="form-control" id="cardId" formControlName="cardId" placeholder="Enter Account cardId" [(ngModel)]="account.cardId">
+        </div>
+        <div class="col-md-3 pl-0 pr-0 form-group mb-1">
+          <label for="firstName">Select Card Provider</label>
+          <tag-input [formControl]="userControl" theme='primary' [(ngModel)]="selectedServiceProviders" secondaryPlaceholder="Type Card Provider name to search" (onTextChange)="onServiceProviderSearch($event)" (onAdd)="serviceProviderSelected($event)" maxItems="1" [onlyFromAutocomplete]="true">
+            <tag-input-dropdown [autocompleteItems]="autocompleteServiceProviders" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+              <ng-template let-item="item" let-index="index">
+                {{item.name}}, {{item.email}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+        <div class="col-md-2 form-group mb-1 mt-4">
+          <label class="checkbox checkbox-success">
+            <input type="checkbox" [(ngModel)]="account.active" [ngModelOptions]="{standalone: true}">
+            <span>Active</span>
+            <span class="checkmark"></span>
+          </label>
+        </div>
+        <div class="col-md-6 form-group mb-1" *ngIf="account.id && account.active">
+          <label for="firstName">Select User</label>
+          <tag-input [formControl]="userControl" theme='primary' [(ngModel)]="selectedUsers" secondaryPlaceholder="Type User name to search" (onTextChange)="onUserSearch($event)" (onAdd)="userSelected($event)" maxItems="1" [onlyFromAutocomplete]="true">
+            <tag-input-dropdown [autocompleteItems]="autocompleteUsers" [showDropdownIfEmpty]="true" [appendToBody]="false" [displayBy]="'name'" [identifyBy]="id">
+              <ng-template let-item="item" let-index="index">
+                {{item.name}}, {{item.email}}
+              </ng-template>
+            </tag-input-dropdown>
+          </tag-input>
+        </div>
+      </div>
+      <table class="tableBodyScroll table table-striped table-hover table-sm" *ngIf="account.id && account.active">
+        <thead>
+          <tr>
+            <th class="w-30">Name</th>
+            <th class="w-40">Email</th>
+            <th class="w-20">Phone</th>
+            <th class="w-10">Action</th>
+          </tr>
+        </thead>
+        <p class="text-center p-2 f-b" *ngIf="!account?.accountUsers?.length">No users are assigned to this DebitCard Account</p>
+        <tbody class="tableBodyScroll" infiniteScroll [autoHeightAdjust]="190">
+          <tr *ngFor="let accountUser of account?.accountUsers;">
+            <td class="w-30">{{accountUser.user.name}} </td>
+            <td class="w-40">{{accountUser.user.email}}</td>
+            <td class="w-20">{{accountUser.user.phone}}</td>
+            <td class="w-10"><button class="btn btn-icon btn-outline-danger" (click)="accountUser.active=0;saveAccountUser(accountUser)"><i class="fa fa-times"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||form.invalid" (click)="save()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>

@@ -1,0 +1,11 @@
+list of all payments done from erp
+-------------------------------------------------------------------------------------------
+select p.title, v.name vendor, po.refNo, po.date poDate, po.status poStatus, pp.amount, pp.paidOn, pp.paymentMode, pp.type
+from payout_payments pp
+left join payout_benificiaries pb on pb.id=pp.payoutBenificiaryId
+left join vendor_purchase_orders po on po.id = pp.purchaseOrderId
+left join vendors v on po.vendorId=v.id
+left join vendor_projects p on p.id=po.projectId
+where po.companyId=1 and po.isOpex=0  and pp.status in ('Paid','PayoutPending') and po.isBill=1
+order by pp.paidOn desc
+

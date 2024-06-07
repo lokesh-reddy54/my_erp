@@ -1,0 +1,57 @@
+<div class="search-ui rtl-ps-none" [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}" style="padding: 10px 15px;">
+  <div class="search-header">
+    <h4 class="modal-title float-left">Floor Planner</h4>
+    <button class="btn btn-icon bg-transparent float-right mt-2" (click)="commonService.floorplanOpen = false">
+      <i class="i-Close-Window text-22 text-muted"></i>
+    </button>
+  </div>
+  <div class="clear"></div>
+  <div id="body" class="" style="width: 100%;height: calc(100% - 30px);">
+    <div id="drawing" style="width: 80%;height: 100%" class="float-left">
+      <div id="canvas" [ngStyle]="{width:canvasWidth,height:canvasHeight}"></div>
+    </div>
+    <div id="options card" class="" style="width: 20%;height: 100%;padding-left: 10px;" perfectScrollbar class="float-right">
+      <div class="card-title mb-2">Floor Details</div>
+      <div class="row">
+        <div class="col-md-6 form-group mb-3">
+          <label for="length">Length <small>(in meters)</small></label>
+          <input type="number" class="form-control" [(ngModel)]="floorLength" id="length" placeholder="in meters">
+        </div>
+        <div class="col-md-6 form-group mb-3">
+          <label for="breadth">Breadth <small>(in meters)</small></label>
+          <input type="number" class="form-control" [(ngModel)]="floorBreadth" id="breadth" placeholder="in meters">
+        </div>
+        <div class="col-md-6 form-group mb-3">
+          <label for="phone">Work Stations : </label>
+          <span>{{workStations}}</span>
+        </div>
+        <div class="col-md-6 form-group mb-3">
+          <label for="credit">Desks : </label>
+          <span>{{desks}}</span>
+        </div>
+      </div>
+      <div class="card-title mb-2">Canvas Drawings</div>
+      <div class="row mb-3">
+        <div class="col-sm-2 text-center  btn mr-5 btn-mini ml-10" (click)="selectedShape='Line';selectShape();" [ngClass]="selectedShape=='Line'?'btn-info':'btn-outline-info'">
+          <i class="text-20 fa fa-arrows-h"></i>
+          <p>Line</p>
+        </div>
+        <div class="col-sm-2 text-center btn mr-5 btn-mini" (click)="selectedShape='Box';selectShape();" [ngClass]="selectedShape=='Box'?'btn-info':'btn-outline-info'">
+          <i class="text-20 fa fa-square"></i>
+          <p>Box</p>
+        </div>
+        <div class="col-sm-3 text-center btn mr-5 btn-mini" (click)="selectedShape='Polygon';selectShape();" [ngClass]="selectedShape=='Polygon'?'btn-info':'btn-outline-info'">
+          <i class="text-20 fa fa-asterisk"></i>
+          <p>Polygon</p>
+        </div>
+        <div class="col-sm-3 text-center btn mr-5 btn-mini" (click)="selectedShape='Circle';selectShape();" [ngClass]="selectedShape=='Circle'?'btn-info':'btn-outline-info'">
+          <i class="text-20 fa fa-circle"></i>
+          <p>Circle</p>
+        </div>
+      </div>
+      <div class="card-title mb-2" *ngIf="selectedElement">Selected Object</div>
+      <div class="row mb-3" *ngIf="selectedElement">
+      </div>
+    </div>
+  </div>
+</div>

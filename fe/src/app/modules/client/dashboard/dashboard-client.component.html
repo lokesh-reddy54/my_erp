@@ -1,0 +1,402 @@
+<div class="dashboards">
+  <loading [loading]="loading"></loading>
+  <div class="row">
+    <div class="col-12 pr-0 pl-4 mb-2 border-bottom pb-2">
+      <h4 class="mb-0"><small>{{greetingText}}</small> <strong> {{user.name}}</strong>, <small> from</small> {{user.clientCompany}} </h4>
+    </div>
+    <div class="col-12 row pr-0">
+      <div class="col-md-4 pr-0" *ngIf="myBookings[0]?.contract.deskType!='EnterpriseOffice' && myBookings[0]?.contract.deskType!='PrivateOffice' ">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center pb-0 pt-1">
+            <i class="i-Add-Window pt-2" style="color:#008080d1"></i>
+            <div class="content pl-10 pr-10">
+              <p class="text-muted mb-0">Upcoming Resource Bookings</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{upcomingResourceBookings?.length}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-2" style="height:32px;" (click)="newResourceBooking()">Book Now</a>
+            <a class="mt-2 d-b" style="position: absolute;bottom: 15px;right: 25px;" href="/#/client/resource-bookings">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0" *ngIf="totalDue>0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Money" style="color:#008080d1"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Dues</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{totalDue|inr}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-0" style="height:32px;" (click)="openPaymentModal()">Pay Now</a>
+            <a class="mt-2 d-b" style="position: absolute;bottom: 15px;right: 25px;" (click)="viewInvoices()">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0" *ngIf="totalDue==0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Money" style="color:#008080d1"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Total Paid</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{thisMonthPayment|inr}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-2" style="height:32px;" (click)="viewInvoices()">All Payments</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Support" style="color:#008080d1"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0"> Open Tickets</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{openedTickets.length}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-0" style="height:32px;" (click)="raiseTicket()">Raise Ticket</a>
+            <a class="mt-2 d-b" style="position: absolute;bottom: 15px;right: 25px;" href="/#/client/tickets/0">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Library" style="color:#008080d1"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0"> Bookings</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{activeBookings}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-4" style="height:32px;" (click)="viewBooking()">View</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 pr-0" *ngIf="myBookings[0]?.contract.deskType!='EnterpriseOffice' && myBookings[0]?.contract.deskType!='PrivateOffice' ">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center pt-1">
+            <i class="i-Dollar-Sign pt-2" style="color:#008080d1"></i>
+            <div class="content">
+              <p class="text-muted mb-0">Available Credits</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{availableCredits}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-4" style="height:32px;" (click)="viewCredits()">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Business-Mens" style="color:#008080d1"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0">Employees</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{employees}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-4" style="height:32px;" (click)="viewEmployees()">View All</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 pr-0">
+        <div class="card card-icon-bg card-icon-bg-primary o-hidden mb-4">
+          <div class="card-body text-center">
+            <i class="i-Support" style="color:#008080d1"></i>
+            <div class="content">
+              <p class="text-muted mt-2 mb-0"> Open RFCs</p>
+              <p class="text-black text-24 line-height-1 mb-2">{{openedRfcs?.length}}</p>
+            </div>
+            <a class="btn btn-outline-primary mt-0" style="height:32px;" (click)="raiseTicket()">Submit RFC</a>
+            <a class="mt-2 d-b" style="position: absolute;bottom: 15px;right: 25px;" href="/#/client/rfcs/1">View All</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card mb-4 o-hidden">
+        <h5 class="m-2 f-b border-bottom pb-2">My Bookings ({{myBookings.length}}) </h5>
+        <div *ngFor="let booking of myBookings;" class="border-bottom mt-2">
+          <h5 class="pl-3 mb-0 f-b">{{booking.office?.building?.name}}, {{booking.office?.floor}}</h5>
+          <img alt="" class="card-img-top p-3" [src]="booking.office?.building?.image">
+          <div class="card-body pt-0">
+            <p>{{booking.office?.building?.address}}</p>
+            <p class="float-left">Moved In : <strong>{{booking.started | date : 'MMM dd, yyyy'}} </strong></p>
+            <p class="float-right badge badge-info fs-14" *ngIf="booking.status=='Reserved'">Reserved</p>
+            <p class="float-right badge badge-info fs-14" *ngIf="booking.status=='Booked'">Booked</p>
+            <p class="float-right badge badge-success fs-14" *ngIf="booking.status=='Active'">Moved In</p>
+            <p class="float-right badge badge-warning fs-14" *ngIf="booking.status=='Exiting'">Requested Exit</p>
+            <p class="float-right badge badge-light fs-14" *ngIf="booking.status=='Exited'">Exited</p>
+            <p class="float-right badge badge-light fs-14" *ngIf="booking.status=='Settled'">Closed</p>
+            <div class="clear mb-1"></div>
+            <a class="btn btn-primary float-right btn-sm" href="#/client/booking/{{booking.id}}">View Booking</a>
+            <a class="btn btn-outline-danger btn-sm float-left" *ngIf="booking.contract.deskType!='EnterpriseOffice' && booking.contract.deskType!='PrivateOffice' && booking.status=='Active'" (click)="openExitRequest(booking)">Request Exit</a>
+            <a class="btn btn-outline-danger btn-sm float-left" *ngIf="booking.status=='Exiting'" (click)="cancelExitRequest(booking)">Cancel Exit Request</a>
+            <div class="clear mb-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4" *ngIf="pendingInvoices.length">
+      <div class="card">
+        <div class="card-body p-1">
+          <h5 class="m-2 f-b">Pending Invoices ({{pendingInvoices.length}})</h5>
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-50">Invoice</th>
+                <th class="w-25 text-center">Status</th>
+                <th class="w-25 text-right">Due</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="300">
+              <tr *ngFor="let item of pendingInvoices;">
+                <td class="w-50 ">{{item.name}} for {{item.date | date : 'MMM yy'}} </td>
+                <td class="w-25 text-center">{{item.status}}</td>
+                <td class="w-25 text-right">{{item.due | inr}}</td>
+              </tr>
+              <tr>
+                <td class="w-75 text-right">Total Due</td>
+                <td class="w-25 text-right">{{totalDue | inr}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4" *ngIf="thisMonthPayments.length">
+      <div class="card">
+        <div class="card-body p-1">
+          <h5 class="m-2 f-b">This Month Payments ({{thisMonthPayments.length}})</h5>
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-25 text-left">UTR</th>
+                <th class="w-50 text-right">Date</th>
+                <th class="w-25 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll last-row-bold" infiniteScroll [autoHeightAdjust]="300">
+              <tr *ngFor="let item of thisMonthPayments;">
+                <td class="w-25 text-left">{{item.utr || '-'}}</td>
+                <td class="w-50 text-right">{{item.date | date : 'dd MMM yy hh:mm aa'}} </td>
+                <td class="w-25 text-right">{{item.amount | inr}}</td>
+              </tr>
+              <tr>
+                <td class="w-75 text-right">Total Paid</td>
+                <td class="w-25 text-right">{{thisMonthPayment | inr}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body p-1">
+          <h5 class="m-2 f-b">Open Tickets ({{openedTickets.length}})</h5>
+          <table class="tableBodyScroll table table-striped table-hover table-sm">
+            <thead>
+              <tr>
+                <th class="w-60">Issue Context</th>
+                <th class="w-30 text-center">Status</th>
+                <th class="w-10 text-center"></th>
+              </tr>
+            </thead>
+            <tbody class="tableBodyScroll">
+              <tr *ngFor="let item of openedTickets;">
+                <td class="w-60 ">{{item.category}}, {{item.subCategory}}, {{item.context}} </td>
+                <td class="w-30 text-center">{{item.status}}</td>
+                <td class="w-10 text-center"><a href="#/client/ticket/{{item.id}}" class="btn btn-info btn-icon btn-sm"><i class="fa fa-search"></i></a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #newTicketModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ticket.id ? 'Edit Ticket' : 'New Ticket'}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row" *ngIf="myBookings.length>1">
+      <div class="form-group col-md-12 mb-1">
+        <label for="roles">Select Booking</label>
+        <ng-select [items]="myBookings" [hideSelected]="true" bindLabel="refNo" placeholder="Select Booking" [(ngModel)]="selectedBooking" name="booking">
+          <ng-template ng-option-tmp let-item="item">
+            <div><strong>{{item.refNo}}</strong></div>
+            <span>{{item.office?.name}}, {{item.office?.building?.name}}, {{item.office?.building?.address}}</span>
+          </ng-template>
+        </ng-select>
+      </div>
+      <!--  <div class="col-md-4 form-group mb-1" *ngIf="selectedOffice.id">
+        <label for="firstName">Select Cabin <small>(which has issue, if any)</small></label>
+        <div *ngIf="!selectedBooking?.id"><small>Please select booking </small></div>
+        <ng-select [items]="selectedBooking?.cabins" *ngIf="selectedBooking?.id" [hideSelected]="true" [bindLabel]="'name'" placeholder="Select Cabin to report" [(ngModel)]="ticket.cabin" formControlName="cabin" name="cabin"> </ng-select>
+      </div> -->
+    </div>
+    <div class="row" *ngIf="selectedBooking?.id">
+      <div class="col-md-3 form-group mb-1">
+        <label for="firstName"><span *ngIf="!ticket.category">Select</span> Issue Category</label>
+        <p class="mb-1" *ngIf="ticket.category"><strong>{{ticket.category.name}}</strong> <i class="fa fa-times" style="float: right;color:red;font-size: 1rem !important;" (click)="ticket.category=null;"></i></p>
+        <ul class="list-group list-group-flush" *ngIf="!ticket.category">
+          <li style="padding: 0.25rem 1.25rem;" *ngFor="let category of categories;" (click)="ticket.category=category" class="list-group-item cursor">{{category.name}}</li>
+        </ul>
+      </div>
+      <div class="col-md-3 form-group mb-1" *ngIf="ticket.category">
+        <label for="firstName"><span *ngIf="!ticket.subCategory">Select</span> Sub Category</label>
+        <p class="mb-1" *ngIf="ticket.subCategory"><strong>{{ticket.subCategory.name}}</strong> <i class="fa fa-times" style="float: right;color:red;font-size: 1rem !important;" (click)="ticket.subCategory=null;"></i></p>
+        <ul class="list-group list-group-flush" *ngIf="!ticket.subCategory">
+          <li style="padding: 0.25rem 1.25rem;" *ngFor="let subCategory of ticket.category?.subCategories;" (click)="ticket.subCategory=subCategory" class="list-group-item cursor">{{subCategory.name}}</li>
+        </ul>
+      </div>
+      <div class="col-md-4 form-group mb-1" *ngIf="ticket.subCategory">
+        <label for="firstName"><span *ngIf="!ticket.context">Select</span> Issue Context</label>
+        <p class="mb-1" *ngIf="ticket.context"><strong>{{ticket.context.context}}</strong> <i class="fa fa-times" style="float: right;color:red;font-size: 1rem !important;" (click)="ticket.context=null;"></i></p>
+        <ul class="list-group list-group-flush" *ngIf="!ticket.context">
+          <li style="padding: 0.25rem 1.25rem;" *ngFor="let context of ticket.subCategory?.contexts;" (click)="ticket.context=context" class="list-group-item cursor">{{context.context}}</li>
+        </ul>
+      </div>
+      <div class="col-md-12 form-group mb-1" *ngIf="ticket.context">
+        <label for="roles">Additional Info (if any)</label>
+        <textarea placeholder="Describe your issue in detail here" rows="8" class="form-control" name="description" [(ngModel)]="ticket.description"></textarea>
+      </div>
+      <div class="col-12 mb-2 form-group" *ngIf="ticket.context">
+        <label for="roles" class="d-b">File Attachment (if any)</label>
+        <a class="f-b badge badge-secondary fs-10 float-left" *ngIf="ticket.attachment?.file" [href]="ticket.attachment?.file" target="_blank" ngbTooltip="Click to View">Attachment</a>
+        <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Remove Attachment" (click)="ticket.attachment=null;" *ngIf="ticket.attachment"></i>
+        <div class="input-group" *ngIf="!ticket.attachment">
+          <div class="custom-file" *ngIf="!attachmentFile">
+            <input class="custom-file-input" id="attachmentId" (change)="attachmentFileChange($event)" type="file">
+            <label class="custom-file-label" for="attachmentId">Choose file</label>
+          </div>
+          <div class="custom-file" *ngIf="attachmentFile">
+            <span class="float-left">{{attachmentFile?.name}}</span>
+            <i class="float-left fa fa-times fa-3x text-danger pl-2" ngbTooltip="Cancel this file" (click)="attachmentFile=null;"></i>
+            <div class="mb-1">
+              <div *ngIf="attachmentFileError">
+                {{ attachmentFileError.message }}
+              </div>
+              <div *ngIf="attachmentUploadResponse.status === 'error'">
+                {{ attachmentUploadResponse.message }}
+              </div>
+              <div *ngIf="attachmentUploadResponse.status === 'progress'">
+                <div role="progressbar" [style.width.%]="attachmentUploadResponse.message" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                  {{attachmentUploadResponse.message}}%
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="input-group-append">
+            <span class="input-group-text cursor" (click)="uploadAttachementFile()">Upload</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-info ladda-button btn-ico" [ladda]="loading" [disabled]="loading||!ticket.context" (click)="saveTicket()"><i class="fa fa-check" *ngIf="!loading"></i> Save</button>
+  </div>
+</ng-template>
+<ng-template #exitRequestModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Request for Exit</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="exitForm">
+      <div class="row">
+        <div class="col-md-12 form-group">
+          <input placeholder="Select Exit date " class="form-control" name="exitDate" ngbDatepicker #dp="ngbDatepicker" [(ngModel)]="exitDate" formControlName="exitDate" (focus)="dp.toggle()" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+    <button class="btn btn-primary btn-sm ml-10 btn-ico pull-right" (click)="requestExit()" [ladda]="loading" [disabled]="loading||!exitForm.valid">
+      <i class="fa fa-check" *ngIf="!loading"></i> Confirm Exit
+    </button>
+  </div>
+</ng-template>
+<ng-template #paymentModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Payment of {{paymentAmount | inr}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row" *ngIf="myBookings.length>1">
+      <div class="form-group col-md-12 mb-1">
+        <label for="roles">Select Booking</label>
+        <ng-select [items]="myBookings" [hideSelected]="true" bindLabel="refNo" placeholder="Select Booking" [(ngModel)]="selectedBooking" name="booking" (ngModelChange)="onBookingSelected()">
+          <ng-template ng-option-tmp let-item="item">
+            <div><strong>{{item.refNo}}</strong></div>
+            <span>{{item.office?.name}}, {{item.office?.building?.name}}, {{item.office?.building?.address}}</span>
+          </ng-template>
+        </ng-select>
+      </div>
+    </div>
+    <div class="row mt-4" *ngIf="selectedBooking">
+      <div class="col-md-7 col-12">
+        <h5 class="text-center">Pay by Bank Transfer </h5>
+        <p class="text-muted f-b"> Login to your bank account and transfer the due amount to our account mentioned below using IMPS, NEFT or RTGS. </p>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">Account Holder Name </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{selectedBooking.company?.accountName}}</div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">Account Number </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{selectedBooking.company?.accountNumber}}</div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">IFSC Code </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{selectedBooking.company?.ifscCode}}</div>
+        </div>
+        <div class="row">
+          <div class="col-12 col-md-5 form-group mb-1">Bank & Branch </div>
+          <div class="col-12 col-md-7 form-group mb-1">: {{selectedBooking.company?.bankName}}, {{selectedBooking.company?.branchName}}</div>
+        </div>
+        <div class="text-center" *ngIf="urnSubmitted">
+          <h4 class="text-success">URN Submitted Successfully .. !</h4>
+        </div>
+        <form [formGroup]="paymentForm" *ngIf="!urnSubmitted">
+          <div class="row">
+            <div class="col-12 col-md-6 form-group mb-1">
+              <label for="firstName">Amount</label>
+              <input type="number" class="form-control" id="amount" formControlName="amount" placeholder="Enter paid amount" [(ngModel)]="urn.amount">
+            </div>
+            <div class="col-12 col-md-6 form-group mb-1">
+              <label for="roles">Payment Date</label>
+              <input placeholder="Select payment date " class="form-control" name="date" ngbDatepicker #dp="ngbDatepicker" placement="top" [(ngModel)]="urn.date" formControlName="date" (focus)="dp.toggle()" />
+            </div>
+            <div class="col-12 form-group mb-1">
+              <label for="roles">Payment Reference (UTR) Number</label>
+              <input placeholder="Enter UTR number" class="form-control" name="utr" [(ngModel)]="urn.urn" formControlName="utr" />
+            </div>
+            <div class="col-12 form-group mb-1">
+              <button class="btn btn-info m-3 btn-ico pull-right" [disabled]="!paymentForm.valid||selectedBooking.due<=0" (click)="saveUrnPayment()">
+                <i class="fa fa-check"></i> Submit URN Payment
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-5 col-12">
+        <h5 class="text-center">Pay Online by Credit / Debit Card </h5>
+        <p class="text-muted f-b">By paying online with Payment Gateway, PG charges of 2.75% of total amount is charged additionally.</p>
+        <button class="btn btn-info m-3 btn-ico pull-right" (click)="payNow()" [disabled]="!selectedBooking.onlinePayment">
+          <i class="fa fa-check"></i> Pay {{selectedBooking.onlinePayment | inr}} Now
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>

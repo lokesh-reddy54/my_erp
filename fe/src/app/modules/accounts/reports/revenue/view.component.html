@@ -1,0 +1,109 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Revenue Report</h4>
+    <input type="text" placeholder="Search by building or location" [formControl]="searchControl" class="form-control form-control-rounde pull-left w-30 ml-2 mt--10">
+    <div class="btn-group btn-group-toggle pull-right ml-10 mt--10" data-toggle="buttons">
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="reportType">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="selectedBuilding=null;generateMonthlyReport(false)">
+          <input ngbButton type="radio" value="overall"> OverAll
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="generateMonthlyReport(true);">
+          <input ngbButton type="radio" value="buildingWise"> Building
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="generateClientsReport();">
+          <input ngbButton type="radio" value="clientWise"> Client
+        </label>
+      </div>
+    </div>
+    <div class="clear"></div>
+    <help-notes [context]="'Reports:RevenueOverAll'" *ngIf="reportType=='overall'"></help-notes>
+    <help-notes [context]="'Reports:RevenueBuilding'" *ngIf="reportType=='buildingWise'"></help-notes>
+    <help-notes [context]="'Reports:RevenueClient'" *ngIf="reportType=='clientWise'"></help-notes>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row" *ngIf="!clientWiseReport">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row">
+          <div class="col-2 pr-0" *ngIf="selectedBuilding">
+            <h5 class="pull-left mb-1 ml-2">Buildings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings; trackBy: trackById;" [ngClass]="{'selected': building==selectedBuilding}">
+                  <td class="w-80">{{building}}</td>
+                  <td class="w-20">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Building Revenue" (click)="selectedBuilding=building;generateMonthlyReport(true)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pl-0" [ngClass]="{'col-12':!selectedBuilding, 'col-10':selectedBuilding}">
+            <h5 *ngIf="selectedBuilding" class="mt-2 pl-4">'{{selectedBuilding}}' Building Revenue</h5>
+            <div class="table-responsive pl-4 pr-4" [ngClass]="{'fs-12':selectedBuilding}">
+              <table class="revenueTable table table-stripe table-hover table-sm">
+                <thead>
+                  <tr class="bg-primary text-white">
+                    <th *ngFor="let month of monthlyReport.months;trackBy: trackById;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">{{month}}</th>
+                  </tr>
+                </thead>
+                <tbody class="revenueTable" *ngFor="let row of monthlyReport.rows;">
+                  <tr (click)="getTypes(row)" [ngClass]="{'bg-info':row.types&&row.selected,'bg-light':row.types&&selectedRow,'f-b':!row.types}" class="cursor">
+                    <td *ngFor="let col of row.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                  <tr [ngClass]="{'d-none':!row.selected}" *ngFor="let type of row?.types;">
+                    <td *ngFor="let col of type.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card" *ngIf="clientWiseReport">
+    <div class="card-body pt-1">
+      <div class="float-right text-right pt-1">
+        <input type="text" class="form-control" placeholder="Search by Client Name" [(ngModel)]="searchClient" (ngModelChange)="generateClientsReport()">
+      </div>
+      <ngb-tabset class="nav-center">
+        <ngb-tab title="{{tab.month}}" *ngFor="let tab of tabs">
+          <ng-template ngbTabContent>
+            <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+            <!-- {{tab.clients | json}} -->
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="cursor w-20" (click)="sortBy(tab, 'name')">Client &nbsp; <i *ngIf="sort.name?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.name?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="cursor w-8 text-right" (click)="sortBy(tab, 'rent')">Rent &nbsp; <i *ngIf="sort.rent?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.rent?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="cursor w-8 text-right" (click)="sortBy(tab, 'rent')">Rent &nbsp; <i *ngIf="sort.rent?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.rent?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="cursor w-8 text-right" (click)="sortBy(tab, 'rent')">Rent &nbsp; <i *ngIf="sort.rent?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.rent?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="cursor w-8 text-right" (click)="sortBy(tab, 'rent')">Rent &nbsp; <i *ngIf="sort.rent?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.rent?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="cursor w-8 text-right" (click)="sortBy(tab, 'rent')">Rent &nbsp; <i *ngIf="sort.rent?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.rent?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="cursor text-right w-15" (click)="sortBy(tab, 'others')">Others &nbsp; <i *ngIf="sort.others?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.others?.desc" class="fa fa-caret-down"></i></th>
+                  <th class="cursor text-right w-15" (click)="sortBy(tab, 'total')">Total &nbsp; <i *ngIf="sort.total?.asc" class="fa fa-caret-up"></i><i *ngIf="sort.total?.desc" class="fa fa-caret-down"></i></th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let client of tab.clients; trackBy: trackById;">
+                  <td class="w-50">{{client.name}}</td>
+                  <td class="w-15 text-right">{{client.rent | inr}}</td>
+                  <td class="w-15 text-right">{{client.sgst | inr}}</td>
+                  <td class="w-15 text-right">{{client.cgst | inr}}</td>
+                  <td class="w-15 text-right">{{client.amount | inr}}</td>
+                  <td class="w-15 text-right">{{client.refNo | inr}}</td>
+                  <td class="w-15 text-right">{{client.others | inr}}</td>
+                  <td class="w-15 text-right f-b">{{client.total | inr}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+</div>

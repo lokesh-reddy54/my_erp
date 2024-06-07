@@ -1,0 +1,134 @@
+Reports Technical Description
+
+----------------------
+
+Dash Boards
+
+----------------------
+
+1. Building/ HO Expense Graph
+
+	Building Expense Report : which is sum of purchase item taxableamounts which are accounted for that month by considering only pos with isOpex=1 and isBill=1 and with po statuses as ('Approved','Paid','PrePaid','Closed')  and item status as not in ('Archived') and opex_categories should be of office=0
+
+	HO Expense Report : which is sum of purchase item taxableamounts which are accounted for that month by considering only pos with isOpex=1 and isBill=1 and with po statuses as ('Approved','Paid','PrePaid','Closed')  and item status as not in ('Archived') and opex_categories should be of office=1
+
+
+2. Revenue Graph
+
+	Revenue : which is sum of invoice items amount based on datefrom and date to of invoices by considering only invoices with isCancelled=0 and isLiability= 0  and bookings statuses not in ('Failed', 'Cancelled'), and invoiceServiceID not null
+
+
+
+3. Profit and Loss Graph
+
+	Expense  : which is sum of purchase item taxableamounts which are accounted for that month by considering only pos with isOpex=1 and isBill=1 and with po statuses as ('Approved','Paid','PrePaid','Closed')  and item status as not in ('Archived') and if building is null considered as HO
+
+
+	Revenue : which is sum of invoice items amount based on datefrom and date to of invoices by considering only invoices with isCancelled=0 and isLiability= 0  and bookings statuses not in ('Failed', 'Cancelled'), and invoiceServiceID not null
+
+4. Projects Capex
+
+	Capex Expnses : which is the sume of purchase items amount by considering only POs with isOpex=0 , po statuses not in ('Declined', 'Deleted'), purchase items status not in ('Archived') and purchase items skuis not null
+
+----------------------
+
+
+Bookings Module
+
+----------------------
+
+1. Availability Report
+
+	Available Desks : which is the count of cabins and desks based on the status of the desk based on dates of booked_desks of desks with desks active=1 cabins active=1 and office active =1
+
+2. Product Analysis 
+
+	Product Analysis : which is invoice items amount of bookings based on contracts desktype which bookings status not in  ("Cancelled", "Failed") and deskType is not null and isLaiability=0
+
+----------------------
+
+Accounts Module
+
+----------------------
+
+1. Revenue Product List
+
+	Products List : Which are the details from invoice_Services invoice_category, invoice type, sacocde, HasGSt, cgst,sgst, igst, tds based on bookings statuses not in ('Cancelled', 'Failed') and from  invoices invoiceServiceId, isCancelled=0, isLiability=0
+
+2. Revenue Invoices List
+
+	Revenue Invoices List : Which are the details of Company name from Clients, booking reference number from Bookings, invoice reference Number, invoice date, duedate from Invoices  and sum(amount) from invoice_items on bookings status not in ('Failed','Cancelled'), and invoices isCancelled=0, isLiablilty=0, and invoiceStart date for cancelled invoices isCancelled=1
+
+3. Customers List
+
+	Customers list : which is the list of customers details GST, PAN, Company Name from cleints booking reference number, bookings status, booking start date and booking enddate from bookings on which bookings status not in ('Failed', 'Cancelled')
+
+4. Expense Bills List
+
+	Capex POs : which is the list of invoice details of  Capex POs VendorName form vendors, building name from Building, amount,  from purchaseOrders,, billNO, bill date from purcahseOrderInvoices   based on  invoice date from purchase order invocies and isOpex=0 and isBill =0 from purchase Orders
+
+	Opex POs : which is the list of invoice details of  Capex POs VendorName form vendors, building name from Building, amount,  from purchaseOrders,, billNO, bill date from purcahseOrderInvoices   based on  invoice date from purchase order invocies and isOpex=1 and isBill =0 from purchase Orders
+
+	Capex Bills : which is the list of invoice details of  Capex POs VendorName form vendors, building name from Building, amount,  from purchaseOrders,, billNO, bill date from purcahseOrderInvoices   based on  invoice date from purchase order invocies and isOpex=0 and isBill =1 from purchase Orders
+
+	Opex Bills : which is the list of invoice details of  Capex POs VendorName form vendors, building name from Building, amount,  from purchaseOrders,, billNO, bill date from purcahseOrderInvoices   based on  invoice date from purchase order invocies and isOpex=1 and isBill =1 from purchase Orders
+
+	HO Bills: which is the list of invoice details of  Capex POs VendorName form vendors, building name from Building, amount,  from purchaseOrders,, billNO, bill date from purcahseOrderInvoices   based on  invoice date from purchase order invocies and isOpex=0 and isBill =0 and buildingId <0from purchase Orders
+
+5. Vendor List
+
+	 Vendor List : which is the details of vendor name, vendor Type, vendor GST, Vendor PAN, from Venodrs, vendor Contact name. phone number and email from Vendor Contacts based on purchase Orders where po status not in ("Deleted", " Declined")
+
+6. Revenue Report :
+	
+	Revenue Report : which is the sum of invoice items amount from invoices, bookings based on bookings status not in ("Cancelled","Failed"), and invoices isCancelled=0, and isLiability=0 and invoice startdate 
+
+7. SD Liability Report 
+
+	Liability Report: is the sum of the taxabale amount from invoices based on bookings status not in ("Failed","Cancelled", "Settled"), invoices isCancelled=0, isLaibility=1, isLiabilityCleared=0
+
+8. AR Report
+
+	AR Report : is the due amount from the bookings on which bookings status not in ("Failed", "Cancelled") and due >0
+
+9. TDS AR Report
+
+	TDS AR Report : is the sum of tds amount from invoices on bookings status not in ("Failed","Cancelled"),invoices isCancelled=0 and i.tds>0 
+
+10. TDS Due Clients 
+
+	TDS Due Clients Report : is the sum(tds-tdsPaid) , Roundof ((sum(tds-tdsPaid)/security)*100%)  from invoices on which bookings status is not in ("Failed","Cancelled","Setteled"),b.refNo is not null and term ='LongTerm' from contracts and invoices isCancelled=0, isLaibility=0, and invoice date 
+
+11. Building Expenses Report
+
+	Building Expense Report POS : which is sum of purchase item taxableamounts which are accounted for that month by considering only pos with isOpex=1 and isBill=0 and with po statuses as ('Approved','Paid','PrePaid','Closed')  and item status as not in ('Archived') 
+
+	Building Expense Report Bills : which is sum of purchase item taxableamounts which are accounted for that month by considering only pos with isOpex=1 and isBill=1 and with po statuses as ('Approved','Paid','PrePaid','Closed')  and item status as not in ('Archived')  opex_categories should be of office=0
+
+12. HO Expenses Report
+
+	HO Expense Report POS : which is sum of purchase item taxableamounts which are accounted for that month by considering only pos with isOpex=1 and isBill=0 and with po statuses as ('Approved','Paid','PrePaid','Closed')  and item status as not in ('Archived') 
+
+	HO Expense Report Bills : which is sum of purchase item taxableamounts which are accounted for that month by considering only pos with isOpex=1 and isBill=1 and with po statuses as ('Approved','Paid','PrePaid','Closed')  and item status as not in ('Archived') opex_categories should be of office=1
+
+----------------------
+
+Purchases Module
+
+----------------------
+
+1. Capex ProjectWise Payables Report
+
+	Capex ProjectWise Payabale Report : which are the amounts from purcahseOrders amount, dueAmount, releaseAmount, paidAmount,(amount-paidAmount) yettopay based on purchaseorder status not in ("Deleted","Declined"), isOpex=0 and buildingID>0
+
+----------------------
+
+Support Module
+
+----------------------
+
+1. Support Tickets Category Report
+
+	Support Tickets Category Report : which are the details from the tickets based on date and category, subcategory, contexta and assignments to the users
+
+----------------------

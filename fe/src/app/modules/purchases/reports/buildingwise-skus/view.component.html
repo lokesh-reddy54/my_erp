@@ -1,0 +1,211 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Capex SKUs Report</h4>
+    <!-- <input type="text" placeholder="Search by name" [formControl]="buildingSearch" class="form-control form-control-rounde pull-left w-30 ml-2"> -->
+    <div class="btn-group btn-group-toggle pull-right ml-10" data-toggle="buttons" *ngIf="buildingsFilters.type=='expenses'">
+      <strong class="mr-2">View By : </strong>
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="buildingsFilters.expensesBy">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="listOfficeExpenses()">
+          <input ngbButton type="radio" value="buildings"> Buildings
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="listVendorExpenses()">
+          <input ngbButton type="radio" value="vendors"> Vendors
+        </label>
+      </div>
+    </div>
+    <div class="btn-group btn-group-toggle pull-right ml-10" data-toggle="buttons" *ngIf="buildingsFilters.type=='bills'">
+      <strong class="mr-2">View By : </strong>
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="buildingsFilters.billsBy">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="selectedBuilding=null;generateMonthlyBillsReport(false)">
+          <input ngbButton type="radio" value="overall"> OverAll
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="generateMonthlyBillsReport(true);">
+          <input ngbButton type="radio" value="buildings"> Buildings
+        </label>
+      </div>
+    </div>
+    <!--  <div class="btn-group btn-group-toggle pull-right" data-toggle="buttons">
+      <strong class="mr-2">Report Type : </strong>
+      <div class="btn-group btn-group-toggle" ngbRadioGroup name="radioBasic" [(ngModel)]="buildingsFilters.type">
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="loadExpenses()">
+          <input ngbButton type="radio" value="expenses"> CapEx
+        </label>
+        <label ngbButtonLabel class="btn btn-sm btn-secondary" (click)="loadBills()">
+          <input ngbButton type="radio" value="bills"> OpEx
+        </label>
+      </div>
+    </div> -->
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card  o-hidden" style="min-height: calc(100vh - 180px);">
+        <div class="row p-1 ml-0 mr-0 ">
+          <div class="form-group pl-1 col-md-2 mb-1">
+            <label for="roles">Select Country</label>
+            <ng-select [items]="countries" [hideSelected]="true" bindLabel="name" placeholder="Select Country" [(ngModel)]="selectedCountry" [ngModelOptions]="{standalone: true}" (change)="onCountrySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-2 mb-1" *ngIf="selectedCountry?.id">
+            <label for="roles">Select City</label>
+            <ng-select [items]="cities" [hideSelected]="true" bindLabel="name" placeholder="Select City" [(ngModel)]="selectedCity" [ngModelOptions]="{standalone: true}" (change)="onCitySelected()">
+            </ng-select>
+          </div>
+          <div class="form-group pl-1 col-md-2 mb-1" *ngIf="selectedCity?.id">
+            <label for="roles">Select Location</label>
+            <ng-select [items]="locations" [hideSelected]="true" bindLabel="name" placeholder="Select Location" [(ngModel)]="selectedLocation" [ngModelOptions]="{standalone: true}" (change)="loadExpenses()">
+            </ng-select>
+          </div>
+        </div>
+        <div class="row" *ngIf="buildingsFilters.type=='expenses'">
+          <div class="table-responsive pl-4 pr-4" *ngIf="selectedLocation?.id" [ngClass]="buildingsFilters.buildingId||servicesFilters.buildingId ? 'col-3':'col-12'">
+            <loading [loading]="loading"></loading>
+            <h5 class="pull-left mb-1" *ngIf="buildingsFilters.expensesBy=='buildings'">Buildings</h5>
+            <h5 class="pull-left mb-1" *ngIf="buildingsFilters.expensesBy=='vendors'">Vendors</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-30">Name</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)&&buildingsFilters.expensesBy=='buildings'">Vendors</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)&&buildingsFilters.expensesBy=='vendors'">Buildings</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">Categories</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">Types</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">SKUs</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">Items</th>
+                  <th class="w-10 text-center">Expense</th>
+                  <th class="w-10 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings;" [ngClass]="building.selected ? 'selected':''">
+                  <td class="w-30" *ngIf="building.building">{{building.building}}</td>
+                  <td class="w-30" *ngIf="building.vendor">{{building.vendor}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)&&building.vendors">{{building.vendors}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)&&building.buildings">{{building.buildings}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">{{building.categories}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">{{building.types}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">{{building.skus}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.buildingId||servicesFilters.buildingId)">{{building.items}}</td>
+                  <td class="w-10 text-center">{{building.expense | inr}}</td>
+                  <td class="w-10 text-center">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Categories" (click)="listOfficeCategories( building)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div [ngClass]="buildingsFilters.catId ? 'col-3':'col-9'" class="p-1" *ngIf="buildingsFilters.buildingId">
+            <h5 class="pull-left mb-1">Categories</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-30">Name</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.catId||servicesFilters.catId)">Types</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.catId||servicesFilters.catId)">SKUs</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.catId||servicesFilters.catId)">Items</th>
+                  <th class="w-10 text-center">Expense</th>
+                  <th class="w-10 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let category of categories;" [ngClass]="category.selected ? 'selected':''">
+                  <td class="w-30">{{category.name}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.catId||servicesFilters.catId)">{{category.types}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.catId||servicesFilters.catId)">{{category.skus}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.catId||servicesFilters.catId)">{{category.items}}</td>
+                  <td class="w-10 text-center">{{category.expense | inr}}</td>
+                  <td class="w-10 text-center">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Types" (click)="listOfficeTypes( category)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div [ngClass]="buildingsFilters.typeId ? 'col-3':'col-6'" class="p-1" *ngIf="buildingsFilters.catId">
+            <h5 class="pull-left mb-1">Types</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-30">Name</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.typeId||servicesFilters.typeId)">SKUs</th>
+                  <th class="w-10 text-center" *ngIf="!(buildingsFilters.typeId||servicesFilters.typeId)">Items</th>
+                  <th class="w-10 text-center">Expense</th>
+                  <th class="w-10 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let type of types;" [ngClass]="type.selected ? 'selected':''">
+                  <td class="w-30">{{type.name}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.typeId||servicesFilters.typeId)">{{type.skus}}</td>
+                  <td class="w-10 text-center" *ngIf="!(buildingsFilters.typeId||servicesFilters.typeId)">{{type.items}}</td>
+                  <td class="w-10 text-center">{{type.expense | inr}}</td>
+                  <td class="w-10 text-center">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View SKUs" (click)="listOfficeSkus(type)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="col-3 p-1" *ngIf="buildingsFilters.typeId">
+            <h5 class="pull-left mb-1">SKUs</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <thead>
+                <tr>
+                  <th class="w-30">Name</th>
+                  <th class="w-10 text-center">Items</th>
+                  <th class="w-10 text-center">Expense</th>
+                </tr>
+              </thead>
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let sku of skus;" [ngClass]="sku.selected ? 'selected':''">
+                  <td class="w-30">{{sku.name}}</td>
+                  <td class="w-10 text-center">{{sku.items}}</td>
+                  <td class="w-10 text-center">{{sku.expense | inr}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="row" *ngIf="buildingsFilters.type=='bills'">
+          <div class="col-2 pr-0" *ngIf="selectedBuilding">
+            <h5 class="pull-left mb-1 ml-2">Buildings</h5>
+            <table class="tableBodyScroll table table-striped table-hover table-sm">
+              <tbody infiniteScroll class="tableBodyScroll">
+                <tr *ngFor="let building of buildings; trackBy: trackById;" [ngClass]="{'selected': building==selectedBuilding}">
+                  <td class="w-80">{{building}}</td>
+                  <td class="w-20">
+                    <button class="btn btn-icon btn-primary" ngbTooltip="View Building OpEx" (click)="selectedBuilding=building;generateMonthlyBillsReport(true)"><i class="i-Blinklist"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pl-0" [ngClass]="{'col-12':!selectedBuilding, 'col-10':selectedBuilding}">
+            <h5 *ngIf="selectedBuilding" class="mt-2 pl-4">'{{selectedBuilding}}' Building OpEx</h5>
+            <div class="table-responsive pl-4 pr-4" [ngClass]="{'fs-12':selectedBuilding}">
+              <table class="revenueTable table table-stripe table-hover table-sm">
+                <thead>
+                  <tr class="bg-primary text-white">
+                    <th *ngFor="let month of monthlyReport.months;trackBy: trackById;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">{{month}}</th>
+                  </tr>
+                </thead>
+                <tbody class="revenueTable" *ngFor="let row of monthlyReport.rows;">
+                  <tr (click)="getTypes(row)" [ngClass]="{'bg-info':row.types&&row.selected,'bg-light':row.types&&selectedRow,'f-b':!row.types}" class="cursor">
+                    <td *ngFor="let col of row.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                  <tr [ngClass]="{'d-none':!row.selected}" *ngFor="let type of row?.types;">
+                    <td *ngFor="let col of type.cols;" style="text-align: right;" [ngStyle]="{'width':colWidth+'%'}">
+                      {{col.value | inr}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

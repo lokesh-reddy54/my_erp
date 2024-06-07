@@ -1,0 +1,409 @@
+<div class="mt-0">
+  <div class="breadcrumb">
+    <h4 class="pull-left">Accounts Cards</h4>
+    <div class="clear"></div>
+  </div>
+  <div class="clear"></div>
+  <div class="separator-breadcrumb border-top mb-10"></div>
+  <div class="row">
+    <div class="col-md-12 mt-1">
+      <loading [loading]="loading"></loading>
+      <ngb-tabset class="nav-center">
+        <ngb-tab title="Accounting">
+          <ng-template ngbTabContent>
+            <hr class="mt-0 mb-1" style="margin-top: -35px !important">
+            <div class="card tableBodyScroll" style="height: calc(100vh - 190px);overflow: auto;">
+              <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+                <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Credit Entries</h5>
+                <div class="row ml-0 mr-0">
+                  <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.credits">
+                    <div class="card mb-2 {{card.level}} cursor" (click)="openCardList(card, 'Credit Entries')">
+                      <div class="card-body pl-2 pr-2 pt-2 pb-0">
+                        <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                        <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                        <div>
+                          <strong>{{card.name}}</strong>
+                          <div class="i-db float-right w-20">
+                            <card-suggestion [card]="card"></card-suggestion>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="bg" style="height: 12px;width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+                <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Debit Entries</h5>
+                <!-- <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.debits" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+                <div class="row ml-0 mr-0">
+                  <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.debits">
+                    <div class="card mb-2 {{card.level}} cursor" (click)="openCardList(card, 'Debit Entries')">
+                      <div class="card-body pl-2 pr-2 pt-2 pb-0">
+                        <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                        <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                        <div>
+                          <strong>{{card.name}}</strong>
+                          <div class="i-db float-right w-20">
+                            <card-suggestion [card]="card"></card-suggestion>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="bg" style="height: 12px;width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-col pl-2 pr-2 border-bottom pb-2" id="chart-col">
+                <h5 class="p-0 pl-2 m-0 f-b mt-2 mb-2 fs-18">Pending Expense Bills</h5>
+                <!--  <ngx-charts-number-card class="chart-container" [view]="view" [scheme]="colorScheme" cardColor="#232837" emptyColor="#1e222e" [results]="data.expenses" [animations]="animations" (select)="onSelect($event)"></ngx-charts-number-card> -->
+                <div class="row ml-0 mr-0">
+                  <div class="col-md-2 pr-1 pl-1" *ngFor="let card of data.expenses">
+                    <div class="card mb-2 {{card.level}} cursor" (click)="openCardList(card)">
+                      <div class="card-body pl-2 pr-2 pt-2 pb-0">
+                        <div *ngIf="card.amount" class="card-title fs-24 mb-1">{{card.value | inr}}</div>
+                        <div *ngIf="!card.amount" class="card-title fs-24 mb-1">{{card.value}}</div>
+                        <div>
+                          <strong>{{card.name}}</strong>
+                          <div class="i-db float-right w-20">
+                            <card-suggestion [card]="card"></card-suggestion>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="bg" style="height: 12px;width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-template>
+        </ngb-tab>
+      </ngb-tabset>
+    </div>
+  </div>
+</div>
+<ng-template #creditEntriesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-50">Narration</th>
+            <th class="w-15 text-right">Amount</th>
+            <th class="w-20">PaymentMode</th>
+            <th class="w-15">Received Date</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;let i=index;">
+            <td class="w-50">#{{i+1}}. {{item.narration}}</td>
+            <td class="w-15 text-right">{{item.amount | inr}}</td>
+            <td class="w-20">{{item.paymentMode}}</td>
+            <td class="w-15">{{item.receivedDate | date : 'MMM dd, yyyy'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #debitEntriesModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-50">Narration</th>
+            <th class="w-15 text-right">Amount</th>
+            <th class="w-20">PaymentMode</th>
+            <th class="w-15">Paid Date</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-50">#{{i+1}}. {{item.narration}}</td>
+            <td class="w-15 text-right">{{item.amount | inr}}</td>
+            <td class="w-20">{{item.paymentMode}}</td>
+            <td class="w-15">{{item.paidOn | date : 'MMM dd, yyyy'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #billsInBillsQueueModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-30">Vendor</th>
+            <th class="w-10">Building/Project</th>
+            <th class="w-15 text-right">Amount</th>
+            <th class="w-15">BillType</th>
+            <th class="w-15">Bill/Paid Date</th>
+            <th class="w-15">PaymentType</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-30">#{{i+1}}. {{item.vendor}}</td>
+            <td class="w-10">{{item.building || item.project}}</td>
+            <td class="w-15 text-right">{{item.amount | inr}}</td>
+            <td class="w-15">{{item.billType}}</td>
+            <td class="w-15">{{(item.billDate || item.paidDate) | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-15">{{item.paymentType}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #billsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-30">Vendor</th>
+            <th class="w-10">Building</th>
+            <th class="w-15 text-right">Bill Amount</th>
+            <th class="w-15">Bill Date</th>
+            <th class="w-15 text-right">TaxableAmount</th>
+            <th class="w-15 text-center">AccountedFor</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-30">#{{i+1}}. {{item.vendor}}</td>
+            <td class="w-10">{{item.building}}</td>
+            <td class="w-15 text-right">{{item.amount | inr}}</td>
+            <td class="w-15">{{(item.date) | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-15 text-right">{{item.taxableAmount | inr}}</td>
+            <td class="w-15 text-center">{{(item.accountedMonth) | date : 'MMM yyyy'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #dueAmountModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-30">Vendor</th>
+            <th class="w-10">Building/Project</th>
+            <th class="w-15 text-right">Due Amount</th>
+            <th class="w-15">Bill Date</th>
+            <th class="w-15">Due Date</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-30">#{{i+1}}. {{item.vendor}}</td>
+            <td class="w-10">{{item.building || item.project}}</td>
+            <td class="w-15 text-right">{{item.amount | inr}}</td>
+            <td class="w-15">{{(item.date) | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-15">{{(item.dueDate) | date : 'MMM dd, yyyy'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #totalARAmountModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-50">Client</th>
+            <th class="w-15 text-right">Amount</th>
+            <th class="w-20">Building</th>
+            <th class="w-15">Status</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-50">#{{i+1}}. {{item.client}}</td>
+            <td class="w-15 text-right">{{item.due | inr}}</td>
+            <td class="w-20">{{item.building}}</td>
+            <td class="w-15">{{item.status}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #gstModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-50">Vendor</th>
+            <th class="w-20">Project</th>
+            <th class="w-15 text-right">Amount</th>
+            <th class="w-15">PO Date</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-50">#{{i+1}}. {{item.vendor}}</td>
+            <td class="w-20">{{item.project}}</td>
+            <td class="w-15 text-right">{{item.amount | inr}}</td>
+            <td class="w-15">{{item.date | date : 'MMM dd, yyyy'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #tdsDueModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-50">Company</th>
+            <th class="w-20 text-right">Due Amount</th>
+            <th class="w-15">From Date</th>
+            <th class="w-15">To Date</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-50">#{{i+1}}. {{item.company}}</td>
+            <td class="w-15 text-right">{{item.due | inr}}</td>
+            <td class="w-15">{{currentCard?.fromDate | date : 'MMM dd, yyyy'}}</td>
+            <td class="w-15">{{currentCard?.toDate | date : 'MMM dd, yyyy'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
+<ng-template #highTdsDueClientsModal let-modal>
+  <loading [loading]="loading" [type]="'loader-bubble'"></loading>
+  <div class="modal-header d-ib">
+    <h4 class="modal-title float-left" id="modal-basic-title">{{currentCard?.title}} - {{currentCard?.name}}</h4>
+    <button type="button" class="close float-right" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="table-responsive">
+      <loading [loading]="loading"></loading>
+      <table class="tableBodyScroll table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th class="w-50">Company</th>
+            <th class="w-20 text-right">TDS Due</th>
+            <th class="w-20 text-right">Security Deposit</th>
+            <th class="w-10 text-center">Percent</th>
+          </tr>
+        </thead>
+        <tbody style="overflow:auto;max-height: 400px;">
+          <tr *ngFor="let item of items;;let i=index;">
+            <td class="w-50">#{{i+1}}. {{item.company}}</td>
+            <td class="w-20 text-right">{{item.tdsdue | inr}}</td>
+            <td class="w-20 text-right">{{item.sd | inr}}</td>
+            <td class="w-10 text-center">{{item.duepercent}}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-light" (click)="modal.close('close click')">Close</button>
+  </div>
+</ng-template>
